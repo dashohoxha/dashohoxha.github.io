@@ -1,10 +1,10 @@
-.highlight {
+.highlight, .example {
 	margin-bottom: 1.5em;
-	@include font(12);
+	@include font(13);
 	color: #d0d0d0;
 	border: 1px solid darken($body-color, 5);
 	background-color: #272822;
-	@include rounded(3px);
+	@include rounded(5px);
 	pre {
 		position: relative;
 		margin: 0;
@@ -70,4 +70,9 @@
 	.vg { color: #f8f8f2 } /* Name.Variable.Global */
 	.vi { color: #f8f8f2 } /* Name.Variable.Instance */
 	.il { color: #ae81ff } /* Literal.Number.Integer.Long */
+}
+
+.example {
+    padding: 10px;
+    line-height: 1.5em;
 }
