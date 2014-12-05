@@ -1,0 +1,116 @@
+#+begin_html
+---
+layout:     post
+title:      Improving the Performance of a VM by Using a Real Disk Partition
+date:       2012-08-22 9:29:00
+summary:    A virtual machine can also use a real partition,
+            and this can improve its performance.
+---
+#+end_html
+
+I have used *zentyal* as a gateway server, and it is actually running
+on a virtual machine. An important component of it is *squid*, which
+is supposed to improve the efficiency of the network connection by
+saving in cache the web pages that have been already visited, and
+fetching them from the cache when they are re-visited.
+
+This is an operation that makes intesive usage of the disk, and
+virtual disks (used on virtual machines) are not particularly
+efficient for it. However, a virtual machine can also use a real
+partition, so the efficience of squid can be improved by attaching a
+real partition to the virtual machine and using it for the cache.
+
+* Attach a Real Partition to the Virtual Machine
+
+  The host where zentyal is installed is a CentOS system, and the disk partitions are managed by LVM. So, first of all we should create a new LVM partition to be attached to the virtual machine:
+  #+BEGIN_EXAMPLE
+  vgdisplay
+  lvdisplay
+  lvcreate vg_data -L 50G -n /dev/vg_data/lv_cache
+  #+END_EXAMPLE
+
+  In LVM, *Volume Groups (VG)* are the equivalents of *disks*, and
+  *Logical Volumes (LV)* are the equivalents of *partitions*. In this
+  case, we are creating a /logical volume/ with name
+  */dev/vg_data/lv_cache*, on the /volume group/ with name
+  *vg_data*. The size of this LV partition is *50G*, and this is
+  enough for the squid cache.
+  
+  Then we add this partition to the configuration file of the virtual
+  machine ~/etc/libvirt/qemu/zentyal.xml~:
+  #+BEGIN_EXAMPLE
+  <devices>
+    . . . . .
+    <disk type='block' device='disk'>
+      <driver name='qemu' type='raw' cache='none' io='native'/>
+      <source dev='/dev/vg_data/lv_cache'/>
+      <target dev='sdb' bus='ide'/>
+      <address type='drive' controller='0' bus='0' unit='1'/>
+    </disk>
+    . . . . .
+  </devices>
+  #+END_EXAMPLE
+
+  Inside the virtual machine this disk will appear and will be
+  accessed as */dev/sdb*.
+
+  Now we have to enable it, by reloading (re-defining) the
+  configuration file:
+  #+BEGIN_EXAMPLE
+  virsh define /etc/libvirt/qemu/zentyal.xml
+  virsh shutdown zentyal
+  virsh start zentyal
+  #+END_EXAMPLE
+
+
+* Using the New Disk Inside the Virtual Machine
+
+  Inside the virtual machine (zentyal), we can access the new disk as
+  */dev/sdb*. First we have to format and mount it, and then we can
+  change the /squid/ configuration to use it.
+
+  + Format the new partition with the /reiserfs/ format (which is a
+    recommended format for the squid cache):
+    #+BEGIN_EXAMPLE
+    mkfs.reiserfs -f /dev/sdb
+    #+END_EXAMPLE
+
+  + Append this line to ~/etc/fstab~:
+    #+BEGIN_EXAMPLE
+    /dev/sdb  /var/spool/squid  reiserfs  defaults,notail,noatime  1  2
+    #+END_EXAMPLE
+
+  + Then stop squid and mount the new partition:
+    #+BEGIN_EXAMPLE
+    service squid stop
+    rm -rf /var/spool/squid/*
+    mount -a
+    chown proxy:proxy /var/spool/squid/
+    chmod 750 /var/spool/squid/
+    squid -z
+    service squid start
+    #+END_EXAMPLE
+
+  + Edit ~/usr/share/zentyal/stubs/squid/squid.conf.mas~ and change
+    this line:
+    #+BEGIN_EXAMPLE
+    cache_dir ufs /var/spool/squid <% $cacheDirSize %> 16 256
+    #+END_EXAMPLE
+    to this one (by adding an =a= option):
+    #+BEGIN_EXAMPLE
+    cache_dir aufs /var/spool/squid <% $cacheDirSize %> 16 256
+    #+END_EXAMPLE
+
+    Then restart:
+    #+BEGIN_EXAMPLE
+    service squid restart
+    #+END_EXAMPLE
+
+* Referencies
+
+  + http://tecnologia.2020mobile.es/improving-zentyal-proxy-performance-squid-dansguardian/
+  + http://www.linux-faqs.com/squid.php
+  + http://sourcelinux.wikidot.com/setting-up-squid-in-gateway-as-a-transparent-proxy
+  + http://daddy-linux.blogspot.com/2012/03/configuring-squid-proxy-server.html
+  + http://en.kioskea.net/faq/804-ubuntu-installing-an-http-proxy-server-squid
+  + http://doc.zentyal.org/en/proxy.html

@@ -1,0 +1,266 @@
+#+begin_html
+---
+layout:     post
+title:      How to Create a Local Ubuntu Repository
+date:       2012-08-09 02:49:00
+summary:
+    We have about 40 computers installed with Edubuntu, and more than a
+    dozen of servers (most of them running on virtual machines). They
+    all need to be updated time after time with the latest version of
+    packages. Also, time after time, new packages need to be installed.
+    These packages come from some central Ubuntu Repository servers.
+
+    All this activity for keeping computers up-to-date (up to the latest
+    version) consumes lots of bandwidth and takes a lot of time. And
+    there are new package updates almost every day! For one computer
+    this can be acceptable, however for lots of computers it may become
+    unbearable.
+
+    One solution for this problem is to create a local mirror of the
+    ubuntu repository.
+---
+#+end_html
+
+We have about 40 computers installed with Edubuntu, and more than a
+dozen of servers (most of them running on virtual machines). They
+all need to be updated time after time with the latest version of
+packages. Also, time after time, new packages need to be installed.
+These packages come from some central Ubuntu Repository servers.
+
+All this activity for keeping computers up-to-date (up to the latest
+version) consumes lots of bandwidth and takes a lot of time. And
+there are new package updates almost every day! For one computer
+this can be acceptable, however for lots of computers it may become
+unbearable.
+
+One solution for this problem is to create a local mirror of the
+ubuntu repository.
+  
+
+* Creating an APT Mirror
+
+  Fortunately, creating a local mirror of the APT packages is very
+  easy. There is even a tool that helps to create it, called
+  =apt-mirror=. So, the first step is to install it:
+  #+BEGIN_SRC ruby
+  aptitude install apt-mirror
+  #+END_SRC
+
+  The next step is to customize its configuration file,
+  ~/etc/apt/mirror.list~. It should look like this:
+  #+BEGIN_SRC bash
+  set base_path    /data/apt-mirror
+  set defaultarch  amd64
+  set nthreads     5
+
+  deb http://archive.ubuntu.com/ubuntu precise main restricted universe multiverse
+  deb http://archive.ubuntu.com/ubuntu precise-updates main restricted universe multiverse
+  deb http://archive.ubuntu.com/ubuntu precise-backports main restricted universe multiverse
+  deb http://archive.ubuntu.com/ubuntu precise-proposed main restricted universe multiverse
+  deb-i386 http://archive.ubuntu.com/ubuntu precise main restricted universe multiverse
+  deb-i386 http://archive.ubuntu.com/ubuntu precise-updates main restricted universe multiverse
+  deb-i386 http://archive.ubuntu.com/ubuntu precise-backports main restricted universe multiverse
+  deb-i386 http://archive.ubuntu.com/ubuntu precise-proposed main restricted universe multiverse
+
+  deb http://security.ubuntu.com/ubuntu precise-security main restricted universe multiverse
+  deb http://archive.canonical.com/ubuntu precise partner
+  deb http://extras.ubuntu.com/ubuntu precise main
+  deb-i386 http://security.ubuntu.com/ubuntu precise-security main restricted universe multiverse
+  deb-i386 http://archive.canonical.com/ubuntu precise partner
+  deb-i386 http://extras.ubuntu.com/ubuntu precise main
+
+  deb http://dl.google.com/linux/chrome/deb/ stable main
+  deb http://packages.medibuntu.org/ precise free non-free
+  deb http://ppa.launchpad.net/epoptes/ppa/ubuntu precise main
+  deb http://ppa.launchpad.net/loneowais/gmailwatcher.dev/ubuntu precise main
+  deb http://ppa.launchpad.net/webupd8team/gnome3/ubuntu precise main
+  deb-i386 http://packages.medibuntu.org/ precise free non-free
+  deb-i386 http://ppa.launchpad.net/epoptes/ppa/ubuntu precise main
+  deb-i386 http://ppa.launchpad.net/loneowais/gmailwatcher.dev/ubuntu precise main
+  deb-i386 http://ppa.launchpad.net/webupd8team/gnome3/ubuntu precise main
+
+  #deb-src http://archive.ubuntu.com/ubuntu precise main restricted universe multiverse
+  #deb-src http://archive.ubuntu.com/ubuntu precise-updates main restricted universe multiverse
+  #deb-src http://archive.ubuntu.com/ubuntu precise-backports main restricted universe multiverse
+  #deb-src http://archive.ubuntu.com/ubuntu precise-proposed main restricted universe multiverse
+
+  #deb-src http://archive.ubuntu.com/ubuntu precise-security main restricted universe multiverse
+  #deb-src http://archive.canonical.com/ubuntu precise partner
+  #deb-src http://extras.ubuntu.com/ubuntu precise main
+  #deb-src http://archive.canoniccom/ubuntu precise partner
+
+  clean http://archive.ubuntu.com/ubuntu
+  #+END_SRC
+
+  The URL-s here are the same to what I have on
+  ~/etc/apt/sources.list~ on my computers. I am storing the packages
+  on the directory ~/data/apt-mirror~, which has plenty of free disk
+  space (at least 200 GB). I am mirroring the packages for both
+  *amd64* and *i386* architectures, and i am skipping the source
+  packages (*deb-src*) to save some space.
+   
+  Now we can start making the mirror (or updating it) by running
+  ~apt-mirror~.
+  + Note :: If the mirroring process is interrupted, start it again
+	    by typing ~apt-mirror~.  If it refuses to start (claiming
+	    that it is already running), look out for
+	    ~/data/apt-mirror/var/apt-mirror.lock~ and remove it.
+  + Note :: Initially it can take a lot of time (several days) to
+	    make a full mirror, depending on the speed of the network
+	    connection.
+
+  After mirroring is done, we can export the mirror by HTTP:
+  #+BEGIN_EXAMPLE
+  ln -s /data/apt-mirror/mirror /var/www/apt-mirror
+  #+END_EXAMPLE
+  Of course, /apache/ has to be already installed (~aptitude install
+  apache2~).
+
+
+* Configure clients for using the local repository
+
+  In order to use this mirror from a client, modify
+  ~/etc/apt/sources.list~ to use something like this
+  ~http://192.168.10.50/apt-mirror/archive.ubuntu.com/ubuntu/~
+  instead of ~http://archive.ubuntu.com/ubuntu/~. It should look
+  like this:
+  #+BEGIN_EXAMPLE
+  deb http://192.168.10.50/apt-mirror/archive.ubuntu.com/ubuntu/ precise main restricted
+  # deb-src http://192.168.10.50/apt-mirror/archive.ubuntu.com/ubuntu/ precise main restricted
+  deb http://192.168.10.50/apt-mirror/archive.ubuntu.com/ubuntu/ precise-updates main restricted
+  # deb-src http://192.168.10.50/apt-mirror/archive.ubuntu.com/ubuntu/ precise-updates main restricted
+
+  deb http://192.168.10.50/apt-mirror/archive.ubuntu.com/ubuntu/ precise universe
+  # deb-src http://192.168.10.50/apt-mirror/archive.ubuntu.com/ubuntu/ precise universe
+  deb http://192.168.10.50/apt-mirror/archive.ubuntu.com/ubuntu/ precise-updates universe
+  # deb-src http://192.168.10.50/apt-mirror/archive.ubuntu.com/ubuntu/ precise-updates universe
+
+  deb http://192.168.10.50/apt-mirror/archive.ubuntu.com/ubuntu/ precise multiverse
+  # deb-src http://192.168.10.50/apt-mirror/archive.ubuntu.com/ubuntu/ precise multiverse
+  deb http://192.168.10.50/apt-mirror/archive.ubuntu.com/ubuntu/ precise-updates multiverse
+  # deb-src http://192.168.10.50/apt-mirror/archive.ubuntu.com/ubuntu/ precise-updates multiverse
+
+  deb http://192.168.10.50/apt-mirror/archive.ubuntu.com/ubuntu/ precise-backports main restricted universe multiverse
+  # deb-src http://192.168.10.50/apt-mirror/archive.ubuntu.com/ubuntu/ precise-backports main restricted universe multiverse
+  deb http://192.168.10.50/apt-mirror/security.ubuntu.com/ubuntu precise-security main restricted
+
+  # deb-src http://192.168.10.50/apt-mirror/security.ubuntu.com/ubuntu precise-security main restricted
+  deb http://192.168.10.50/apt-mirror/security.ubuntu.com/ubuntu precise-security universe
+  # deb-src http://192.168.10.50/apt-mirror/security.ubuntu.com/ubuntu precise-security universe
+  deb http://192.168.10.50/apt-mirror/security.ubuntu.com/ubuntu precise-security multiverse
+  # deb-src http://192.168.10.50/apt-mirror/security.ubuntu.com/ubuntu precise-security multiverse
+
+  deb http://192.168.10.50/apt-mirror/extras.ubuntu.com/ubuntu precise main
+  # deb-src http://192.168.10.50/apt-mirror/extras.ubuntu.com/ubuntu precise main
+
+  deb http://192.168.10.50/apt-mirror/dl.google.com/linux/chrome/deb/ stable main
+  ## Please report any bug on https://bugs.launchpad.net/medibuntu/
+  deb http://192.168.10.50/apt-mirror/packages.medibuntu.org/ precise free non-free #Medibuntu - Ubuntu 11.10 "precise ocelot"
+  # deb-src http://packages.medibuntu.org/ precise free non-free #Medibuntu (source) - Ubuntu 11.10 "precise ocelot"
+  deb http://192.168.10.50/apt-mirror/archive.canonical.com/ubuntu precise partner #Added by software-center
+  #+END_EXAMPLE
+  Here, =192.168.10.50= is the IP of the server where we have created
+  the mirror.
+
+
+* Keeping the APT mirror synchronized
+
+  To synchronize our local repository with the central one, we can
+  just run =apt-mirror= at any time. However I usually prefer to
+  automate things, so I have created the script ~/etc/cron.daily/aptmirror~:
+  #+BEGIN_EXAMPLE
+  #!/bin/sh
+  rm /data/apt-mirror/var/apt-mirror.lock
+  /usr/bin/apt-mirror
+  /data/apt-mirror/var/clean.sh
+  #+END_EXAMPLE
+
+  This will run automatically each day (during the night). Make sure
+  that it is executable: =chmod +x /etc/cron.daily/aptmirror= .
+
+
+* Doing release upgrade from our local ubuntu repository
+
+  Once in a while (once in 6 months or so), Ubuntu makes new
+  releases. It would be usefull if we can upgrade from our local APT
+  mirror. However this needs some further steps to be taken.
+
+  + First of all, get a local copy of /dist-upgrader/ files:
+    #+BEGIN_EXAMPLE
+    cd /data/apt-mirror/mirror
+    mkdir dist_upgrade
+    cd dist_upgrade
+    export dist_upgrader_url='http://archive.ubuntu.com/ubuntu/dists/precise/main/dist-upgrader-all/current'
+    wget $dist_upgrader_url/precise.tar.gz
+    wget $dist_upgrader_url/precise.tar.gz.gpg
+    wget $dist_upgrader_url/ReleaseAnnouncement
+    wget $dist_upgrader_url/ReleaseAnnouncement.html
+    #+END_EXAMPLE
+
+  + Get a local copy of the files /meta-release/ and
+    /meta-release-lts/ as well:
+    #+BEGIN_EXAMPLE
+    cd /data/apt-mirror/mirror/dist_upgrade/
+    wget http://changelogs.ubuntu.com/meta-release
+    wget http://changelogs.ubuntu.com/meta-release-lts
+    #+END_EXAMPLE
+
+  + Modify the URL-s in the file /meta-release/ to look like this:
+    #+BEGIN_EXAMPLE
+    Dist: oneiric
+    Name: Oneiric Ocelot
+    Version: 11.10
+    Date: Thu, 13 Oct 2011 12:00:00 UTC
+    Supported: 1
+    Description: This is the 11.10 release
+    Release-File: http://archive.ubuntu.com/ubuntu/dists/oneiric/Release
+    ReleaseNotes: http://archive.ubuntu.com/ubuntu/dists/oneiric-updates/main/dist-upgrader-all/current/ReleaseAnnouncement
+    ReleaseNotesHtml: http://archive.ubuntu.com/ubuntu/dists/oneiric-updates/main/dist-upgrader-all/current/ReleaseAnnouncement.html
+    UpgradeTool: http://archive.ubuntu.com/ubuntu/dists/oneiric-updates/main/dist-upgrader-all/current/oneiric.tar.gz
+    UpgradeToolSignature: http://archive.ubuntu.com/ubuntu/dists/oneiric-updates/main/dist-upgrader-all/current/oneiric.tar.gz.gpg
+
+    Dist: precise
+    Name: Precise Pangolin
+    Version: 12.04 LTS
+    Date: Thu, 26 Apr 2012 12:04:00 UTC
+    Supported: 1
+    Description: This is the 12.04 LTS release
+    Release-File: http://192.168.10.50/apt-mirror/archive.ubuntu.com/ubuntu/dists/precise/Release
+    ReleaseNotes: http://192.168.10.50/apt-mirror/dist_upgrade/ReleaseAnnouncement
+    ReleaseNotesHtml: http://192.168.10.50/apt-mirror/dist_upgrade/ReleaseAnnouncement.html
+    UpgradeTool: http://192.168.10.50/apt-mirror/dist_upgrade/precise.tar.gz
+    UpgradeToolSignature: http://192.168.10.50/apt-mirror/dist_upgrade/precise.tar.gz.gpg
+    #+END_EXAMPLE
+    Do the same for the file /meta-release-lts/.
+
+  + On each system that is to be upgraded install /update-manager-core/:
+    #+BEGIN_EXAMPLE
+    aptitude install update-manager-core
+    #+END_EXAMPLE
+
+  + On each system that is to be upgraded modify the URL-s in the
+    file ~/etc/update-manager/meta-release~ to look like this:
+    #+BEGIN_EXAMPLE
+    # default location for the meta-release file
+
+    [METARELEASE]
+    URI = http://192.168.10.50/apt-mirror/dist_upgrade/meta-release
+    URI_LTS = http://192.168.10.50/apt-mirror/dist_upgrade/meta-release-lts
+    URI_UNSTABLE_POSTFIX = -development
+    URI_PROPOSED_POSTFIX = -proposed
+    #+END_EXAMPLE
+
+  + Run ~do-release-upgrade~ on the systems that should be
+    upgraded. Now everything should be retrieved from the local
+    mirror, without going out to the Internet.
+
+  + *Note*: Make sure to comment out all lines starting with *deb-src*
+    on ~/etc/apt/sources.list~ before starting the upgrade, since we
+    have not retrieved the source packages in our local mirror.
+
+
+* Referencies:
+
+  + http://www.supportsages.com/blog/2010/05/how-to-create-a-local-ubuntu-repository-updateupgrade-distros-locally-and-thereby-save-bandwidth/
+  + http://blog.knuthaugen.no/2009/12/doing-do-release-upgrade-on-an-offline-ubuntu-mirror.html
+

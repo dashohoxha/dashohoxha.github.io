@@ -1,0 +1,163 @@
+#+begin_html
+---
+layout:     post
+title:      How to Secure an Ubuntu Server
+date:       2012-08-23 10:23:00
+summary:    Recently I purchased a virtual ubuntu server on rackspace.
+    However I have to manage it myself, and this includes first of all taking
+    care for its security. Securing it is very important and is the first
+    thing to be done, since all the rackspace servers have public IP-s and
+    so are open to all the possible attacks from the Internet. Here I will
+    describe some of the steps that can be done to secure the server.
+---
+#+end_html
+
+Recently I purchased a virtual ubuntu server on [[http://www.rackspace.com/cloud/public/servers/pricing/][rackspace]]. However I
+have to manage it myself, and this includes first of all taking care
+for its security. Securing it is very important and is the first thing
+to be done, since all the rackspace servers have public IP-s and so
+are open to all the possible attacks from the Internet. Here I will
+describe some of the steps that can be done to secure the server.
+
+* Login to the Server
+
+  Initially you can login as user *root*, through *ssh*:
+  #+BEGIN_EXAMPLE
+  ssh root@123.45.67.890
+  #+END_EXAMPLE
+
+  Then you can change the password of the /root/ (from the default one,
+  assigned by /rackspace/), with the command =passwd=.
+
+
+* Add an Admin User
+
+  It is a common practice in Linux (and specially in ubuntu) to lock
+  down the *root* account and to use another account for
+  administrative tasks. Let's see how we can create it.
+
+  + First create another user account:
+    #+BEGIN_EXAMPLE
+    adduser administrator
+    #+END_EXAMPLE
+
+  + Then assign the /administrative/ user *sudo* priviledges (by
+    adding it to the the group /sudo/):
+    #+BEGIN_EXAMPLE
+    adduser administrator sudo
+    #+END_EXAMPLE
+
+
+* Set Up Public and Private Keys
+
+  One effective way of securing SSH access to your Cloud Server is to
+  use a public/private key. This means that a public key is placed on
+  the server and the private key is on your local workstation. This
+  makes it impossible for someone to log in using just a password -
+  they must have the private key. This consists of 3 basic steps:
+  create the key on your local workstation, copy the public key to the
+  Cloud Server, and set the correct permissions for the key.
+
+  1. Create the public and private keys on you personal (local) computer:
+     #+BEGIN_EXAMPLE
+     mkdir ~/.ssh
+     ssh-keygen -t rsa
+     cd ~/.ssh/
+     mv id_rsa rackspace_rsa
+     #+END_EXAMPLE
+
+     If you do not want a passphrase then just press enter when
+     prompted.
+
+     The *id_rsa* and *id_rsa.pub* are created in the *.ssh*
+     directory. The *id_rsa.pub* file holds the public key. You'll
+     place this file on you server. The *id_rsa* file is your private
+     key. Never show, give away, or keep this file on a public
+     computer. We rename it to *rackspace_rsa* to make it obvious that
+     this is the private key that is used to access the rackspace
+     server.
+
+  2. Copy the public key to the remote server:
+     #+BEGIN_EXAMPLE
+     scp ~/.ssh/id_rsa.pub administrator@123.45.67.890:/home/administrator/
+     #+END_EXAMPLE
+
+  3. Modify ssh permissions (on the remote server):
+     #+BEGIN_EXAMPLE
+     ssh administrator@123.45.67.890
+
+     mkdir /home/administrator/.ssh
+     mv /home/administrator/id_rsa.pub /home/administrator/.ssh/authorized_keys
+
+     chown -R administrator: /home/administrator/.ssh
+     chmod 700 /home/administrator/.ssh
+     chmod 600 /home/administrator/.ssh/authorized_keys 
+     #+END_EXAMPLE
+
+* Modify the SSH Configuration
+
+  Keeping the SSH service on the default port of 22 makes it an easy
+  target. It is recommended to change the default SSH configuration to
+  make it more secure. There are also some other configuration options
+  that are used to lock down the ssh access to the server.
+
+  Modify the file ~/etc/ssh/sshd_config~ by adding or editing these lines:
+  #+BEGIN_EXAMPLE
+  Port 1234                  # change ssh port to 1234
+  Protocol 2
+  PermitRootLogin no         # user root is not allowed to log in
+  PasswordAuthentication no  # disable password login, only the private key is accepted
+  UseDNS no
+  AllowUsers administrator   # only user administrator is allowed to log in
+  #+END_EXAMPLE
+
+  Not all of these options are required, they overlap each-other, and
+  you can choose which ones to use depending on your case and your
+  security/flexibility requirements.
+
+  We need to restart the *sshd* service in order to enable these
+  changes:
+  #+BEGIN_EXAMPLE
+  service ssh restart
+  #+END_EXAMPLE
+
+  After applying the changes, login from a second terminal (without
+  logging out from the first one), in order to make sure that you can
+  still login and you didn't lock yourself out of the server. Now you
+  can login like this:
+  #+BEGIN_EXAMPLE
+  ssh -i ~/.ssh/rackspace_rsa -p 1234 administrator@123.45.67.890
+  #+END_EXAMPLE
+
+  So, we use the key *~/.ssh/rackspace_rsa* for authentication, access
+  the ssh server on the port *1234*, and login as user
+  *administrator*.
+
+  By the way, in case that we need to copy something through *scp*, we
+  can use a command like this:
+  #+BEGIN_EXAMPLE
+  scp -i ~/.ssh/rackspace_rsa -P 1234 source_file administrator@123.45.67.890:destination_file
+  #+END_EXAMPLE
+
+
+* Setup a Firewall
+
+  For simple firewalls, *ufw* is a great tool for building them
+  easily. Let's say that we would like to allow only the ports *80*,
+  *443*, and *1234* (don't forget to allow the *ssh* port, otherwise
+  you can lock yourself out!). We can build the firewall like this:
+  #+BEGIN_EXAMPLE
+  ssh -i ~/.ssh/rackspace_rsa -p 1234 administrator@123.45.67.890
+  ufw allow 1234
+  ufw allow 80
+  ufw allow 443
+  ufw enable
+  #+END_EXAMPLE
+
+  If you are familiar with *iptables*, then you may want to check out
+  the iptables' rules that *ufw* has built, by using *iptables-save*.
+
+* Referencies
+
+  + http://www.rackspace.com/knowledge\_center/article/configuring-basic-security-0
+  + http://www.linode.com/wiki/index.php/Configuring\_IPtables\_on\_ubuntu\_server

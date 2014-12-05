@@ -1,0 +1,250 @@
+#+begin_html
+---
+layout:     post
+title:      Computer LAB Management
+date:       2012-08-09 02:38:00
+summary:    We have two labs with 16 computers each. In each computer we have
+    installed the latest version of Edubuntu (Linux) with almost the same
+    configuration (partitions, installed packages, etc.). It is a bit of
+    hard work to manage all of them one by one, so we have tried to find
+    workarounds to manage all of them at once. There are different ways
+    and solutions to accomplish this in Linux, but we have adopted a
+    simple and practical one, suitable for our case.
+---
+#+end_html
+
+We have two labs with 16 computers each. In each computer we have
+installed the latest version of [[http://edubuntu.org/][Edubuntu]] (Linux) with almost the same
+configuration (partitions, installed packages, etc.). It is a bit of
+hard work to manage all of them one by one, so we have tried to find
+workarounds to manage all of them at once. There are different ways
+and solutions to accomplish this in Linux, but we have adopted a
+simple and practical one, suitable for our case.
+
+
+* Setting a static IP to each computer
+
+  First of all, it is better to set a static IP to each computer,
+  instead of letting them to get a dynamic (random) IP by DHCP. This
+  is required for accessing and managing them remotely. It can be
+  done like this:
+
+  + First of all disable/remove the ~network-manager~ service, because
+    it will try to configure automatically the network interface:
+    #+BEGIN_EXAMPLE
+    apt-get purge network-manager
+    #+END_EXAMPLE
+
+  + Then edit ~/etc/network/interfaces~ like this:
+    #+BEGIN_EXAMPLE
+    auto lo
+    iface lo inet loopback
+
+    auto eth0
+    iface eth0 inet static
+      address 192.168.1.51
+      netmask 255.255.255.0
+      gateway 192.168.1.1
+      dns-nameservers 80.78.66.66 80.78.66.67
+    #+END_EXAMPLE
+
+  + Finally, restart the networking:
+    #+BEGIN_EXAMPLE
+    sudo /etc/init.d/networking restart
+    #+END_EXAMPLE
+
+  *Note:* It is even better if we configure the DHCP server to give
+  always the same IP to the same computer, based on the MAC of its
+  network interface. However the method above is quite ok.
+
+
+* Managing computers remotely
+
+  In order to run commands remotely through *ssh*, without entering a
+  password, we can generate a public-private key pair, and then put
+  the public key on each computer.
+
+  + Generate a public/private key pair:
+    #+BEGIN_EXAMPLE
+    sudo su
+    ssh-keygen
+    #+END_EXAMPLE
+
+  + Transfer the public key to each PC and append it to
+    ~/root/.ssh/authorized_keys~:
+    #+BEGIN_EXAMPLE
+    scp id_rsa.pub root@192.168.1.51:
+    ssh root@192.168.1.51
+    mkdir .ssh
+    chmod 700 .ssh
+    cat id_rsa.pub >> .ssh/authorized_keys
+    chmod 600 .ssh/authorized_keys
+    rm id_rsa.pub
+    exit
+    #+END_EXAMPLE
+
+  Now we can run without password commands like this:
+  #+BEGIN_EXAMPLE
+  ssh 192.168.1.51 ls -al
+  ssh 192.168.1.51 apt-get update
+  ssh 192.168.1.51 apt-get upgrade
+  etc.
+  #+END_EXAMPLE
+
+
+* Administrating multiple computers at once
+
+  + First install the package *mssh* (Multi-SSH):
+    #+BEGIN_EXAMPLE
+    sudo apt-get install mssh
+    #+END_EXAMPLE
+
+  + Now we can run the same commands on many computers, like this:
+    #+BEGIN_EXAMPLE
+    mssh 192.168.1.51 192.168.1.52 192.168.1.53
+    mssh 192.168.1.5{1,2,3,4,5,6,7,8,9}
+    #+END_EXAMPLE
+
+  + However, for convenience we can put all the IPs in a file like
+    ~iplist_lab1.txt~, which looks like this:
+    #+BEGIN_EXAMPLE
+    192.168.1.51
+    192.168.1.52
+    192.168.1.53
+    192.168.1.54
+    192.168.1.55
+    . . . . .
+    #+END_EXAMPLE
+
+  + Now we can run the command *mssh* with all of them, with a
+    command like this:
+    #+BEGIN_EXAMPLE
+    mssh $(cat iplist_lab1.txt)
+    or 
+    mssh $(<iplist_lab1.txt)
+    #+END_EXAMPLE
+    
+
+* Getting the mac addresses
+
+  We need the MAC addresses of each PC in order to turn them ON
+  remotely, from the LAN. We may also need them later to set up the
+  DHCP server so that each computer gets a fixed IP.
+
+  In order to get them remotely, first we ping each IP, then we get
+  the neighbor list with ~ip neigh~, and finally we process it to
+  get a clean list:
+
+  #+BEGIN_EXAMPLE
+  for IP in $(cat iplist_lab1.txt); do ping -c 2 $IP; done
+  ip neigh > mac_list.txt
+  gawk '{print $1 " " $5}' mac_list.txt > mac_list_1.txt
+  sort mac_list_1.txt > mac_list_lab1.txt
+  rm mac_list_1.txt
+  #+END_EXAMPLE
+
+  The final list ~mac_list_lab1.txt~ should be something like this:
+  #+BEGIN_EXAMPLE
+  192.168.1.51 2c:41:38:a9:82:ef
+  192.168.1.52 2c:41:38:a9:82:7c
+  192.168.1.53 2c:41:38:a5:94:f2
+  192.168.1.54 2c:41:38:a5:94:d7
+  192.168.1.55 2c:41:38:a5:98:66
+  . . . . .
+  #+END_EXAMPLE
+
+
+* Turning on all the computers remotely
+
+  Almost all of the computers nowadays support a feature called
+  *Wake-On-LAN* (or *WOL*). It can be used to turn on a PC from the LAN
+  by sending it a special packet. Let's see how we can use it.
+
+  + First of all make sure that it is enabled on the BIOS Setup.
+
+  + Then install the package *wakeonlan*:
+    #+BEGIN_EXAMPLE
+    sudo apt-get install wakeonlan
+    #+END_EXAMPLE
+
+  + Then get a list of MAC addresses and IPs of all the computers.
+    It can be generated by rearranging the columns on
+    ~mac_list_lab1.txt~:
+
+    #+BEGIN_EXAMPLE
+    gawk '{print $2 " " $1}' mac_list_lab1.txt > lab1.wol
+    #+END_EXAMPLE
+
+    The file ~lab1.wol~ looks like this:
+    #+BEGIN_EXAMPLE
+    2c:41:38:a9:82:ef 192.168.1.51
+    2c:41:38:a9:82:7c 192.168.1.52
+    2c:41:38:a5:94:f2 192.168.1.53
+    2c:41:38:a5:94:d7 192.168.1.54
+    2c:41:38:a5:98:66 192.168.1.55
+    . . . . .
+    #+END_EXAMPLE
+
+  + Then, to turn ON all the computers on LAB1, run the command
+    ~wakeonlan~ with this list as a parameter:
+    #+BEGIN_EXAMPLE
+    wakeonlan -f lab1.wol
+    #+END_EXAMPLE
+
+
+* Turning OFF all the computers remotely
+
+  A PC can be turned OFF using the command ~poweoff~ remotely, like
+  this:
+  #+BEGIN_EXAMPLE
+  sudo su
+  for IP in $(<iplist_lab1.txt); do echo --$IP; ssh $IP poweroff; done
+  #+END_EXAMPLE
+
+  Here, ~iplist_lab1.txt~ is a list with IP-s of all the PC-s, like this:
+  #+BEGIN_EXAMPLE
+  192.168.1.51
+  192.168.1.52
+  192.168.1.53
+  192.168.1.54
+  192.168.1.55
+  . . . . .
+  #+END_EXAMPLE
+
+
+* Adding an administrator user
+
+  The computers in LAB1 initially were installed with user /student/
+  as administrative user. These steps show how to add another
+  administrative user and how to remove the administrative privileges
+  from the user /student/.
+
+  + Create user administrator:
+    #+BEGIN_EXAMPLE
+    adduser administrator
+    #+END_EXAMPLE
+
+  + Add this user to groups:
+    #+BEGIN_EXAMPLE
+    adduser administrator adm
+    adduser administrator dialout
+    adduser administrator cdrom
+    adduser administrator plugdev
+    adduser administrator lpadmin
+    adduser administrator admin
+    adduser administrator sudo
+    #+END_EXAMPLE
+
+  + Remove the user student from privileged groups:
+    #+BEGIN_EXAMPLE
+    deluser student adm 
+    deluser student admin
+    deluser student sudo
+    #+END_EXAMPLE
+
+
+* Remove autologin
+  The initial configuration of the computers in LAB1 was to autologin
+  to user /student/. In order to remove the autologin, edit
+  ~/etc/lightdm/lightdm.conf~ and leave empty ~autologin-user=~
+
