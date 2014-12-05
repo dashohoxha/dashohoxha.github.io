@@ -9,91 +9,90 @@ summary:    Some tips about the configuration of a MikroTik router.
 
 Some tips about the configuration of a MikroTik router.
 
-** Starting the graphical configuration application
-   #+BEGIN_EXAMPLE
-   sudo apt-get install wine
-   wine winbox.exe
-   #+END_EXAMPLE
+* Starting the graphical configuration application
+  #+BEGIN_EXAMPLE
+  sudo apt-get install wine
+  wine winbox.exe
+  #+END_EXAMPLE
 
-** How to backup the configuration
-   #+BEGIN_EXAMPLE
-   ssh admin@192.168.1.1
-   /system backup save name=cit-mikrotik-20120130
-   exit
+* How to backup the configuration
+  #+BEGIN_EXAMPLE
+  ssh admin@192.168.1.1
+  /system backup save name=cit-mikrotik-20120130
+  exit
 
-   lftp admin@192.168.1.1
-   get cit-mikrotik-20120130.backup
-   quit
-   #+END_EXAMPLE
+  lftp admin@192.168.1.1
+  get cit-mikrotik-20120130.backup
+  quit
+  #+END_EXAMPLE
 
-   See also:
-   http://wiki.mikrotik.com/wiki/Manual:Configuration_Management
+  See also:
+  http://wiki.mikrotik.com/wiki/Manual:Configuration_Management
 
+* How to correct the date and time
+  #+BEGIN_EXAMPLE
+  /system clock print
+  /system clock set date=jan/30/2012 time=9:45:00 time-zone-name=Europe/Tirane
 
-** How to correct the date and time
-   #+BEGIN_EXAMPLE
-   /system clock print
-   /system clock set date=jan/30/2012 time=9:45:00 time-zone-name=Europe/Tirane
+  /system ntp client print
+  /system ntp client set enabled=yes mode=unicast \
+	  primary-ntp=130.88.200.4 secondary-ntp=129.6.15.28
+  #+END_EXAMPLE
 
-   /system ntp client print
-   /system ntp client set enabled=yes mode=unicast \
-           primary-ntp=130.88.200.4 secondary-ntp=129.6.15.28
-   #+END_EXAMPLE
+  Referencies:
+  + http://wiki.mikrotik.com/wiki/Manual:System/Time
+  + http://www.mikrotik.com/testdocs/ros/2.9/system/ntp.php
+  + http://tf.nist.gov/tf-cgi/servers.cgi
+  + http://community.plus.net/forum/index.php?topic=5679.msg46179
 
-   Referencies:
-   + http://wiki.mikrotik.com/wiki/Manual:System/Time
-   + http://www.mikrotik.com/testdocs/ros/2.9/system/ntp.php
-   + http://tf.nist.gov/tf-cgi/servers.cgi
-   + http://community.plus.net/forum/index.php?topic=5679.msg46179
+* How to add DNAT rules
 
-** How to add DNAT rules
+  Forward ports 80 and 443 (HTTP and HTTPS) to the local webserver
+  ~192.168.1.246~:
+  #+BEGIN_EXAMPLE
+  /ip firewall nat add chain=dstnat \
+      dst-address=109.69.4.170 protocol=tcp dst-port=80 \
+      action=dst-nat to-addresses=192.168.1.246 to-ports=80
+  /ip firewall nat add chain=dstnat \
+      dst-address=109.69.4.170 protocol=tcp dst-port=443 \
+      action=dst-nat to-addresses=192.168.1.246 to-ports=443
+  #+END_EXAMPLE
 
-   Forward ports 80 and 443 (HTTP and HTTPS) to the local webserver
-   ~192.168.1.246~:
-   #+BEGIN_EXAMPLE
-   /ip firewall nat add chain=dstnat \
-       dst-address=109.69.4.170 protocol=tcp dst-port=80 \
-       action=dst-nat to-addresses=192.168.1.246 to-ports=80
-   /ip firewall nat add chain=dstnat \
-       dst-address=109.69.4.170 protocol=tcp dst-port=443 \
-       action=dst-nat to-addresses=192.168.1.246 to-ports=443
-   #+END_EXAMPLE
+* Set up packet filtering
+  #+BEGIN_EXAMPLE   
+  / ip firewall filter
+  add chain=input connection-state=established comment="Accept established connections"
+  add chain=input connection-state=related comment="Accept related connections"
+  add chain=input connection-state=invalid action=drop comment="Drop invalid connections" 
+  add chain=input protocol=udp action=accept comment="UDP" disabled=no 
+  add chain=input protocol=icmp limit=50/5s,2 comment="Allow limited pings" 
+  add chain=input protocol=icmp action=drop comment="Drop excess pings" 
+  add chain=input src-address=192.168.1.0/24 comment="From our private LAN"
+  add chain=input protocol=tcp dst-port=22 src-address=192.168.1.0/24 comment="SSH for secure shell"
+  add chain=input protocol=tcp dst-port=8291 src-address=192.168.1.0/24 comment="winbox" 
+  add chain=input action=log log-prefix="DROP INPUT" comment="Log everything else"
+  add chain=input action=drop comment="Drop everything else"
 
-** Set up packet filtering
-   #+BEGIN_EXAMPLE   
-   / ip firewall filter
-   add chain=input connection-state=established comment="Accept established connections"
-   add chain=input connection-state=related comment="Accept related connections"
-   add chain=input connection-state=invalid action=drop comment="Drop invalid connections" 
-   add chain=input protocol=udp action=accept comment="UDP" disabled=no 
-   add chain=input protocol=icmp limit=50/5s,2 comment="Allow limited pings" 
-   add chain=input protocol=icmp action=drop comment="Drop excess pings" 
-   add chain=input src-address=192.168.1.0/24 comment="From our private LAN"
-   add chain=input protocol=tcp dst-port=22 src-address=192.168.1.0/24 comment="SSH for secure shell"
-   add chain=input protocol=tcp dst-port=8291 src-address=192.168.1.0/24 comment="winbox" 
-   add chain=input action=log log-prefix="DROP INPUT" comment="Log everything else"
-   add chain=input action=drop comment="Drop everything else"
+  add chain=forward protocol=udp dst-port=69 action=drop comment="Blocking UDP Packets"                   
+  add chain=forward protocol=udp dst-port=111 action=drop                                 
+  add chain=forward protocol=udp dst-port=135 action=drop      
+  add chain=forward protocol=udp dst-port=137-139 action=drop 
+  add chain=forward protocol=udp dst-port=2049 action=drop       
+  add chain=forward protocol=udp dst-port=3133 action=drop    
+  add chain=forward protocol=tcp dst-port=69 action=drop comment="Blocking TCP Packets"      
+  add chain=forward protocol=tcp dst-port=111 action=drop                                  
+  add chain=forward protocol=tcp dst-port=119 action=drop 
+  add chain=forward protocol=tcp dst-port=135 action=drop  
+  add chain=forward protocol=tcp dst-port=137-139 action=drop 
+  add chain=forward protocol=tcp dst-port=445 action=drop       
+  add chain=forward protocol=tcp dst-port=2049 action=drop   
+  add chain=forward protocol=tcp dst-port=12345-12346 action=drop     
+  add chain=forward protocol=tcp dst-port=20034 action=drop           
+  add chain=forward protocol=tcp dst-port=3133 action=drop     
+  add chain=forward protocol=tcp dst-port=67-68 action=drop    
 
-   add chain=forward protocol=udp dst-port=69 action=drop comment="Blocking UDP Packets"                   
-   add chain=forward protocol=udp dst-port=111 action=drop                                 
-   add chain=forward protocol=udp dst-port=135 action=drop      
-   add chain=forward protocol=udp dst-port=137-139 action=drop 
-   add chain=forward protocol=udp dst-port=2049 action=drop       
-   add chain=forward protocol=udp dst-port=3133 action=drop    
-   add chain=forward protocol=tcp dst-port=69 action=drop comment="Blocking TCP Packets"      
-   add chain=forward protocol=tcp dst-port=111 action=drop                                  
-   add chain=forward protocol=tcp dst-port=119 action=drop 
-   add chain=forward protocol=tcp dst-port=135 action=drop  
-   add chain=forward protocol=tcp dst-port=137-139 action=drop 
-   add chain=forward protocol=tcp dst-port=445 action=drop       
-   add chain=forward protocol=tcp dst-port=2049 action=drop   
-   add chain=forward protocol=tcp dst-port=12345-12346 action=drop     
-   add chain=forward protocol=tcp dst-port=20034 action=drop           
-   add chain=forward protocol=tcp dst-port=3133 action=drop     
-   add chain=forward protocol=tcp dst-port=67-68 action=drop    
-
-   /ip firewall filter print stats
-   /ip firewall filter reset-counters-all
-   /log print
-   /log print follow
-   #+END_EXAMPLE
+  /ip firewall filter print stats
+  /ip firewall filter reset-counters-all
+  /log print
+  /log print follow
+  #+END_EXAMPLE

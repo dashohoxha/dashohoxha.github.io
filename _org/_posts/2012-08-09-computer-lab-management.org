@@ -21,7 +21,6 @@ workarounds to manage all of them at once. There are different ways
 and solutions to accomplish this in Linux, but we have adopted a
 simple and practical one, suitable for our case.
 
-
 * Setting a static IP to each computer
 
   First of all, it is better to set a static IP to each computer,

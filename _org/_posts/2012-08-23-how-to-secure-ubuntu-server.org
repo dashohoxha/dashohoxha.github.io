@@ -94,6 +94,7 @@ describe some of the steps that can be done to secure the server.
      chmod 600 /home/administrator/.ssh/authorized_keys 
      #+END_EXAMPLE
 
+
 * Modify the SSH Configuration
 
   Keeping the SSH service on the default port of 22 makes it an easy
@@ -156,6 +157,7 @@ describe some of the steps that can be done to secure the server.
 
   If you are familiar with *iptables*, then you may want to check out
   the iptables' rules that *ufw* has built, by using *iptables-save*.
+
 
 * Referencies
 

@@ -1,0 +1,226 @@
+---
+layout:     post
+title:      How to Secure an Ubuntu Server
+date:       2012-08-23 10:23:00
+summary:    Recently I purchased a virtual ubuntu server on rackspace.
+    However I have to manage it myself, and this includes first of all taking
+    care for its security. Securing it is very important and is the first
+    thing to be done, since all the rackspace servers have public IP-s and
+    so are open to all the possible attacks from the Internet. Here I will
+    describe some of the steps that can be done to secure the server.
+---
+
+<p>
+Recently I purchased a virtual ubuntu server on <a href="http://www.rackspace.com/cloud/public/servers/pricing/">rackspace</a>. However I
+have to manage it myself, and this includes first of all taking care
+for its security. Securing it is very important and is the first thing
+to be done, since all the rackspace servers have public IP-s and so
+are open to all the possible attacks from the Internet. Here I will
+describe some of the steps that can be done to secure the server.
+</p>
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1">Login to the Server</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Initially you can login as user <b>root</b>, through <b>ssh</b>:
+</p>
+<pre class="example">
+ssh root@123.45.67.890
+</pre>
+
+<p>
+Then you can change the password of the <i>root</i> (from the default one,
+assigned by <i>rackspace</i>), with the command <code>passwd</code>.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2">Add an Admin User</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+It is a common practice in Linux (and specially in ubuntu) to lock
+down the <b>root</b> account and to use another account for
+administrative tasks. Let's see how we can create it.
+</p>
+
+<ul class="org-ul">
+<li>First create another user account:
+<pre class="example">
+adduser administrator
+</pre>
+</li>
+
+<li>Then assign the <i>administrative</i> user <b>sudo</b> priviledges (by
+adding it to the the group <i>sudo</i>):
+<pre class="example">
+adduser administrator sudo
+</pre>
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3">Set Up Public and Private Keys</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+One effective way of securing SSH access to your Cloud Server is to
+use a public/private key. This means that a public key is placed on
+the server and the private key is on your local workstation. This
+makes it impossible for someone to log in using just a password -
+they must have the private key. This consists of 3 basic steps:
+create the key on your local workstation, copy the public key to the
+Cloud Server, and set the correct permissions for the key.
+</p>
+
+<ol class="org-ol">
+<li>Create the public and private keys on you personal (local) computer:
+<pre class="example">
+mkdir ~/.ssh
+ssh-keygen -t rsa
+cd ~/.ssh/
+mv id_rsa rackspace_rsa
+</pre>
+
+<p>
+If you do not want a passphrase then just press enter when
+prompted.
+</p>
+
+<p>
+The <b>id<sub>rsa</sub></b> and <b>id<sub>rsa</sub>.pub</b> are created in the <b>.ssh</b>
+directory. The <b>id<sub>rsa</sub>.pub</b> file holds the public key. You'll
+place this file on you server. The <b>id<sub>rsa</sub></b> file is your private
+key. Never show, give away, or keep this file on a public
+computer. We rename it to <b>rackspace<sub>rsa</sub></b> to make it obvious that
+this is the private key that is used to access the rackspace
+server.
+</p>
+</li>
+
+<li>Copy the public key to the remote server:
+<pre class="example">
+scp ~/.ssh/id_rsa.pub administrator@123.45.67.890:/home/administrator/
+</pre>
+</li>
+
+<li>Modify ssh permissions (on the remote server):
+<pre class="example">
+ssh administrator@123.45.67.890
+
+mkdir /home/administrator/.ssh
+mv /home/administrator/id_rsa.pub /home/administrator/.ssh/authorized_keys
+
+chown -R administrator: /home/administrator/.ssh
+chmod 700 /home/administrator/.ssh
+chmod 600 /home/administrator/.ssh/authorized_keys
+</pre>
+</li>
+</ol>
+</div>
+</div>
+
+
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4">Modify the SSH Configuration</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+Keeping the SSH service on the default port of 22 makes it an easy
+target. It is recommended to change the default SSH configuration to
+make it more secure. There are also some other configuration options
+that are used to lock down the ssh access to the server.
+</p>
+
+<p>
+Modify the file <code>/etc/ssh/sshd_config</code> by adding or editing these lines:
+</p>
+<pre class="example">
+Port 1234                  # change ssh port to 1234
+Protocol 2
+PermitRootLogin no         # user root is not allowed to log in
+PasswordAuthentication no  # disable password login, only the private key is accepted
+UseDNS no
+AllowUsers administrator   # only user administrator is allowed to log in
+</pre>
+
+<p>
+Not all of these options are required, they overlap each-other, and
+you can choose which ones to use depending on your case and your
+security/flexibility requirements.
+</p>
+
+<p>
+We need to restart the <b>sshd</b> service in order to enable these
+changes:
+</p>
+<pre class="example">
+service ssh restart
+</pre>
+
+<p>
+After applying the changes, login from a second terminal (without
+logging out from the first one), in order to make sure that you can
+still login and you didn't lock yourself out of the server. Now you
+can login like this:
+</p>
+<pre class="example">
+ssh -i ~/.ssh/rackspace_rsa -p 1234 administrator@123.45.67.890
+</pre>
+
+<p>
+So, we use the key <b>~/.ssh/rackspace<sub>rsa</sub></b> for authentication, access
+the ssh server on the port <b>1234</b>, and login as user
+<b>administrator</b>.
+</p>
+
+<p>
+By the way, in case that we need to copy something through <b>scp</b>, we
+can use a command like this:
+</p>
+<pre class="example">
+scp -i ~/.ssh/rackspace_rsa -P 1234 source_file administrator@123.45.67.890:destination_file
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5">Setup a Firewall</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+For simple firewalls, <b>ufw</b> is a great tool for building them
+easily. Let's say that we would like to allow only the ports <b>80</b>,
+<b>443</b>, and <b>1234</b> (don't forget to allow the <b>ssh</b> port, otherwise
+you can lock yourself out!). We can build the firewall like this:
+</p>
+<pre class="example">
+ssh -i ~/.ssh/rackspace_rsa -p 1234 administrator@123.45.67.890
+ufw allow 1234
+ufw allow 80
+ufw allow 443
+ufw enable
+</pre>
+
+<p>
+If you are familiar with <b>iptables</b>, then you may want to check out
+the iptables' rules that <b>ufw</b> has built, by using <b>iptables-save</b>.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-6" class="outline-2">
+<h2 id="sec-6">Referencies</h2>
+<div class="outline-text-2" id="text-6">
+<ul class="org-ul">
+<li><a href="http://www.rackspace.com/knowledge\_center/article/configuring-basic-security-0">http://www.rackspace.com/knowledge\_center/article/configuring-basic-security-0</a>
+</li>
+<li><a href="http://www.linode.com/wiki/index.php/Configuring\_IPtables\_on\_ubuntu\_server">http://www.linode.com/wiki/index.php/Configuring\_IPtables\_on\_ubuntu\_server</a>
+</li>
+</ul>
+</div>
+</div>

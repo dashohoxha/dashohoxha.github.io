@@ -1,10 +1,13 @@
 (eval-after-load "org"
   '(require 'ox-md nil t))
 
-;; fontify code in code blocks
+;;; Fontify code in code blocks.
 (setq org-src-fontify-natively t)
 
-;;; support for Jekyll blogs
+;;; Support for Jekyll blogs.
+;;; For more details see:
+;;;  - http://orgmode.org/worg/org-tutorials/org-jekyll.html
+;;;  - http://www.gorgnegre.com/linux/using-emacs-orgmode-to-blog-with-jekyll.html
 (setq org-publish-project-alist
       '(
 

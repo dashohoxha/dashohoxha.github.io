@@ -106,6 +106,7 @@ real partition to the virtual machine and using it for the cache.
     service squid restart
     #+END_EXAMPLE
 
+
 * Referencies
 
   + http://tecnologia.2020mobile.es/improving-zentyal-proxy-performance-squid-dansguardian/

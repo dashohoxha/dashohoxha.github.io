@@ -1,0 +1,416 @@
+---
+layout:     post
+title:      Virtual Machine Management on Ubuntu
+date:       2012-08-20 6:41:00
+summary:    Installing virtual machines on a ubuntu server,
+            managing them from a ubuntu desktop, and some other tips.
+---
+
+<p>
+Installing virtual machines on a ubuntu server, managing them from a
+ubuntu desktop, and some other tips.
+</p>
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1">Prepare a Ubuntu Server as a Virtual Machine Host</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+A <b>host</b> is a system on top of which virtual machines run. Let's
+see how to prepare a ubuntu server as a virtual machine host.
+</p>
+
+<ul class="org-ul">
+<li>Check whether the CPU supports the hardware virtualization:
+<pre class="example">
+egrep '(vmx|svm)' --color=always /proc/cpuinfo
+</pre>
+</li>
+
+<li>Enable virtualization on the BIOS setup.
+</li>
+
+<li>Install KVM and vmbuilder:
+<pre class="example">
+apt-get install ubuntu-virt-server python-vm-builder kvm-pxe
+</pre>
+</li>
+
+<li>Add the user as which we're currently logged in (root) to the
+group libvirtd:
+<pre class="example">
+adduser `id -un` libvirtd
+adduser `id -un` kvm
+</pre>
+</li>
+
+<li>Check whether KVM has successfully been installed:
+<pre class="example">
+virsh -c qemu:///system list
+</pre>
+<p>
+It should display something like this:
+</p>
+<pre class="example">
+root@server1:~# virsh -c qemu:///system list
+Id Name                 State
+----------------------------------
+
+root@server1:~#
+</pre>
+</li>
+</ul>
+
+
+<p>
+Referencies:
+</p>
+<ul class="org-ul">
+<li><a href="http://www.howtoforge.com/virtualization-with-kvm-on-ubuntu-11.10">http://www.howtoforge.com/virtualization-with-kvm-on-ubuntu-11.10</a>
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2">Configure the Bridge Interface on the Host Machine</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+The bridge interface on the host system allows the virtual machines
+to access the local network (LAN) directly and independently from
+the host machine, as if they were real machines.
+</p>
+
+<ul class="org-ul">
+<li>First install the bridge utils:
+<pre class="example">
+apt-get install bridge-utils
+</pre>
+</li>
+
+<li>Then add a bridge interface <b>br0</b> at <code>/etc/network/interfaces</code>
+<pre class="example">
+auto lo
+iface lo inet loopback
+
+auto br0
+iface br0 inet static
+address 192.168.1.10
+netmask 255.255.255.0
+gateway 192.168.1.1
+bridge_ports eth0
+bridge_fd 9
+bridge_hello 2
+bridge_maxage 12
+bridge_stp off
+</pre>
+</li>
+
+<li>Finally restart the networking:
+<pre class="example">
+sudo /etc/init.d/networking restart
+</pre>
+</li>
+</ul>
+
+<p>
+Referencies:
+</p>
+<ul class="org-ul">
+<li><a href="https://help.ubuntu.com/11.10/serverguide/C/network-configuration.html#bridging">https://help.ubuntu.com/11.10/serverguide/C/network-configuration.html#bridging</a>
+</li>
+<li><a href="http://www.howtoforge.com/virtualization-with-kvm-on-ubuntu-11.10">http://www.howtoforge.com/virtualization-with-kvm-on-ubuntu-11.10</a>
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3">Creating a Virtual Machine</h2>
+<div class="outline-text-2" id="text-3">
+<ul class="org-ul">
+<li>Create a directory for the virtual machine on
+<code>/var/lib/libvirt/images/</code>:
+<pre class="example">
+cd /var/lib/libvirt/images/
+mkdir ns1
+cd ns1/
+</pre>
+</li>
+
+<li>We will use the <code>vmbuilder</code> tool to create VMs, which uses a
+template to create virtual machines. This template is located in
+the <code>/etc/vmbuilder/libvirt/</code> directory and we make a copy of it:
+<pre class="example">
+mkdir -p mytemplates/libvirt
+cp /etc/vmbuilder/libvirt/* mytemplates/libvirt/
+</pre>
+</li>
+
+<li>Define the partitions in the file <code>vmbuilder.partition</code> with a
+content like this:
+<pre class="example">
+root 1000
+swap 500
+</pre>
+</li>
+
+<li>Create a script called <code>boot.sh</code> that will be executed when the
+VM is booted for the first time:
+<pre class="example">
+# This script will run the first time the virtual machine boots
+# It is ran as root.
+
+# Expire the user account
+passwd -e citadmin
+
+# Install openssh-server
+apt-get update
+apt-get install -qqy --force-yes openssh-server
+</pre>
+</li>
+
+<li>Create the script <code>install.sh</code> with a content like this:
+<pre class="example">
+#!/bin/bash
+
+    # --mirror=http://192.168.1.249/apt-mirror/archive.ubuntu.com/ubuntu \
+vmbuilder kvm ubuntu --suite=oneiric --flavour=virtual --arch=amd64 \
+    --iso=/data/iso/ubuntu-11.10-server-amd64.iso \
+    -o --libvirt=qemu:///system \
+    --ip=192.168.1.252 --gw=192.168.1.1 \
+    --part=vmbuilder.partition --templates=mytemplates \
+    --user=citadmin --name=CITAdmin --pass=CITAdmin \
+    --addpkg=vim-nox --addpkg=acpid \
+    --firstboot=/var/lib/libvirt/images/ns1/boot.sh \
+    --mem=256 --hostname=ns1 --bridge=br0
+</pre>
+</li>
+
+<li>Run <code>install.sh</code> and do the installation. The disk images will be
+located in the <code>ubuntu-kvm/</code> subdirectory of our VM directory
+<pre class="example">
+ls -l /var/lib/libvirt/images/ns1/ubuntu-kvm/
+</pre>
+</li>
+
+<li>Move the created disk image to the directory <code>/images/</code>:
+<pre class="example">
+mkdir -p /images/
+mv ubuntu-kvm/tmpRwPa27.qcow2 /images/ns1.qcow2
+</pre>
+</li>
+
+<li>Edit the file <code>/etc/libvirt/qemu/ns1.xml</code> and modify the path of
+the image, so that it looks like this:
+<pre class="example">
+&lt;disk type='file' device='disk'&gt;
+  &lt;driver name='qemu' type='qcow2'/&gt;
+  &lt;source file='/images/ns1.qcow2'/&gt;
+  &lt;target dev='hda' bus='ide'/&gt;
+  &lt;address type='drive' controller='0' bus='0' unit='0'/&gt;
+&lt;/disk&gt;
+</pre>
+</li>
+
+<li>Redefine the virtual machine:
+<pre class="example">
+virsh define /etc/libvirt/qemu/ns1.xml
+</pre>
+</li>
+</ul>
+</div>
+</div>
+
+
+
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4">Define a Virtual Machine</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+Whenever the configuration of a virtual machine changes, it should
+be redefined (which means updating the registry of virtual machines
+with the latest configurations):
+</p>
+
+<pre class="example">
+virsh define /etc/libvirt/qemu/vm1.xml
+virsh list --all
+virsh start vm1
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5">Manage Virtual Machines from Ubuntu Desktop</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+The program <b>virt-manager</b> is a desktop (GUI) application, based on
+<b>libvirt</b>, which can be used to manage virtual machines even on
+remote hosts (through <b>ssh</b>). Let's see how to install and use it.
+</p>
+
+<ul class="org-ul">
+<li>Install the virtualization packages:
+<pre class="example">
+sudo apt-get install qemu-kvm libvirt-bin virt-manager bridge-utils
+</pre>
+</li>
+
+<li>Check that it is OK:
+<pre class="example">
+kvm-ok
+sudo kvm-ok
+</pre>
+</li>
+
+<li>Manage local and remote virtual hosts:
+<pre class="example">
+virsh -c qemu:///system list
+virsh -c qemu+ssh://admin@192.168.10.50/system list
+virt-manager -c qemu:///system 127.0.0.1
+virt-manager -c qemu+ssh://admin@192.168.10.50/system
+</pre>
+</li>
+</ul>
+
+<p>
+Referencies:
+</p>
+<ul class="org-ul">
+<li><a href="http://www.itworld.com/virtualization/216949/crash-course-virtualization-kvm-ubuntu-server?page=0,1">http://www.itworld.com/virtualization/216949/crash-course-virtualization-kvm-ubuntu-server?page=0,1</a>
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-sec-6" class="outline-2">
+<h2 id="sec-6">Convert virtual disks from raw format to qcow2</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+The format <b>qcow2</b> has some advantages with respect to the <b>raw</b>
+format. For example it can be compressed, it can have <i>snapshots</i>,
+etc.
+</p>
+
+<ul class="org-ul">
+<li>Use <code>qemu-img</code> convert like this:
+<pre class="example">
+cd /var/lib/libvirt/images/
+qemu-img convert -c -O qcow2 vm1.img vm1.qcow2
+</pre>
+</li>
+
+<li>Modify <code>/etc/libvirt/qemu/vm1.xml</code> like this:
+<pre class="example">
+&lt;disk type='file' device='disk'&gt;
+&lt;driver name='qemu' type='qcow2'/&gt;
+   &lt;source file='/var/lib/libvirt/images/vm1.qcow2'/&gt;
+   &lt;target dev='vda' bus='virtio'/&gt;
+   &lt;address type='pci' domain='0x0000' bus='0x00' slot='0x05' function='0x0'/&gt;
+&lt;/disk&gt;
+</pre>
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-sec-7" class="outline-2">
+<h2 id="sec-7">Migrating from VMWare to KVM</h2>
+<div class="outline-text-2" id="text-7">
+<p>
+A virtual machine built with VMWare can be converted to KVM.
+</p>
+
+<ul class="org-ul">
+<li>Install the neccessary packages:
+<pre class="example">
+aptitude install virt-goodies qemu-kvm kvm \
+	 libvirt-bin ubuntu-vm-builder bridge-utils virt-top
+</pre>
+</li>
+
+<li>Convert the disk image from format <i>vmdk</i> to <i>qcow2</i>:
+<pre class="example">
+qemu-img convert User-PC.vmdk -O qcow2 User-PC.qcow2
+</pre>
+</li>
+
+<li>Convert the <i>vmx</i> file to format <i>xml</i>:
+<pre class="example">
+vmware2libvirt -f User-PC.vmx &gt; User-PC.xml
+</pre>
+</li>
+
+<li>Change also the disk type and source file on <code>User-PC.xml</code> like
+this:
+<pre class="example">
+&lt;disk type='file' device='disk'&gt;
+&lt;driver name='qemu' type='qcow2'/&gt;
+   &lt;source file='/images/User-PC.qcow2'/&gt;
+   &lt;target dev='vda' bus='virtio'/&gt;
+   &lt;address type='pci' domain='0x0000' bus='0x00' slot='0x05' function='0x0'/&gt;
+&lt;/disk&gt;
+</pre>
+</li>
+
+<li>Add this xml file to the vm manager:
+<pre class="example">
+virsh -c qemu:///system define User-PC.xml
+</pre>
+</li>
+
+<li>Start it:
+<pre class="example">
+virsh start User-PC
+</pre>
+</li>
+</ul>
+
+<p>
+Referencies:
+</p>
+<ul class="org-ul">
+<li><a href="http://blog.mymediasystem.net/uncategorized/vmware-kvm-migration-guide/">http://blog.mymediasystem.net/uncategorized/vmware-kvm-migration-guide/</a>
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-sec-8" class="outline-2">
+<h2 id="sec-8">How to mount a qcow2 image</h2>
+<div class="outline-text-2" id="text-8">
+<p>
+Sometimes we need to access directly the disk of a virtual machine,
+without booting it. It can be done by mounting it on the host
+system, as in the following example.
+</p>
+
+<pre class="example">
+modprobe nbd max_part=16
+qemu-nbd -c /dev/nbd0 image.qcow2
+partprobe /dev/nbd0
+mount /dev/nbd0p1 /mnt/image
+
+fdisk /dev/nbd0
+
+vgscan
+vgchange -ay zentyal
+
+lvdisplay
+mount /dev/zentyal/root /mnt/image
+umount /mnt/image
+vgchange -an zentyal
+killall qemu-nbd
+</pre>
+
+<p>
+Reference: <a href="http://en.wikibooks.org/wiki/QEMU/Images">http://en.wikibooks.org/wiki/QEMU/Images</a>
+</p>
+</div>
+</div>

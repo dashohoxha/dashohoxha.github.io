@@ -34,8 +34,7 @@ this can be acceptable, however for lots of computers it may become
 unbearable.
 
 One solution for this problem is to create a local mirror of the
-ubuntu repository.
-  
+ubuntu repository.  
 
 * Creating an APT Mirror
 

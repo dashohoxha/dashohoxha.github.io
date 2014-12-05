@@ -1,0 +1,348 @@
+---
+layout:     post
+title:      Multiple Webservers Behind NAT
+date:       2012-08-09 02:36:00
+summary:    We got from the ISP a single public IP, and we need to host
+            our own public webservers (more than one) in our LAN.
+            How to do this?
+---
+
+<p>
+The problem is that we have got from the ISP a single public IP, and
+we need to host our own public webservers (more than one) in our
+LAN. How to do this?
+</p>
+
+<p>
+The first thing to be done is to use <i>port forwarding</i> (also called
+Destination NAT or DNAT) to forward the tcp ports 80 and 443 from the
+gateway (MikroTik in out case) to an internal webserver on our
+LAN. Then we could use the <i>name-based virtual hosting</i> of apache2 to
+host several domains/subdomains on the same webserver and everything
+would be fine.
+</p>
+
+<p>
+However the issue is a little bit more complicated than this, because
+sometimes it is not possible (or suitable, or convenient) to host two
+different websites on the same server. For example our website is
+built on Joomla, and it has some modules that do not work well with
+the latest version of PHP (5.3), and it depends on PHP-5.2. Also,
+sometimes it can be suitable/convenient to use appliancies from
+TurnKey Linux (<a href="http://www.turnkeylinux.org/">http://www.turnkeylinux.org/</a>), for easy installation
+and maintenance, but they need to have their own server. What to do in
+this case?
+</p>
+
+<p>
+In this case, the <i>Reverse Proxy</i> module of apache2 comes to rescue. The
+idea is that the main webserver forwards the http requests to the
+other webservers, behaving like a kind of http gateway or hub.
+</p>
+
+<p>
+Let's see how to do the configuration. Suppose that we have the
+subdomains <code>www.cit.edu.al</code>, <code>www-test.cit.edu.al</code>,
+<code>moodle.cit.edu.al</code> and <code>ocw.cit.edu.al</code>. The first two domains will
+be hosted on the same webserver, and moodle and ocw will have their
+own webserver each.
+</p>
+
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1">DNS configurations</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Add these lines on <code>/var/cache/bind/db.cit.edu.al</code>:
+</p>
+<pre class="example">
+www             IN      A               109.69.4.170
+www-test        IN      A               109.69.4.170
+
+moodle          IN      CNAME           www
+ocw             IN      CNAME           www
+</pre>
+
+<p>
+Don't forget to modify the serial number, and then restart the
+service with <code>service bind9 restart</code>.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2">Gateway (MikroTik) configurations</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+Add these firewall rules from the terminal (or from winbox):
+</p>
+
+<pre class="example">
+ip firewall nat chain=dstnat action=dst-nat to-addresses=192.168.1.246 to-ports=80 protocol=tcp dst-address=109.69.4.170 dst-port=80 
+ip firewall nat chain=dstnat action=dst-nat to-addresses=192.168.1.246 to-ports=443 protocol=tcp dst-address=109.69.4.170 dst-port=443
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3">Configurations on the main (gateway/hub) webserver</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+On the gateway webserver (192.168.1.246) do these apache
+configurations:
+</p>
+
+<ul class="org-ul">
+<li>Enable SSL Name-Based virtual hosting.
+<ul class="org-ul">
+<li>Enable mode <i>ssl</i>: <code>a2enmod ssl</code>
+</li>
+
+<li>Edit <code>/etc/apache2/ports.conf</code> and add the line
+<code>NameVirtualHost *:443</code>:
+<pre class="example">
+&lt;IfModule mod_ssl.c&gt;
+    # If you add NameVirtualHost *:443 here, you will also have to change
+    # the VirtualHost statement in /etc/apache2/sites-available/default-ssl
+    # to &lt;VirtualHost *:443&gt;
+    # Server Name Indication for SSL named virtual hosts is currently not
+    # supported by MSIE on Windows XP.
+    NameVirtualHost *:443
+    Listen 443
+&lt;/IfModule&gt;
+</pre>
+</li>
+
+<li>Edit <code>/etc/apache2/sites-available/default-ssl</code> and change
+the VirtualHost statement (at the top) to <code>&lt;VirtualHost
+      *:443&gt;</code>, like this:
+<pre class="example">
+&lt;IfModule mod_ssl.c&gt;
+&lt;VirtualHost *:443&gt;
+</pre>
+</li>
+
+<li>Then restart apache: <code>service apache2 restart</code>
+</li>
+</ul>
+</li>
+
+<li>Enable the proxy modules etc.:
+<pre class="example">
+a2enmod proxy
+a2enmod proxy_http
+a2enmod proxy_connect
+a2enmod proxy_balancer
+a2enmod headers
+a2enmod cache
+a2enmod mem_cache
+</pre>
+</li>
+
+<li>On the directory <code>/etc/apache2/sites-available</code>, copy files
+<code>default</code> and <code>default-ssl</code> to <code>cit</code>, <code>cit-ssl</code>, <code>cit-test</code>,
+<code>cit-test-ssl</code>, <code>moodle</code>, <code>moodle-ssl</code>, <code>ocw</code>, <code>ocw-ssl</code>,
+etc. Then modify these files similarly to <code>cit</code> and <code>cit-ssl</code>
+below:
+<ul class="org-ul">
+<li>Add these lines at the top of <code>cit</code>:
+<pre class="example">
+&lt;VirtualHost *:80&gt;
+      ServerName www.cit.edu.al
+      ServerAdmin admin@cit.edu.al
+
+      ProxyRequests off
+      ProxyPass / http://www.cit.edu.al/
+      ProxyPassReverse / http://www.cit.edu.al/
+</pre>
+</li>
+<li>Add these lines at the top of <code>cit-ssl</code>:
+<pre class="example">
+&lt;IfModule mod_ssl.c&gt;
+&lt;VirtualHost *:443&gt;
+	ServerName www.cit.edu.al
+	ServerAdmin admin@cit.edu.al
+
+	ProxyRequests off
+	SSLProxyEngine on
+	ProxyPass / https://www.cit.edu.al/
+	ProxyPassReverse / https://www.cit.edu.al/
+</pre>
+</li>
+</ul>
+</li>
+
+<li>Enable the sites <code>cit</code>, <code>cit-ssl</code>, etc. like this:
+<pre class="example">
+a2ensite cit
+a2ensite cit-ssl
+a2ensite cit-test
+a2ensite cit-test-ssl
+a2ensite moodle
+a2ensite moodle-ssl
+a2ensite ocw
+a2ensite ocw-ssl
+</pre>
+</li>
+
+<li>Restart or reload apache2: <code>service apache2 reload</code>
+</li>
+
+<li><b>Important!</b> Modify the file <code>/etc/hosts</code> and append these
+lines:
+<pre class="example">
+192.168.1.252   www.cit.edu.al
+192.168.1.252   www-test.cit.edu.al
+192.168.1.253   moodle.cit.edu.al
+192.168.1.254   ocw.cit.edu.al
+</pre>
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4">Configurations on the webservers that are accessed through the proxy</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+On the webserver <code>192.168.1.252</code> (that is hosting the websites
+<i>www.cit.edu.al</i> and <i>www-test.cit.edu.al</i>), make these
+configurations:
+</p>
+<ul class="org-ul">
+<li>Enable SSL Name-Based virtual hosting (as described previously).
+</li>
+
+<li>Place the files of the websites on the directories
+<code>/var/www/cit/</code> and <code>/var/www/cit-test/</code>.
+</li>
+
+<li>On the directory <code>/etc/apache2/sites-available</code>, copy files
+<code>default</code> and <code>default-ssl</code> to <code>cit</code>, <code>cit-ssl</code>, <code>cit-test</code>,
+<code>cit-test-ssl</code>, and modify these files like this:
+<ul class="org-ul">
+<li>Add these lines at the top of <code>cit</code>:
+<pre class="example">
+&lt;VirtualHost *:80&gt;
+	ServerName www.cit.edu.al
+	ServerAdmin admin@cit.edu.al
+
+	DocumentRoot /var/www/cit
+	&lt;Directory /&gt;
+		Options FollowSymLinks
+		AllowOverride None
+	&lt;/Directory&gt;
+	&lt;Directory /var/www/cit/&gt;
+		Options Indexes FollowSymLinks MultiViews
+		AllowOverride None
+		Order allow,deny
+		allow from all
+	&lt;/Directory&gt;
+</pre>
+</li>
+
+<li>Add these lines at the top of <code>cit-ssl</code>:
+<pre class="example">
+&lt;IfModule mod_ssl.c&gt;
+&lt;VirtualHost *:443&gt;
+	ServerName www.cit.edu.al
+	ServerAdmin admin@cit.edu.al
+
+	DocumentRoot /var/www/cit
+	&lt;Directory /&gt;
+		Options FollowSymLinks
+		AllowOverride None
+	&lt;/Directory&gt;
+	&lt;Directory /var/www/cit/&gt;
+		Options Indexes FollowSymLinks MultiViews
+		AllowOverride None
+		Order allow,deny
+		allow from all
+	&lt;/Directory&gt;
+</pre>
+</li>
+
+<li>Add these lines at the top of <code>cit-test</code>:
+<pre class="example">
+&lt;VirtualHost *:80&gt;
+	ServerName www-test.cit.edu.al
+	ServerAdmin admin@cit.edu.al
+
+	DocumentRoot /var/www/cit-test
+	&lt;Directory /&gt;
+		Options FollowSymLinks
+		AllowOverride None
+	&lt;/Directory&gt;
+	&lt;Directory /var/www/cit-test/&gt;
+		Options Indexes FollowSymLinks MultiViews
+		AllowOverride None
+		Order allow,deny
+		allow from all
+	&lt;/Directory&gt;
+</pre>
+</li>
+
+<li>Add these lines at the top of <code>cit-test-ssl</code>:
+<pre class="example">
+&lt;IfModule mod_ssl.c&gt;
+&lt;VirtualHost *:443&gt;
+	ServerName www-test.cit.edu.al
+	ServerAdmin admin@cit.edu.al
+
+	DocumentRoot /var/www/cit-test
+	&lt;Directory /&gt;
+		Options FollowSymLinks
+		AllowOverride None
+	&lt;/Directory&gt;
+	&lt;Directory /var/www/cit-test/&gt;
+		Options Indexes FollowSymLinks MultiViews
+		AllowOverride None
+		Order allow,deny
+		allow from all
+	&lt;/Directory&gt;
+</pre>
+</li>
+</ul>
+</li>
+
+<li>Enable the sites <code>cit</code>, <code>cit-ssl</code>, <code>cit-test</code>, <code>cit-test-ssl</code>
+    etc. like this:
+<pre class="example">
+a2ensite cit
+a2ensite cit-ssl
+a2ensite cit-test
+a2ensite cit-test-ssl
+</pre>
+</li>
+
+<li>Restart or reload apache2: <code>service apache2 reload</code>
+</li>
+</ul>
+
+<p>
+Do the same thing for the other webservers as well.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5">Referencies:</h2>
+<div class="outline-text-2" id="text-5">
+<ul class="org-ul">
+<li><a href="http://fob.po8.org/node/289">http://fob.po8.org/node/289</a>
+</li>
+<li><a href="http://www.askapache.com/hosting/reverse-proxy-apache.html">http://www.askapache.com/hosting/reverse-proxy-apache.html</a>
+</li>
+<li><a href="http://blogs.adobe.com/cguerrero/2010/10/27/configuring-a-reverse-proxy-with-apache-that-handles-https-connections/">http://blogs.adobe.com/cguerrero/2010/10/27/configuring-a-reverse-proxy-with-apache-that-handles-https-connections/</a>
+</li>
+<li><a href="http://blog.lundscape.com/2009/05/configure-a-reverse-proxy-with-apache/">http://blog.lundscape.com/2009/05/configure-a-reverse-proxy-with-apache/</a>
+</li>
+<li><a href="http://www.raskas.be/blog/2006/04/21/reverse-proxy-of-virtual-hosts-with-apache-2/">http://www.raskas.be/blog/2006/04/21/reverse-proxy-of-virtual-hosts-with-apache-2/</a>
+</li>
+</ul>
+</div>
+</div>

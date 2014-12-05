@@ -1,0 +1,325 @@
+---
+layout:     post
+title:      Computer LAB Management
+date:       2012-08-09 02:38:00
+summary:    We have two labs with 16 computers each. In each computer we have
+    installed the latest version of Edubuntu (Linux) with almost the same
+    configuration (partitions, installed packages, etc.). It is a bit of
+    hard work to manage all of them one by one, so we have tried to find
+    workarounds to manage all of them at once. There are different ways
+    and solutions to accomplish this in Linux, but we have adopted a
+    simple and practical one, suitable for our case.
+---
+
+<p>
+We have two labs with 16 computers each. In each computer we have
+installed the latest version of <a href="http://edubuntu.org/">Edubuntu</a> (Linux) with almost the same
+configuration (partitions, installed packages, etc.). It is a bit of
+hard work to manage all of them one by one, so we have tried to find
+workarounds to manage all of them at once. There are different ways
+and solutions to accomplish this in Linux, but we have adopted a
+simple and practical one, suitable for our case.
+</p>
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1">Setting a static IP to each computer</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+First of all, it is better to set a static IP to each computer,
+instead of letting them to get a dynamic (random) IP by DHCP. This
+is required for accessing and managing them remotely. It can be
+done like this:
+</p>
+
+<ul class="org-ul">
+<li>First of all disable/remove the <code>network-manager</code> service, because
+it will try to configure automatically the network interface:
+<pre class="example">
+apt-get purge network-manager
+</pre>
+</li>
+
+<li>Then edit <code>/etc/network/interfaces</code> like this:
+<pre class="example">
+auto lo
+iface lo inet loopback
+
+auto eth0
+iface eth0 inet static
+  address 192.168.1.51
+  netmask 255.255.255.0
+  gateway 192.168.1.1
+  dns-nameservers 80.78.66.66 80.78.66.67
+</pre>
+</li>
+
+<li>Finally, restart the networking:
+<pre class="example">
+sudo /etc/init.d/networking restart
+</pre>
+</li>
+</ul>
+
+<p>
+<b>Note:</b> It is even better if we configure the DHCP server to give
+always the same IP to the same computer, based on the MAC of its
+network interface. However the method above is quite ok.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2">Managing computers remotely</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+In order to run commands remotely through <b>ssh</b>, without entering a
+password, we can generate a public-private key pair, and then put
+the public key on each computer.
+</p>
+
+<ul class="org-ul">
+<li>Generate a public/private key pair:
+<pre class="example">
+sudo su
+ssh-keygen
+</pre>
+</li>
+
+<li>Transfer the public key to each PC and append it to
+<code>/root/.ssh/authorized_keys</code>:
+<pre class="example">
+scp id_rsa.pub root@192.168.1.51:
+ssh root@192.168.1.51
+mkdir .ssh
+chmod 700 .ssh
+cat id_rsa.pub &gt;&gt; .ssh/authorized_keys
+chmod 600 .ssh/authorized_keys
+rm id_rsa.pub
+exit
+</pre>
+</li>
+</ul>
+
+<p>
+Now we can run without password commands like this:
+</p>
+<pre class="example">
+ssh 192.168.1.51 ls -al
+ssh 192.168.1.51 apt-get update
+ssh 192.168.1.51 apt-get upgrade
+etc.
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3">Administrating multiple computers at once</h2>
+<div class="outline-text-2" id="text-3">
+<ul class="org-ul">
+<li>First install the package <b>mssh</b> (Multi-SSH):
+<pre class="example">
+sudo apt-get install mssh
+</pre>
+</li>
+
+<li>Now we can run the same commands on many computers, like this:
+<pre class="example">
+mssh 192.168.1.51 192.168.1.52 192.168.1.53
+mssh 192.168.1.5{1,2,3,4,5,6,7,8,9}
+</pre>
+</li>
+
+<li>However, for convenience we can put all the IPs in a file like
+<code>iplist_lab1.txt</code>, which looks like this:
+<pre class="example">
+192.168.1.51
+192.168.1.52
+192.168.1.53
+192.168.1.54
+192.168.1.55
+. . . . .
+</pre>
+</li>
+
+<li>Now we can run the command <b>mssh</b> with all of them, with a
+command like this:
+<pre class="example">
+mssh $(cat iplist_lab1.txt)
+or 
+mssh $(&lt;iplist_lab1.txt)
+</pre>
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4">Getting the mac addresses</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+We need the MAC addresses of each PC in order to turn them ON
+remotely, from the LAN. We may also need them later to set up the
+DHCP server so that each computer gets a fixed IP.
+</p>
+
+<p>
+In order to get them remotely, first we ping each IP, then we get
+the neighbor list with <code>ip neigh</code>, and finally we process it to
+get a clean list:
+</p>
+
+<pre class="example">
+for IP in $(cat iplist_lab1.txt); do ping -c 2 $IP; done
+ip neigh &gt; mac_list.txt
+gawk '{print $1 " " $5}' mac_list.txt &gt; mac_list_1.txt
+sort mac_list_1.txt &gt; mac_list_lab1.txt
+rm mac_list_1.txt
+</pre>
+
+<p>
+The final list <code>mac_list_lab1.txt</code> should be something like this:
+</p>
+<pre class="example">
+192.168.1.51 2c:41:38:a9:82:ef
+192.168.1.52 2c:41:38:a9:82:7c
+192.168.1.53 2c:41:38:a5:94:f2
+192.168.1.54 2c:41:38:a5:94:d7
+192.168.1.55 2c:41:38:a5:98:66
+. . . . .
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5">Turning on all the computers remotely</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+Almost all of the computers nowadays support a feature called
+<b>Wake-On-LAN</b> (or <b>WOL</b>). It can be used to turn on a PC from the LAN
+by sending it a special packet. Let's see how we can use it.
+</p>
+
+<ul class="org-ul">
+<li>First of all make sure that it is enabled on the BIOS Setup.
+</li>
+
+<li>Then install the package <b>wakeonlan</b>:
+<pre class="example">
+sudo apt-get install wakeonlan
+</pre>
+</li>
+
+<li>Then get a list of MAC addresses and IPs of all the computers.
+It can be generated by rearranging the columns on
+<code>mac_list_lab1.txt</code>:
+
+<pre class="example">
+gawk '{print $2 " " $1}' mac_list_lab1.txt &gt; lab1.wol
+</pre>
+
+<p>
+The file <code>lab1.wol</code> looks like this:
+</p>
+<pre class="example">
+2c:41:38:a9:82:ef 192.168.1.51
+2c:41:38:a9:82:7c 192.168.1.52
+2c:41:38:a5:94:f2 192.168.1.53
+2c:41:38:a5:94:d7 192.168.1.54
+2c:41:38:a5:98:66 192.168.1.55
+. . . . .
+</pre>
+</li>
+
+<li>Then, to turn ON all the computers on LAB1, run the command
+<code>wakeonlan</code> with this list as a parameter:
+<pre class="example">
+wakeonlan -f lab1.wol
+</pre>
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-sec-6" class="outline-2">
+<h2 id="sec-6">Turning OFF all the computers remotely</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+A PC can be turned OFF using the command <code>poweoff</code> remotely, like
+this:
+</p>
+<pre class="example">
+sudo su
+for IP in $(&lt;iplist_lab1.txt); do echo --$IP; ssh $IP poweroff; done
+</pre>
+
+<p>
+Here, <code>iplist_lab1.txt</code> is a list with IP-s of all the PC-s, like this:
+</p>
+<pre class="example">
+192.168.1.51
+192.168.1.52
+192.168.1.53
+192.168.1.54
+192.168.1.55
+. . . . .
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-sec-7" class="outline-2">
+<h2 id="sec-7">Adding an administrator user</h2>
+<div class="outline-text-2" id="text-7">
+<p>
+The computers in LAB1 initially were installed with user <i>student</i>
+as administrative user. These steps show how to add another
+administrative user and how to remove the administrative privileges
+from the user <i>student</i>.
+</p>
+
+<ul class="org-ul">
+<li>Create user administrator:
+<pre class="example">
+adduser administrator
+</pre>
+</li>
+
+<li>Add this user to groups:
+<pre class="example">
+adduser administrator adm
+adduser administrator dialout
+adduser administrator cdrom
+adduser administrator plugdev
+adduser administrator lpadmin
+adduser administrator admin
+adduser administrator sudo
+</pre>
+</li>
+
+<li>Remove the user student from privileged groups:
+<pre class="example">
+deluser student adm 
+deluser student admin
+deluser student sudo
+</pre>
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-sec-8" class="outline-2">
+<h2 id="sec-8">Remove autologin</h2>
+<div class="outline-text-2" id="text-8">
+<p>
+The initial configuration of the computers in LAB1 was to autologin
+to user <i>student</i>. In order to remove the autologin, edit
+<code>/etc/lightdm/lightdm.conf</code> and leave empty <code>autologin-user=</code>
+</p>
+</div>
+</div>
