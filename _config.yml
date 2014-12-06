@@ -14,13 +14,15 @@ url:              //dashohoxha.fs.al
 owner:
   name:           Dashamir Hoxha
   avatar:         dashamir.jpg
-  bio:            "Computer Engineer with experience in software engineering, web application development, linux and network configuration/administraton, etc."
+  # bio:            "Computer Engineer with experience in software engineering, web application development, linux and network configuration/administraton, etc."
+  bio:
   email:          dashohoxha@gmail.com
   # Social networking links used in footer. Update and remove as you like.
   twitter:        dashohoxha
   facebook:       
   github:         dashohoxha
-  stackexchange:  dashohoxha
+  academia:       http://independent.academia.edu/DashamirHoxha
+  stackexchange:  http://stackexchange.com/users/990339/dashohoxha
   linkedin:       dashohoxha
   instagram:      
   flickr:         
