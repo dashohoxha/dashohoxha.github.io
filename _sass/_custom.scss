@@ -1,0 +1,19 @@
+
+.figure {
+    text-align: center;
+    border: 1px solid #cccccc;
+    margin: 10px 0;
+}
+
+.figure img {
+    box-shadow: 0 0 3px;
+}
+
+.figure p:nth-child(2) {
+    background-color: #cccccc;
+    margin: 0;
+}
+
+.figure .figure-number {
+    font-style: italic;
+}

@@ -327,9 +327,9 @@ practices (how they are actually applied in this project).
    diagram (which is drawn using [[http://www.umlet.com/][Umlet]]):
 
    #+CAPTION:    Actors and Use-cases of B-Translator.
-   #+LABEL:      fig:functional_analysis
+   #+NAME:       fig:functional_analysis
    #+ATTR_LaTeX: width=13cm
-   [[./uml/functional_analysis.png]]
+   [[file:images/btranslator-project/functional_analysis.png][file:images/btranslator-project/functional_analysis.png]]
 
    There are also the cases when the software is accessed through a
    third party application (for example a Facebook, LinkedIn, Google+,
@@ -593,24 +593,24 @@ practices (how they are actually applied in this project).
    by a certain user.
 
    #+CAPTION:    Tables and their relations.
-   #+LABEL:      fig:db_diagram
+   #+NAME:       fig:db_diagram
    #+ATTR_LaTeX: width=13cm
-   [[./uml/db_diagram.png]]
+   [[file:images/btranslator-project/db_diagram.png][file:images/btranslator-project/db_diagram.png]]
 
    #+CAPTION:    Structure of the DB.
-   #+LABEL:      fig:object_diagram_1
+   #+NAME:       fig:object_diagram_1
    #+ATTR_LaTeX: width=13cm
-   [[./uml/object_diagram_1.png]]
+   [[file:images/btranslator-project/object_diagram_1.png][file:images/btranslator-project/object_diagram_1.png]]
 
    #+CAPTION:    Structure of the DB.
-   #+LABEL:      fig:object_diagram_2
+   #+NAME:       fig:object_diagram_2
    #+ATTR_LaTeX: width=12cm
-   [[./uml/object_diagram_2.png]]
+   [[file:images/btranslator-project/object_diagram_2.png][file:images/btranslator-project/object_diagram_2.png]]
 
    #+CAPTION:    Structure of the DB.
-   #+LABEL:      fig:object_diagram_3
+   #+NAME:       fig:object_diagram_3
    #+ATTR_LaTeX: width=12cm
-   [[./uml/object_diagram_3.png]]
+   [[file:images/btranslator-project/object_diagram_3.png][file:images/btranslator-project/object_diagram_3.png]]
 
 
 ** API
