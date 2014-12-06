@@ -5,6 +5,16 @@ date:       2012-08-22 9:29:00
 summary:    A virtual machine can also use a real partition,
             and this can improve its performance.
 ---
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. Attach a Real Partition to the Virtual Machine</a></li>
+<li><a href="#sec-2">2. Using the New Disk Inside the Virtual Machine</a></li>
+<li><a href="#sec-3">3. Referencies</a></li>
+</ul>
+</div>
+</div>
 
 <p>
 I have used <b>zentyal</b> as a gateway server, and it is actually running
@@ -23,7 +33,7 @@ real partition to the virtual machine and using it for the cache.
 </p>
 
 <div id="outline-container-sec-1" class="outline-2">
-<h2 id="sec-1">Attach a Real Partition to the Virtual Machine</h2>
+<h2 id="sec-1"><span class="section-number-2">1</span> Attach a Real Partition to the Virtual Machine</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 The host where zentyal is installed is a CentOS system, and the disk partitions are managed by LVM. So, first of all we should create a new LVM partition to be attached to the virtual machine:
@@ -38,8 +48,8 @@ lvcreate vg_data -L 50G -n /dev/vg_data/lv_cache
 In LVM, <b>Volume Groups (VG)</b> are the equivalents of <b>disks</b>, and
 <b>Logical Volumes (LV)</b> are the equivalents of <b>partitions</b>. In this
 case, we are creating a <i>logical volume</i> with name
-<b>/dev/vg<sub>data</sub>/lv<sub>cache</sub></b>, on the <i>volume group</i> with name
-<b>vg<sub>data</sub></b>. The size of this LV partition is <b>50G</b>, and this is
+<b>/dev/vg_data/lv_cache</b>, on the <i>volume group</i> with name
+<b>vg_data</b>. The size of this LV partition is <b>50G</b>, and this is
 enough for the squid cache.
 </p>
 
@@ -79,7 +89,7 @@ virsh start zentyal
 
 
 <div id="outline-container-sec-2" class="outline-2">
-<h2 id="sec-2">Using the New Disk Inside the Virtual Machine</h2>
+<h2 id="sec-2"><span class="section-number-2">2</span> Using the New Disk Inside the Virtual Machine</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 Inside the virtual machine (zentyal), we can access the new disk as
@@ -138,7 +148,7 @@ service squid restart
 
 
 <div id="outline-container-sec-3" class="outline-2">
-<h2 id="sec-3">Referencies</h2>
+<h2 id="sec-3"><span class="section-number-2">3</span> Referencies</h2>
 <div class="outline-text-2" id="text-3">
 <ul class="org-ul">
 <li><a href="http://tecnologia.2020mobile.es/improving-zentyal-proxy-performance-squid-dansguardian/">http://tecnologia.2020mobile.es/improving-zentyal-proxy-performance-squid-dansguardian/</a>

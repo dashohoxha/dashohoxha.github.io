@@ -10,6 +10,21 @@ summary:    We have two labs with 16 computers each. In each computer we have
     and solutions to accomplish this in Linux, but we have adopted a
     simple and practical one, suitable for our case.
 ---
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. Setting a static IP to each computer</a></li>
+<li><a href="#sec-2">2. Managing computers remotely</a></li>
+<li><a href="#sec-3">3. Administrating multiple computers at once</a></li>
+<li><a href="#sec-4">4. Getting the mac addresses</a></li>
+<li><a href="#sec-5">5. Turning on all the computers remotely</a></li>
+<li><a href="#sec-6">6. Turning OFF all the computers remotely</a></li>
+<li><a href="#sec-7">7. Adding an administrator user</a></li>
+<li><a href="#sec-8">8. Remove autologin</a></li>
+</ul>
+</div>
+</div>
 
 <p>
 We have two labs with 16 computers each. In each computer we have
@@ -22,7 +37,7 @@ simple and practical one, suitable for our case.
 </p>
 
 <div id="outline-container-sec-1" class="outline-2">
-<h2 id="sec-1">Setting a static IP to each computer</h2>
+<h2 id="sec-1"><span class="section-number-2">1</span> Setting a static IP to each computer</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 First of all, it is better to set a static IP to each computer,
@@ -70,7 +85,7 @@ network interface. However the method above is quite ok.
 
 
 <div id="outline-container-sec-2" class="outline-2">
-<h2 id="sec-2">Managing computers remotely</h2>
+<h2 id="sec-2"><span class="section-number-2">2</span> Managing computers remotely</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 In order to run commands remotely through <b>ssh</b>, without entering a
@@ -115,7 +130,7 @@ etc.
 
 
 <div id="outline-container-sec-3" class="outline-2">
-<h2 id="sec-3">Administrating multiple computers at once</h2>
+<h2 id="sec-3"><span class="section-number-2">3</span> Administrating multiple computers at once</h2>
 <div class="outline-text-2" id="text-3">
 <ul class="org-ul">
 <li>First install the package <b>mssh</b> (Multi-SSH):
@@ -157,7 +172,7 @@ mssh $(&lt;iplist_lab1.txt)
 
 
 <div id="outline-container-sec-4" class="outline-2">
-<h2 id="sec-4">Getting the mac addresses</h2>
+<h2 id="sec-4"><span class="section-number-2">4</span> Getting the mac addresses</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 We need the MAC addresses of each PC in order to turn them ON
@@ -195,7 +210,7 @@ The final list <code>mac_list_lab1.txt</code> should be something like this:
 
 
 <div id="outline-container-sec-5" class="outline-2">
-<h2 id="sec-5">Turning on all the computers remotely</h2>
+<h2 id="sec-5"><span class="section-number-2">5</span> Turning on all the computers remotely</h2>
 <div class="outline-text-2" id="text-5">
 <p>
 Almost all of the computers nowadays support a feature called
@@ -246,7 +261,7 @@ wakeonlan -f lab1.wol
 
 
 <div id="outline-container-sec-6" class="outline-2">
-<h2 id="sec-6">Turning OFF all the computers remotely</h2>
+<h2 id="sec-6"><span class="section-number-2">6</span> Turning OFF all the computers remotely</h2>
 <div class="outline-text-2" id="text-6">
 <p>
 A PC can be turned OFF using the command <code>poweoff</code> remotely, like
@@ -273,7 +288,7 @@ Here, <code>iplist_lab1.txt</code> is a list with IP-s of all the PC-s, like thi
 
 
 <div id="outline-container-sec-7" class="outline-2">
-<h2 id="sec-7">Adding an administrator user</h2>
+<h2 id="sec-7"><span class="section-number-2">7</span> Adding an administrator user</h2>
 <div class="outline-text-2" id="text-7">
 <p>
 The computers in LAB1 initially were installed with user <i>student</i>
@@ -314,7 +329,7 @@ deluser student sudo
 
 
 <div id="outline-container-sec-8" class="outline-2">
-<h2 id="sec-8">Remove autologin</h2>
+<h2 id="sec-8"><span class="section-number-2">8</span> Remove autologin</h2>
 <div class="outline-text-2" id="text-8">
 <p>
 The initial configuration of the computers in LAB1 was to autologin
