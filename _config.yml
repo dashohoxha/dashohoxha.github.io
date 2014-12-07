@@ -32,7 +32,7 @@ owner:
   google_plus:    +DashamirHoxha
 
 # Background image to be tiled on all pages
-background: 
+background:       textured-paper.jpg
 
 # Analytics and webmaster tools stuff goes here
 google_analytics: UA-57417723-1
