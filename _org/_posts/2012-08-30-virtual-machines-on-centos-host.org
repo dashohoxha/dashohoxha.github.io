@@ -1,0 +1,276 @@
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+begin_html
+---
+layout:     post
+title:      Virtual Machines on a CentOS Host
+date:       2012-08-30 13:55:51
+summary:    A powerful rack server can be used as a host for installing
+    lots of virtual machines, and it can be used as a data storage as well.
+    This article will describe how to use such a server, installed with
+    CentOS, as a host for virtual machines.
+---
+#+end_html
+
+  A powerful rack server can be used as a host for installing lots of
+  virtual machines, and it can be used as a data storage as well. This
+  article will describe how to use such a server, installed with
+  CentOS, as a host for virtual machines.
+
+  The server is a SuperMicro X9DRL-3F/IF with these parameters:
+
+     | RAM     | 32GB                                   |
+     | HDD     | 2x320GB + 2x3TB                        |
+     | Network | 2 Gb interfaces + 1 KVM/IMPI interface |
+
+  The first two disks (2x320GB) are used in RAID1 configuration to
+  keep the host and the virtual servers, and the 2x3TB diska are used
+  for the data.
+
+* Installation of CentOS
+
+  During boot-up, we press Ctrl+I and configure a RAID1 device
+  with the first two disks (320Gb each).
+
+  Installation was done with /CentOS-6.2-x86_64-minimal.iso/ (standard
+  installation, where the installer automatically partitions the first
+  disk drive (the raid one). The standard installation of CentOS is
+  very easy (with a GUI interface), it use RAID automatically,
+  partitions the disk automatically, and uses LVM for the partitions.
+
+
+* Disk partitioning and formating
+
+  We have two disks of 3TB each that we need to partition and manage,
+  however the partition tables of type *msdos* (most commonly used)
+  cannot manage more than 2TB of disk space. The solution is to use
+  partion tables of type *GPT*. Fortunately, the partition editor
+  (parted) of Linux, supports them quite well.
+
+  The GPT partitions can also have more than 4 primary partitions, so
+  there is no need for extended partitions and tricks like this. I
+  split both of the disks in *6* primary partitions of *500GB* each,
+  formating them with *ext4*. Later, I am going to manage these
+  partitions with *LVM*.
+
+  The steps below show roughly how I did the partitioning:
+
+  #+BEGIN_EXAMPLE
+  yum install parted
+  parted /dev/sdc
+  parted /dev/sdd
+  #+END_EXAMPLE
+
+  #+BEGIN_EXAMPLE
+  (parted) print
+  (parted) mklabel gpt
+  (parted) mkpart primary 0.0GB 500.0GB
+  (parted) mkpart primary 0.0GB 500.0GB                                             
+  (parted) mkpart primary 500.0GB 1.0TB                               
+  (parted) mkpart primary 1.0TB 1.5TB                               
+  (parted) mkpart primary 1.5TB 2.0TB
+  (parted) mkpart primary 2.0TB 2.5TB                                 
+  (parted) mkpart primary 2.5TB 3.0TB                                 
+  (parted) print                                                            
+  Model: ATA ST3000DM001-9YN1 (scsi)
+  Disk /dev/sdd: 3001GB
+  Sector size (logical/physical): 512B/4096B
+  Partition Table: gpt
+
+  Number  Start   End     Size   File system  Name     Flags
+   1      1049kB  500GB   500GB               primary
+   2      500GB   1000GB  500GB               primary
+   3      1000GB  1500GB  500GB               primary
+   4      1500GB  2000GB  500GB               primary
+   5      2000GB  2500GB  500GB               primary
+   6      2500GB  3001GB  501GB               primary
+
+  (parted)              
+  #+END_EXAMPLE
+
+  And this is how I formated them with *ext4*:
+  #+BEGIN_EXAMPLE
+  mkfs.ext4 /dev/sdc1
+  mkfs.ext4 /dev/sdc2
+  mkfs.ext4 /dev/sdc3
+  mkfs.ext4 /dev/sdc4
+  mkfs.ext4 /dev/sdc5
+  mkfs.ext4 /dev/sdc6
+  for i in 1 2 3 4 5 6; do  mkfs.ext4 /dev/sdd$i ; done
+  #+END_EXAMPLE
+
+  Referencies:
+  + http://www.cyberciti.biz/tips/fdisk-unable-to-create-partition-greater-2tb.html
+
+
+* Managing partitions with LVM
+
+  One of the best advantages of Logical Volume Management (*LVM*) is
+  the flexibility. LVM disks and partitions can be resized easily,
+  when needed. Actually, in the terminology of LVM, logical disks are
+  called /Volume Groups/ (*VG*), and logical partitions are called
+  Logical Volumes (*LV*). We can create several VGs, and inside each
+  of them we can create LVs. The sizes of VGs and LVs are flexible, we
+  can extend them later, if needed.
+
+  Let's create a /volume group/ named /vg_data/ by including some
+  Physical Volumes (*PV*, physical disk partitions) to it:
+  #+BEGIN_EXAMPLE
+  vgdisplay
+  vgcreate vg_data /dev/sdc1 /dev/sdc2 /dev/sdd1 /dev/sdd2
+  vgdisplay
+  #+END_EXAMPLE
+
+  Then we can extend it by adding some more PVs (partitions) to it:
+  #+BEGIN_EXAMPLE
+  vgdisplay
+  vgextend vg_data /dev/sdc3 /dev/sdc4 /dev/sdd3 /dev/sdd4
+  vgdisplay
+  #+END_EXAMPLE
+
+  Now, inside the VG named /vg_data/, let's create an LV (logical
+  partition) named */dev/vg_data/lv_mirror*, of size *1TB*:
+  #+BEGIN_EXAMPLE
+  lvdisplay
+  lvcreate vg_data -L 1T -n /dev/vg_data/lv_mirror
+  lvdisplay
+  #+END_EXAMPLE
+
+  We can create an *ext4* filesystem on it like this:
+  #+BEGIN_EXAMPLE
+  mkfs.ext4 -L mirror /dev/vg_data/lv_mirror
+  #+END_EXAMPLE
+
+  Another LV can be created like this:
+  #+BEGIN_EXAMPLE
+  lvcreate vg_data -L 500G -n /dev/vg_data/lv_cache
+  lvdisplay
+  #+END_EXAMPLE
+
+
+* Creating bridged interfaces on CentOS
+
+  We want the virtual machines to be connected directly to the
+  network, and for this reason we should create bridged interfaces on
+  the host system. We create a bridged interface for each of the
+  network interfaces of the server. The steps below show how it can be
+  done on CentOS.
+
+  + Edit ~/etc/sysconfig/network-scripts/ifcfg-eth0~:
+    #+BEGIN_EXAMPLE
+    DEVICE="eth0"
+    HWADDR="00:25:90:76:91:9A"
+    ONBOOT="yes"
+    BRIDGE="br0"
+    #+END_EXAMPLE
+
+  + Edit ~/etc/sysconfig/network-scripts/ifcfg-eth1~:
+    #+BEGIN_EXAMPLE
+    DEVICE="eth1"
+    HWADDR="00:25:90:76:91:9B"
+    ONBOOT="yes"
+    BRIDGE="br1"
+    #+END_EXAMPLE
+
+  + Edit ~/etc/sysconfig/network-scripts/ifcfg-br0~:
+    #+BEGIN_EXAMPLE
+    DEVICE="br0"
+    TYPE="Bridge"
+    BOOTPROTO="static"
+    ONBOOT="yes"
+    IPADDR="192.168.10.254"
+    NETMASK="255.255.255.0"
+    DELAY="0"
+    #+END_EXAMPLE
+
+  + Edit ~/etc/sysconfig/network-scripts/ifcfg-br1~:
+    #+BEGIN_EXAMPLE
+    DEVICE="br1"
+    TYPE="Bridge"
+    BOOTPROTO="static"
+    ONBOOT="yes"
+    IPADDR="192.168.1.254"
+    NETMASK="255.255.255.0"
+    DELAY="0"
+    GATEWAY="192.168.1.1"
+    #+END_EXAMPLE
+
+  + Restart the network: ~service network restart~
+
+  Referencies:
+  + http://www.cyberciti.biz/faq/rhel-linux-kvm-virtualization-bridged-networking-with-libvirt/
+  + http://www.centos.org/docs/5/html/Deployment_Guide-en-US/s1-networkscripts-interfaces.html
+
+
+* Installing KVM and libvirt
+
+  + First check if the CPU supports hardware virtualization:
+    #+BEGIN_EXAMPLE
+    egrep '(vmx|svm)' --color=always /proc/cpuinfo
+    #+END_EXAMPLE
+
+  + Install /kvm/ and /libvirt/:
+    #+BEGIN_EXAMPLE
+    rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY*
+    yum install kvm libvirt python-virtinst qemu-kvm
+    #+END_EXAMPLE
+
+  + Modify ~/etc/libvirt/libvirtd.conf~ and uncomment ~mdns_adv =
+    0~. Then restart /libvirtd/ and check it with /virsh/:
+    #+BEGIN_EXAMPLE
+    service libvirtd restart
+    virsh -c qemu:///system list
+    #+END_EXAMPLE
+
+  + Add a user that can manage the virtual machines:
+    #+BEGIN_EXAMPLE
+    useradd virtadmin
+    passwd virtadmin
+    usermod -a -G kvm virtadmin
+    #+END_EXAMPLE
+
+    We would like to be able to manage the virtual machines remotely
+    (for example with virt-manager), and it is not a good idea to use
+    the *root* account for doing it. So we create another account,
+    *virtadmin*, that has permissions to manage the virtual
+    machines. These permissions are assigned to it simply by adding it
+    to the group *kvm*.
+
+  + Set ~SELINUX=disabled~ on ~/etc/selinux/config~ and then reboot:
+    #+BEGIN_EXAMPLE
+    # This file controls the state of SELinux on the system.
+    # SELINUX= can take one of these three values:
+    #     enforcing - SELinux security policy is enforced.
+    #     permissive - SELinux prints warnings instead of enforcing.
+    #     disabled - No SELinux policy is loaded.
+    SELINUX=disabled
+    # SELINUXTYPE= can take one of these two values:
+    #     targeted - Targeted processes are protected,
+    #     mls - Multi Level Security protection.
+    SELINUXTYPE=targeted
+    #+END_EXAMPLE
+
+  + For easy backup, we keep all the configurations and images on a
+    separate directory, called ~/systems~ (which can also be on a
+    separate partition). Move all configurations and images to
+    ~/systems~:
+    #+BEGIN_EXAMPLE
+    mkdir /systems
+    mv /etc/libvirt /systems/etc
+    ln -s /systems/etc /etc/libvirt
+    mv /var/lib/libvirt/ /systems/var
+    ln -s /systems/var/ /var/lib/libvirt
+    mkdir /systems/images/
+    #+END_EXAMPLE
+    Modify ~/systems/etc/storage/default.xml~ like this:
+    #+BEGIN_EXAMPLE
+    <!- - <path>/var/lib/libvirt/images</path> -->
+    <path>/systems/images</path>
+    #+END_EXAMPLE
+
+  Referencies:
+  + http://www.howtoforge.com/virtualization-with-kvm-on-a-centos-6.2-server
+  + http://www.howtoforge.com/how-to-install-kvm-and-libvirt-on-centos-6.2-with-bridged-networking
+  + http://quags.net/archives/53
+
+
