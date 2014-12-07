@@ -1,0 +1,867 @@
+---
+layout:     post
+title:      The Digital Signature and the X.509/OpenPGP Authentication Models
+date:       2011-09-20
+summary:    What is a Digital Signature, why it is an important part of the
+    Digital Identity, and how it works. The authenticity and social
+    problems related to the usage of the Digital Signature. The two
+    authentication models, X.509 and OpenPGP, that can be used to solve
+    these authenticity problems.
+---
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. Abstract</a></li>
+<li><a href="#sec-2">2. Introduction</a>
+<ul>
+<li><a href="#sec-2-1">2.1. What is the Digital Signature</a></li>
+<li><a href="#sec-2-2">2.2. Why the Digital Signature is Important</a></li>
+</ul>
+</li>
+<li><a href="#sec-3">3. How the Digital Signature Works</a>
+<ul>
+<li><a href="#sec-3-1">3.1. What is a Hash Function</a></li>
+<li><a href="#sec-3-2">3.2. What is Asymmetric Key Cryptography</a></li>
+<li><a href="#sec-3-3">3.3. Signing a Digital Document</a></li>
+<li><a href="#sec-3-4">3.4. Verifying the Digital Signature of a Document</a></li>
+<li><a href="#sec-3-5">3.5. A Concrete Example</a></li>
+</ul>
+</li>
+<li><a href="#sec-4">4. Authenticity Verification</a>
+<ul>
+<li><a href="#sec-4-1">4.1. Where to Find the Public Key</a></li>
+<li><a href="#sec-4-2">4.2. The Problem of Authenticity</a></li>
+<li><a href="#sec-4-3">4.3. Verifying and Signing Digital Certificates</a></li>
+<li><a href="#sec-4-4">4.4. Introducers and Certification Authorities (CAs)</a></li>
+</ul>
+</li>
+<li><a href="#sec-5">5. The Hierarchical (X.509) Authentication Model</a></li>
+<li><a href="#sec-6">6. The Web-Of-Trust (OpenPGP) Authentication Model</a>
+<ul>
+<li><a href="#sec-6-1">6.1. Self-Signing Your Own Digital Certificate</a></li>
+<li><a href="#sec-6-2">6.2. Verifying and Signing Certificates of the Others</a></li>
+<li><a href="#sec-6-3">6.3. Deciding Whom To Trust</a></li>
+<li><a href="#sec-6-4">6.4. Deciding About the Validity/Authenticity of a Certificate</a></li>
+<li><a href="#sec-6-5">6.5. Calculating the Validity/Authenticity of a Certificate</a></li>
+<li><a href="#sec-6-6">6.6. Digital Notaries</a></li>
+</ul>
+</li>
+<li><a href="#sec-7">7. Comparing the X.509 and OpenPGP Authentication Models</a>
+<ul>
+<li><a href="#sec-7-1">7.1. Inflexible vs Flexible and Versatile</a></li>
+<li><a href="#sec-7-2">7.2. Centralized vs Decentralized and Distributed</a></li>
+<li><a href="#sec-7-3">7.3. Vulnerable vs Robust and Reliable</a></li>
+</ul>
+</li>
+<li><a href="#sec-8">8. Summary</a></li>
+<li><a href="#sec-9">9. References</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Abstract</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+This article explains what is a Digital Signature, why it is an
+important part of the Digital Identity, and how it works. Then it
+describes the authenticity and social problems related to the usage of
+the Digital Signature. It explains as well the two authentication
+models, X.509 and OpenPGP, that can be used to solve these
+authenticity problems. Finally it makes a comparison between these two
+authentication models and their features and tries to explain why the
+OpenPGP model is better.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Introduction</h2>
+<div class="outline-text-2" id="text-2">
+</div><div id="outline-container-sec-2-1" class="outline-3">
+<h3 id="sec-2-1"><span class="section-number-3">2.1</span> What is the Digital Signature</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+Digital Signature means some digital data that are attached to a
+digital document, which cannot be falsified, and which guaranty the
+integrity and the authenticity of the document.
+</p>
+
+<p>
+The "integrity" means that the document has not been changed/corrupted
+since the time that it was digitally signed, either intentionally or by
+mistake. The "authenticity" means that we can verify and be sure about
+the person that signed the document (the author of the document).
+</p>
+
+<p>
+So, the Digital Signature on digital documents has the same purpose as
+the hand-written signature on the hard-copy (printed) documents.
+</p>
+
+<p>
+The digital signature is not related to a scanned version of a
+hard-copy document which is hand-signed, or to a faxed paper document
+which is hand-signed, or to a scanned image of the hand-signature
+which is included to a document or attached to an email. All these
+methods seem to be intuitive for a digital signature, however they do
+not fully guaranty the integrity and the authenticity of a document,
+therefore cannot be used as valid digital signatures.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-2-2" class="outline-3">
+<h3 id="sec-2-2"><span class="section-number-3">2.2</span> Why the Digital Signature is Important</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+Without being able to sign digital documents, they can never be
+considered official, because we cannot be sure that they are original
+and we cannot be sure who is the real author (they can be corrupted
+and manipulated). So, despite using computers, digital systems and
+digital documents, we always have to rely on the hard copies of the
+documents and keep them around for official purposes, since we can't
+fully trust the digital documents. This means that we will never be
+able to build totally digital systems for institutions and
+organizations, free from papers and hard-copy documents.
+</p>
+
+<p>
+For example if a citizen has to interact with a governmental
+institution and sends some documents online, nevertheless he still has
+to submit the hard copies of the documents in person, since we can't
+rely on the authorship and correctness of the digital documents.
+</p>
+
+<p>
+Or if a person sends a document by email to a bank, the bank cannot
+rely on it, since it cannot be fully sure about the authenticity (real
+authorship) of the document, that it is not manipulated or corrupted
+somehow, or that it is not just a trick or deception.
+</p>
+
+<p>
+Only the Digital Signature can guaranty the identity of the author of
+a document and establish a secure relationship between the people and
+the digital documents. So, it is an essential tool for
+enabling/supporting the digital identity, for establishing trust and
+security on the digital world, and for building a digital society
+(digital governance, digital business, etc.).
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> How the Digital Signature Works</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+The Digital Signature is based on the hash functions and the so called
+asymmetric key cryptography (private/public key pairs).
+</p>
+</div>
+
+<div id="outline-container-sec-3-1" class="outline-3">
+<h3 id="sec-3-1"><span class="section-number-3">3.1</span> What is a Hash Function</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+The job of a hash function is to digest (process) an electronic
+document and to generate from it an extract. No matter how big is the
+document, the extract has always the same fixed size. Two different
+documents cannot produce the same extract. A document that is changed
+even by a single character will produce a different extract after
+being digested by the hash function.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-3-2" class="outline-3">
+<h3 id="sec-3-2"><span class="section-number-3">3.2</span> What is Asymmetric Key Cryptography</h3>
+<div class="outline-text-3" id="text-3-2">
+<p>
+Different from the symmetric cryptography, which uses the same key for
+both encryption and decryption, asymmetric cryptography uses one key
+for encryption and a different one for decryption.  Each person has a
+pair of encryption keys; one of them is private (secret) and is known
+only by the person himself, and the other key is public and is known
+by everybody. A message that is encrypted by one of the keys, can be
+decrypted only by the other key of the pair. It is almost impossible
+to find the private key from the public key that is known by
+everybody.
+</p>
+
+<p>
+The algorithms that are used for generating a pair of private/public
+keys and for encrypting and decrypting a message are based on the
+arithmetic of large prime numbers and calculations with residue
+classes. It is not difficult to understand them, however this is not
+the proper place to explain such details. It is enough to know that
+the asymmetric key cryptography is thought to be quite secure and
+unbreakable.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-3-3" class="outline-3">
+<h3 id="sec-3-3"><span class="section-number-3">3.3</span> Signing a Digital Document</h3>
+<div class="outline-text-3" id="text-3-3">
+<p>
+To sign a digital document, these steps are followed:
+</p>
+<ol class="org-ol">
+<li>The digital document is digested by the hash function and a
+digital extract is produced.
+</li>
+<li>The digital extract of the document is encrypted with the private
+key of the author.
+</li>
+<li>This encrypted extract of the document is the digital signature
+and it can either be appended to the original document, or can be
+saved as a separate file.
+</li>
+</ol>
+</div>
+</div>
+
+<div id="outline-container-sec-3-4" class="outline-3">
+<h3 id="sec-3-4"><span class="section-number-3">3.4</span> Verifying the Digital Signature of a Document</h3>
+<div class="outline-text-3" id="text-3-4">
+<p>
+The verification of the digital signature of a document is done like
+this:
+</p>
+<ol class="org-ol">
+<li>The digital document is digested by the hash function and its
+digital extract is produced.
+</li>
+<li>The digital signature of the document is decrypted with the public
+key of the author. This gives us the digital extract of the
+original document.
+</li>
+<li>The digital extract of the current document (from the first step)
+and the digital extract of the original document (from the second
+step) are compared. If they are the same, then the signature is
+good and the document is original. Otherwise the signature is bad
+and the authenticity of the document cannot be guarantied (most
+probably it has been corrupted, intentionally or by error).
+</li>
+</ol>
+
+<p>
+If the two digital extracts compared on the third step are equal, this
+means that the original document is unmodified (since the digital
+extract has not changed) and it verifies the authenticity of the
+author (since his public key is able to decrypt the digital signature
+correctly).
+</p>
+
+<p>
+If these digital extracts are not equal, either the content of the
+document has been corrupted (by error or intentionally), or the author
+of the document is not the one who claims to be, or both. Any of these
+reasons is enough to discard the document as invalid.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-3-5" class="outline-3">
+<h3 id="sec-3-5"><span class="section-number-3">3.5</span> A Concrete Example</h3>
+<div class="outline-text-3" id="text-3-5">
+<p>
+Email is a kind of digital document, and it can be signed digitally.
+Actually it is the document that is most widely used with a digital
+signature nowadays. This is probably due to the fact that the Internet
+of today is not secure, and emails can be faked easily, and one cannot
+be completely sure about its authenticity, unless it is digitally
+signed.
+</p>
+
+<p>
+Suppose that Alice sends an email to Bob. She signs this email using
+her private key. Then Bob verifies the signature using the public key
+of Alice. If the verification is successful, then Bob can be sure
+that this email cannot have been signed except with the private key of
+Alice.  Since only Alice has her private key, then only she can be the
+signer (and hence the author) of the message.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> Authenticity Verification</h2>
+<div class="outline-text-2" id="text-4">
+</div><div id="outline-container-sec-4-1" class="outline-3">
+<h3 id="sec-4-1"><span class="section-number-3">4.1</span> Where to Find the Public Key</h3>
+<div class="outline-text-3" id="text-4-1">
+<p>
+Consider again the example of the last section, where Alice sends an
+email to Bob. Where can Bob find the public key of Alice, so that he
+can verify the authenticity of her message?
+</p>
+
+<p>
+There are several ways that Bob can get her public key. Maybe Alice
+gave it to him directly, using a removable media or sending it as an
+attachment. Maybe Alice published it on her website and Bob got it
+from there. Maybe Alice published it on some public key server and Bob
+retrieved it from there (and this is the most common case in
+practice).
+</p>
+
+<p>
+A Public Key Server (PKS) is like a directory server (a dictionary),
+where you can look up and retrieve the public key of a given person.
+Alice can upload her public key on a PKS, and Bob (or anyone else that
+needs to verify her signature) can look up and retrieve this key from
+there.
+</p>
+
+<p>
+Actually the public key of a person is stored in a digital document
+that contains also the identity of a person (name, email, address,
+organization, etc.). This document is called Digital Certificate (or
+Identity Certificate, or Public Key Certificate). It is the Digital
+Certificate that is uploaded to a PKS and retrieved from it, and it is
+the Digital Certificate that makes the relation (connection) between
+the digital identity of a person and his public key.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4-2" class="outline-3">
+<h3 id="sec-4-2"><span class="section-number-3">4.2</span> The Problem of Authenticity</h3>
+<div class="outline-text-3" id="text-4-2">
+<p>
+Here we are faced with a problem. If Bob retrieved the digital
+certificate of Alice from a PKS, how can he be sure that it is
+authentic? How can he be sure that this certificate was uploaded there
+by Alice and the public key in it really belongs to Alice?  Probably
+somebody else uploaded that digital certificate there instead of
+Alice, with the identity of Alice but with a different public key.
+</p>
+
+<p>
+This is actually a social problem, not a technical one, and it can be
+solved by social means. Bob can actually call Alice and make sure that
+the ID of her key is the same as the one that he got from the PKS.  Or
+probably Alice gave Bob a business card where she has also written the
+ID of her public key, so Bob can check this ID with the ID of the key
+that he retrieved from the PKS and make sure that it is correct.
+</p>
+
+<p>
+However most of the time we communicate with people that we have never
+met before and we have no idea who they are. It can be that "Alice" is
+just a fake identity (a nickname or a fake name, not the name of a
+real person). Or maybe somebody else uploaded the certificate instead
+of Alice, pretending to be Alice, and the key in the certificate does
+not really belong to Alice (is a fake public key).
+</p>
+
+<p>
+If Bob has never met Alice, then how can he be sure about her real
+identity? How can he be sure that Alice is a real person and that the
+messages that he gets are really coming from her and not from somebody
+pretending to be her? In other words, how can Bob be sure that the
+digital certificate of Alice, that he gets from the PKS, is authentic?
+</p>
+
+<p>
+Just verifying that the signature of the message is correct is not
+enough.  We need to verify also that the digital certificate that was
+used for the signature is authentic.
+</p>
+
+<p>
+Again, this is a social problem and cannot be solved only by technical
+means.  It can be solved only by a combination of social and technical
+procedures.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4-3" class="outline-3">
+<h3 id="sec-4-3"><span class="section-number-3">4.3</span> Verifying and Signing Digital Certificates</h3>
+<div class="outline-text-3" id="text-4-3">
+<p>
+Suppose that Chloe has checked the digital certificate of Alice and is
+sure that:
+</p>
+<ol class="org-ol">
+<li>Alice is a real person and the digital identity on her digital
+certificate corresponds to her real-life identity and is correct.
+</li>
+<li>The public key in the digital certificate is the correct one (the
+one that belongs to Alice).
+</li>
+</ol>
+
+<p>
+How can Chloe check and verify the digital identity of Alice (first
+point above)? If Chloe does not know Alice personally, she can ask to
+meet her in person, check her identity documents (passport, identity
+card, driver license, etc.)  and make sure that the digital identity
+of Alice (name, birthday, etc.)  corresponds to the real-life
+identity. For checking and verifying the public key (second point
+above), Chloe has to get from Alice the fingerprint or ID of her
+public key, compare it with the one on the digital certificate, and
+make sure that it is the same.
+</p>
+
+<p>
+Now that Chloe has verified that the digital certificate of Alice is
+authentic, she can sign it. A digital certificate is just a digital
+document, so it can be signed with a digital signature.
+</p>
+
+<p>
+By signing the digital certificate of Alice, Chloe testifies that it
+is correct and valid, which means that the digital identity is
+authentic and the public key really belongs to Alice. The digital
+signature of Chloe also guaranties that the information on the digital
+certificate has not been changed since the time that she verified and
+signed it.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4-4" class="outline-3">
+<h3 id="sec-4-4"><span class="section-number-3">4.4</span> Introducers and Certification Authorities (CAs)</h3>
+<div class="outline-text-3" id="text-4-4">
+<p>
+If Bob has full trust on Chloe about checking and verifying the
+information of digital certificates, then he can be sure that the
+digital certificate of Alice is authentic and valid, without having to
+check and verify it himself.
+</p>
+
+<p>
+So, Bob asserts (derives) the validity/authenticity of the digital
+certificate of Alice by trusting a third party, which is Chloe. Bob
+can trust as well any other digital certificates that Chloe has
+signed.  In such a case Chloe is called an "introducer" for Bob.
+</p>
+
+<p>
+If Chloe verifies and signs a lot of digital certificates and a lot of
+people trust the certificates signed by Chloe, then Chloe is called a
+Certification Authority (CA).
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5"><span class="section-number-2">5</span> The Hierarchical (X.509) Authentication Model</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+The X.509 authentication model is a hierarchical one. The digital
+certificate of a person is verified and signed by a certification
+authority (CA), the digital certificate of this CA is verified and
+signed by a higher level CA, and so on until we reach a root CA, whose
+digital certificate is self-signed (has signed himself his own digital
+certificate).
+</p>
+
+<p>
+For example, if Bob receives a message signed with the digital
+certificate of Alice, he will notice that this digital certificate is
+verified and signed by CA1, which in turn is verified and signed by
+CA2, which is verified and signed by RCA (a root CA). Bob just has to
+check that the certificate of the root CA is correct (valid and
+authentic), and then he has to trust that each of RCA, CA1 and CA2
+have done the verification and signing properly. He doesn't have to
+check and verify the certificate of Alice directly. This chain
+verification is usually done automatically by the software that Bob
+uses.
+</p>
+
+<p>
+The digital certificate (public key) of the root authority has to be
+widely known and easily verifiable. And also Bob has to trust it
+(actually it turns out that Bob does not have much choice on this,
+because other people have decided that Bob should trust it). The
+validation of a certificate is based on the trust that Bob has that
+the root CA and each of the CAs have done their job properly (checking
+and verifying the certificates of the next level).
+</p>
+
+<p>
+CAs are usually commercial, but large institutions or government
+entities may have their own CAs as well. There are about 50 root CAs
+that are known worldwide.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-6" class="outline-2">
+<h2 id="sec-6"><span class="section-number-2">6</span> The Web-Of-Trust (OpenPGP) Authentication Model</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+The OpenPGP standard uses a non-hierarchical, decentralized
+authentication model that is called Web-Of-Trust. 
+</p>
+</div>
+
+<div id="outline-container-sec-6-1" class="outline-3">
+<h3 id="sec-6-1"><span class="section-number-3">6.1</span> Self-Signing Your Own Digital Certificate</h3>
+<div class="outline-text-3" id="text-6-1">
+<p>
+In the OpenPGP model each person acts as a root CA and first of all
+self-signs his own digital certificate (to protect it from any
+modification and forgery). For example Alice signs her own certificate
+and Bob signs his own.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-6-2" class="outline-3">
+<h3 id="sec-6-2"><span class="section-number-3">6.2</span> Verifying and Signing Certificates of the Others</h3>
+<div class="outline-text-3" id="text-6-2">
+<p>
+Second, each of them can sign the certificates of the people, which
+they have personally checked and verified. Verification includes both
+making sure that the digital identity matches the real-life identity
+of the person, and making sure that the public key in the certificate
+is the correct one that belongs to this person. This certificate
+verification and signing can be mutual as well, for example Alice
+signs the certificate of Bob, and Bob signs the certificate of Alice.
+</p>
+
+<p>
+When Alice signs the certificate of Bob, usually she makes public this
+signature by uploading the signed certificate on a PKS. This lets
+everybody know that she has checked and verified the digital
+certificate of Bob and that she guaranties that this certificate is
+authentic and valid.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-6-3" class="outline-3">
+<h3 id="sec-6-3"><span class="section-number-3">6.3</span> Deciding Whom To Trust</h3>
+<div class="outline-text-3" id="text-6-3">
+<p>
+Next, each person decides who are the people that he can trust about
+making correct verification of others' certificates, and how much he
+can trust them. The trust levels that are defined by the OpenPGP
+standard are: unknown (default), none, marginal, full, ultimate.
+These trust values are not about how trustable is this person in the
+real life, but rather about the ability of the person to make correct
+verification of digital certificates, before signing them.
+</p>
+
+<p>
+For example the trust value 'marginal' means that you believe that
+this person sometimes may not check and verify carefully the details
+of a certificate, before signing it. The trust value 'full' means that
+you believe that this person is very careful when signing
+certificates. The trust value 'ultimate' means that you believe that
+this person is so careful when checking and signing certificates,
+that he almost never makes mistakes.
+</p>
+
+<p>
+The trust level that one assigns to a person is subjective and can be
+different from one person to another. For example Alice may have full
+trust on Bob, however Chloe may think that Bob can be trusted only
+marginally. The trust level is also private, which means that it is
+relevant only to the person who assigns it, and it is not published on
+any servers.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-6-4" class="outline-3">
+<h3 id="sec-6-4"><span class="section-number-3">6.4</span> Deciding About the Validity/Authenticity of a Certificate</h3>
+<div class="outline-text-3" id="text-6-4">
+<p>
+The figure shows a web of trust rooted at Alice. The graph illustrates
+who has signed who's certificate.
+</p>
+
+
+<div class="figure">
+<p><a href="/images/digital-signature/signatures.jpg"><img src="/images/digital-signature/signatures.jpg" alt="signatures.jpg" /></a>
+</p>
+</div>
+
+<p>
+Alice is sure that the certificates of Blake and Dharma are valid,
+since she has verified and signed them herself.
+</p>
+
+<p>
+If Alice has full trust on Dharma, then she would consider valid the
+certificates of Chloe and Fransis as well. She has not verified them
+herself, but Dharma has verified and signed them and Alice has full
+trust on the ability of Dharma to correctly verify and sign digital
+certificates.
+</p>
+
+<p>
+In case that Alice has only marginal trust on Blake and Dharma, then
+she cannot be really sure about the validity of the Francis'
+certificate, although Dharma has signed it. However, she can be almost
+sure about the validity of the Chloe's certificate. Both Blake and
+Dharma have verified and signed it, so the possibility of both of them
+being deceived (or corrupted, mistaken) is small.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-6-5" class="outline-3">
+<h3 id="sec-6-5"><span class="section-number-3">6.5</span> Calculating the Validity/Authenticity of a Certificate</h3>
+<div class="outline-text-3" id="text-6-5">
+<p>
+The decision on which certificate can be considered fully valid, or
+partially valid, or non-valid, is actually done automatically by the
+software that is used for verifying the signature. The software makes
+this decision based on who has signed who's certificate, on the trust
+value assigned to each of the people on the web of trust, and
+applying certain rules that are used to calculate the validity
+(authenticity) of a certificate. Such a rule can be for example: a
+certificate that is signed by at least three marginally trusted people
+can be considered fully valid.
+</p>
+
+<p>
+The validation rules are customizable and can be different for each
+person, in order to fit the security requirements of everybody. For
+example, if Alice does not have any high security needs, and she lives
+in a friendly (not hostile) environment, then she may decide that even
+two marginally trusted signatures are enough to consider a certificate
+fully valid. However, if she has high security requirements and she
+lives in a rather hostile environment, then she can decide that at
+least five marginally trusted signatures should be required, so that a
+certificate that she has not verified herself can be considered valid.
+In this case, since she has decided to depend less on the
+verifications done by the others, she has to do more verifications
+on her own.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-6-6" class="outline-3">
+<h3 id="sec-6-6"><span class="section-number-3">6.6</span> Digital Notaries</h3>
+<div class="outline-text-3" id="text-6-6">
+<p>
+Sometimes there are people who do a great many of verification and
+signing of the others' digital certificates, even on a full time
+bases, and they are trusted by everybody (or at least a lot of
+people). These people play the role of a CA (Certification Authority)
+in the OpenPGP model.
+</p>
+
+<p>
+Such people can be for example the head of the IT department in a
+company or institution. Or they can be people approved, verified and
+authorized by the government to offer this kind of service to the
+citizens. In this case they can also be called Digital Notaries
+and they may offer other Digital Services as well, besides verifying
+and signing digital certificates.
+</p>
+
+<p>
+The Digital Notaries can also be held responsible in front of law for
+the correctness and truthfulness of the verifications and signatures
+that they make (as well as for other digital or non-digital services
+that they may offer). This accountability can be very useful for
+increasing their responsibility, as well as for increasing the trust
+of people on them and the health and reliability of the web-of-trust
+system as a whole.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-7" class="outline-2">
+<h2 id="sec-7"><span class="section-number-2">7</span> Comparing the X.509 and OpenPGP Authentication Models</h2>
+<div class="outline-text-2" id="text-7">
+<p>
+The digital certificates of both standards, X.509 and OpenPGP, are
+very similar in content and they are based on the same principles (of
+asymmetric cryptography, private/public key pair, etc.). However their
+authentication models are different and not interoperable. This means
+that a digital certificate that is recognized as valid and authentic
+by one of them, can not be recognized as such by the other.
+</p>
+
+<p>
+However both of them can be used concurrently (at the same time)
+without interfering with each-other. This means that a person can have
+one certificate of type X.509 and another of type OpenPGP at the same
+time, and use either one of them or the other, as needed.  This is
+also facilitated by the fact that most of the software that are used
+for digital signatures support both of these standards.
+</p>
+</div>
+
+<div id="outline-container-sec-7-1" class="outline-3">
+<h3 id="sec-7-1"><span class="section-number-3">7.1</span> Inflexible vs Flexible and Versatile</h3>
+<div class="outline-text-3" id="text-7-1">
+<p>
+If we compare the structure of the authentication models of the X.509
+and the OpenPGP standards, we will notice that the first one closely
+resembles a tree (is hierarchical, like the structure of the
+private/governmental organizations), while the second one resembles a
+web or mesh (like the structure of the Internet).
+</p>
+
+<p>
+A mesh is a much more flexible structure than a tree, because a tree
+structure is just a special case of a mesh structure.
+</p>
+
+<p>
+In the web-of-trust authentication model of OpenPGP there can be CAs
+as well (like in the case of Digital Notaries that we have discussed
+previously).  If many people choose to fully trust the same CA for
+checking the validity/authenticity of the others certificates (and
+they all configure their own copies of the OpenPGP client software to
+trust that CA), then the OpenPGP model acts just like the X.509
+model. In fact, the web model of OpenPGP is a proper superset of the
+hierarchical model of X.509. There is no situation in the X.509 model
+that cannot be handled exactly the same way in the OpenPGP model. But
+OpenPGP can do much more.
+</p>
+
+<p>
+In the X.509 model the set of trusted root CAs is fixed and
+predetermined. The users have no choice and can make no decision
+whether to trust them or not. This is so true that these CAs are
+"baked into" the major software that uses digital certificates
+(e.g. browsers). On the OpenPGP model, on the other hand, the users
+can decide themselves whom to trust and how much to trust them.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-7-2" class="outline-3">
+<h3 id="sec-7-2"><span class="section-number-3">7.2</span> Centralized vs Decentralized and Distributed</h3>
+<div class="outline-text-3" id="text-7-2">
+<p>
+We can notice as well that the hierarchical model is centralized,
+while the web-of-trust model is distributed and decentralized. This is
+related to who is responsible for ensuring the correctness,
+authenticity and validity of the certificates, the security,
+trustability and reliability of the whole system, etc.
+</p>
+
+<p>
+On the hierarchical model this responsibility falls on some central
+authority (the root CA), and on the sub-authorities (CAs) that it
+approves. On the web-of-trust model this responsibility falls on
+everybody participating on the system, since each of them helps to
+verify and validate the certificates of the others. So, on the
+web-of-trust model, each person that holds a digital certificate is
+verified by the others and helps to verify the others at the same
+time. This is a more democratic model, that encourages the
+responsibility and the participation of the citizens.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-7-3" class="outline-3">
+<h3 id="sec-7-3"><span class="section-number-3">7.3</span> Vulnerable vs Robust and Reliable</h3>
+<div class="outline-text-3" id="text-7-3">
+<p>
+The decentralized/distributed model is also more robust and reliable
+than the hierarchical model.
+</p>
+
+<p>
+The hierarchical model has just a single point-of-failure that has to
+be watched, protected and guarded very carefully, since it is a clear
+target of attack. This is the root CA. In case that its security is
+compromised or corrupted some day, then the security of the whole
+system is compromised and all of the digital certificates of the
+system are rendered invalid.
+</p>
+
+<p>
+This doesn't have to be a technical failure (for example some hackers
+breaking into the system), it can be a social corruption as well (and
+this can be even more likely than a technical failure). This risk is
+amplified by the fact that most of the CAs are commercial. Matt Blaze
+once made the cogent observation that commercial CAs will protect you
+against anyone who that CA refuses to accept money from!
+</p>
+
+<p>
+The distributed model, on the other hand, is much more difficult to
+corrupt because each participant is a little CA on its own. Maybe some
+of them can be corrupted for some time, but it is quite difficult to
+corrupt many or most of them at the same time. In any case, there can
+be inflicted only local damages, the whole system will survive the
+attack, and with time it can auto-correct and heal itself gradually.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-8" class="outline-2">
+<h2 id="sec-8"><span class="section-number-2">8</span> Summary</h2>
+<div class="outline-text-2" id="text-8">
+<p>
+It is quite easy to understand the concept of Digital Signatures and
+the basics of how it works. The Digital Signature is so important that
+it will become an inevitable part of our future digital societies.
+</p>
+
+<p>
+A very important aspect of the digital signature is verification of
+its authenticity. It happens that this is more a social problem than a
+technical one, so it can be solved correctly only by the right
+combination of social and technical means.
+</p>
+
+<p>
+Currently, there are two models (or infrastructures) for solving the
+authentication problem. One of them is the Hierarchical model (X.509
+standard), and the other one is the Web-Of-Trust model (OpenPGP
+standard). The Web-Of-Trust model is more flexible and advanced than
+the Hierarchical model, but it requires that everybody that
+participates in it takes responsibility and makes decisions for
+himself.
+</p>
+
+<p>
+However I think that the Web-Of-Trust is the right approach, because
+the personal privacy and security are, by definition, personal
+responsibilities, and they cannot be outsourced.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-9" class="outline-2">
+<h2 id="sec-9"><span class="section-number-2">9</span> References</h2>
+<div class="outline-text-2" id="text-9">
+<ul class="org-ul">
+<li><a href="http://en.wikipedia.org/wiki/Digital_signature">http://en.wikipedia.org/wiki/Digital_signature</a>
+</li>
+<li><a href="http://en.wikipedia.org/wiki/Public_key">http://en.wikipedia.org/wiki/Public_key</a>
+</li>
+<li><a href="http://en.wikipedia.org/wiki/Digital_certificate">http://en.wikipedia.org/wiki/Digital_certificate</a>
+</li>
+<li><a href="http://en.wikipedia.org/wiki/X.509">http://en.wikipedia.org/wiki/X.509</a>
+</li>
+<li><a href="http://en.wikipedia.org/wiki/Web_of_trust">http://en.wikipedia.org/wiki/Web_of_trust</a>
+</li>
+<li><a href="http://www.youdzone.com/signature.html">http://www.youdzone.com/signature.html</a>
+</li>
+<li><a href="http://www.gnupg.org/gph/en/manual.html">http://www.gnupg.org/gph/en/manual.html</a>
+</li>
+<li><a href="http://www.cryptnet.net/fdp/crypto/keysigning_party/en/keysigning_party.html">http://www.cryptnet.net/fdp/crypto/keysigning_party/en/keysigning_party.html</a>
+</li>
+<li><a href="http://www.openpgp.org/technical/whybetter.shtml">http://www.openpgp.org/technical/whybetter.shtml</a>
+</li>
+<li><a href="http://enigmail.mozdev.org/">http://enigmail.mozdev.org/</a>
+</li>
+<li><a href="http://www.gpg4win.org/">http://www.gpg4win.org/</a>
+</li>
+</ul>
+</div>
+</div>
