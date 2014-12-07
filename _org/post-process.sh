@@ -24,4 +24,7 @@ do
     ### make sure that the yaml front matter is on top of the file
     (sed -n -e '/^---$/,/^---$/p' $file; sed -e '/^---$/,/^---$/d' $file) > $file.new
     mv $file.new $file
+
+    ### fix the path (url) of images by adding a slash (/) in front of it
+    sed -i $file -e 's|="images/|="/images/|g'
 done
