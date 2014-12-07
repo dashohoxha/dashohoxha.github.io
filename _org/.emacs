@@ -1,3 +1,5 @@
+(require 'org)
+
 (eval-after-load "org"
   '(require 'ox-md nil t))
 
@@ -38,4 +40,3 @@
     ("blog" :components ("org-blog" "org-static-blog"))
 
 ))
-

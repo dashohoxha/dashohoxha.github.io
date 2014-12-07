@@ -1,3 +1,4 @@
+// Change the colors of the selected text.
 ::-moz-selection { 
 	background-color: blue;
 	color: white; 
@@ -9,25 +10,26 @@
 	text-shadow: none; 
 }
 
+// Decrease the space between the links in the section About.
 #dl-menu .dl-submenu li a {
     padding: 10px 20px;
 }
 
+// Improve the display of figures by adding borders, centering, etc.
 .figure {
     text-align: center;
-    border: 1px solid #cccccc;
-    margin: 10px 0;
+    border: 1px solid #eeeeee;
+    margin: 20px 0;
 }
-
 .figure img {
-    box-shadow: 0 0 3px;
+    border: 1px solid #cccccc;
+    border-radius: 5px;
+    box-shadow: 0 0 10px #cccccc;
 }
-
 .figure p:nth-child(2) {
-    background-color: #cccccc;
+    background-color: #eeeeee;
     margin: 0;
 }
-
 .figure .figure-number {
     font-style: italic;
 }
