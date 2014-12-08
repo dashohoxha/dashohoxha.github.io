@@ -1,0 +1,117 @@
+#+TITLE:     Installing a Clonezilla Server
+#+AUTHOR:    Dashamir Hoxha
+#+EMAIL:     dashohoxha@gmail.com
+#+DATE:      2012-09-30
+#+DESCRIPTION: Clonezilla Server is used to clone many computers simultaneously across a network.
+#+LANGUAGE:  en
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+# #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
+#+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
+#+begin_html
+---
+layout:     post
+title:      Installing a Clonezilla Server
+date:       2012-09-30
+summary:    Clonezilla Server is used to clone many computers simultaneously
+    across a network. This is done using a DRBL server and computer
+    workstations that can boot from a network.
+---
+#+end_html
+
+Clonezilla Server is used to clone many computers simultaneously
+across a network. This is done using a DRBL server and computer
+workstations that can boot from a network.
+
+* Set a static IP
+
+  Ubuntu by default uses /network-manager/ and automatic (DHCP)
+  configuration for the network card. For a server it is better to do
+  manual static (fixed IP) configuration.
+
+  First modify ~/etc/network/interfaces~ like this:
+  #+BEGIN_EXAMPLE
+  auto lo
+  iface lo inet loopback
+
+  auto eth0
+  iface eth0 inet static
+  address 192.168.1.235
+  netmask 255.255.255.0
+  gateway 192.168.1.1
+  #+END_EXAMPLE
+
+  Then remove the package ~network-manager~ and restart networking:
+  #+BEGIN_EXAMPLE
+  aptitude purge network-manager
+  /etc/init.d/networking restart   
+  #+END_EXAMPLE
+
+
+* Add a second IP address (alias) to the same card
+  
+  Conezilla is based on the DRBL server (which is a kind of light
+  terminal server, whith terminals booting over the network through
+  PXE). The DRBL server itself needs one external network interface
+  (connected to WAN) and at least one internal interface (connected to
+  LAN). However, if we have just one network interface, we can add an
+  alias to it, and use it for the LAN.
+
+  Append these lines to ~/etc/network/interfaces~:
+  #+BEGIN_EXAMPLE
+  auto eth0:0
+  iface eth0:0 inet static
+  name Ethernet alias LAN card
+  address 192.168.3.235
+  netmask 255.255.255.0
+  broadcast 192.168.3.255
+  network 192.168.3.0
+  #+END_EXAMPLE
+
+  Then restart networking: ~/etc/init.d/networking restart~
+
+  Reference:
+  + http://www.virtualhelp.me/linux/509-multiple-ip-adresses-for-network-device
+
+
+* Installation on the server
+  
+  Here are the steps for installing DRBL/Clonezilla on a Ubuntu
+  Server:
+
+  1. Add the key of the DRBL repository to apt:
+     #+BEGIN_EXAMPLE
+     wget -q http://drbl.org/GPG-KEY-DRBL -O- | sudo apt-key add -
+     #+END_EXAMPLE
+
+  2. Create the file ~/etc/apt/sources.list.d/drbl.list~ which
+     contains this line:
+     #+BEGIN_EXAMPLE
+     deb http://drbl.sourceforge.net/drbl-core drbl stable
+     #+END_EXAMPLE
+
+  3. Install the package ~drbl~:
+     #+BEGIN_EXAMPLE
+     apt-get update
+     apt-get install drbl
+     #+END_EXAMPLE
+
+  4. Install the DRBL server:
+     #+BEGIN_EXAMPLE
+     /opt/drbl/sbin/drblsrv -i
+     #+END_EXAMPLE
+     For the installation steps see this example:
+     http://drbl.sourceforge.net/one4all/examples/drblsrv_desktop_example.txt
+
+  5. Setup the filesystem for the clients
+     #+BEGIN_EXAMPLE
+     /opt/drbl/sbin/drblpush -i
+     #+END_EXAMPLE
+    
+  Referencies:
+  + http://www.upubuntu.com/2012/05/how-to-install-clonezilla-server-on.html
+  + https://help.ubuntu.com/community/Clonezilla_Server_Edition
+  + http://geekyprojects.com/cloning/setup-a-clonezilla-server-on-ubuntu/
+  + http://drbl.sourceforge.net/one4all/
+  + http://drbl.nchc.org.tw/one4all/desktop/download/stable/RELEASE-NOTES
+

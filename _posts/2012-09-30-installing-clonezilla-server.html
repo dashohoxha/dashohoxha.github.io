@@ -1,0 +1,162 @@
+---
+layout:     post
+title:      Installing a Clonezilla Server
+date:       2012-09-30
+summary:    Clonezilla Server is used to clone many computers simultaneously
+    across a network. This is done using a DRBL server and computer
+    workstations that can boot from a network.
+---
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. Set a static IP</a></li>
+<li><a href="#sec-2">2. Add a second IP address (alias) to the same card</a></li>
+<li><a href="#sec-3">3. Installation on the server</a></li>
+</ul>
+</div>
+</div>
+
+<p>
+Clonezilla Server is used to clone many computers simultaneously
+across a network. This is done using a DRBL server and computer
+workstations that can boot from a network.
+</p>
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Set a static IP</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Ubuntu by default uses <i>network-manager</i> and automatic (DHCP)
+configuration for the network card. For a server it is better to do
+manual static (fixed IP) configuration.
+</p>
+
+<p>
+First modify <code>/etc/network/interfaces</code> like this:
+</p>
+<pre class="example">
+auto lo
+iface lo inet loopback
+
+auto eth0
+iface eth0 inet static
+address 192.168.1.235
+netmask 255.255.255.0
+gateway 192.168.1.1
+</pre>
+
+<p>
+Then remove the package <code>network-manager</code> and restart networking:
+</p>
+<pre class="example">
+aptitude purge network-manager
+/etc/init.d/networking restart
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Add a second IP address (alias) to the same card</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+Conezilla is based on the DRBL server (which is a kind of light
+terminal server, whith terminals booting over the network through
+PXE). The DRBL server itself needs one external network interface
+(connected to WAN) and at least one internal interface (connected to
+LAN). However, if we have just one network interface, we can add an
+alias to it, and use it for the LAN.
+</p>
+
+<p>
+Append these lines to <code>/etc/network/interfaces</code>:
+</p>
+<pre class="example">
+auto eth0:0
+iface eth0:0 inet static
+name Ethernet alias LAN card
+address 192.168.3.235
+netmask 255.255.255.0
+broadcast 192.168.3.255
+network 192.168.3.0
+</pre>
+
+<p>
+Then restart networking: <code>/etc/init.d/networking restart</code>
+</p>
+
+<p>
+Reference:
+</p>
+<ul class="org-ul">
+<li><a href="http://www.virtualhelp.me/linux/509-multiple-ip-adresses-for-network-device">http://www.virtualhelp.me/linux/509-multiple-ip-adresses-for-network-device</a>
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> Installation on the server</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+Here are the steps for installing DRBL/Clonezilla on a Ubuntu
+Server:
+</p>
+
+<ol class="org-ol">
+<li>Add the key of the DRBL repository to apt:
+<pre class="example">
+wget -q http://drbl.org/GPG-KEY-DRBL -O- | sudo apt-key add -
+</pre>
+</li>
+
+<li>Create the file <code>/etc/apt/sources.list.d/drbl.list</code> which
+contains this line:
+<pre class="example">
+deb http://drbl.sourceforge.net/drbl-core drbl stable
+</pre>
+</li>
+
+<li>Install the package <code>drbl</code>:
+<pre class="example">
+apt-get update
+apt-get install drbl
+</pre>
+</li>
+
+<li>Install the DRBL server:
+<pre class="example">
+/opt/drbl/sbin/drblsrv -i
+</pre>
+<p>
+For the installation steps see this example:
+<a href="http://drbl.sourceforge.net/one4all/examples/drblsrv_desktop_example.txt">http://drbl.sourceforge.net/one4all/examples/drblsrv_desktop_example.txt</a>
+</p>
+</li>
+
+<li>Setup the filesystem for the clients
+<pre class="example">
+/opt/drbl/sbin/drblpush -i
+</pre>
+</li>
+</ol>
+
+<p>
+Referencies:
+</p>
+<ul class="org-ul">
+<li><a href="http://www.upubuntu.com/2012/05/how-to-install-clonezilla-server-on.html">http://www.upubuntu.com/2012/05/how-to-install-clonezilla-server-on.html</a>
+</li>
+<li><a href="https://help.ubuntu.com/community/Clonezilla_Server_Edition">https://help.ubuntu.com/community/Clonezilla_Server_Edition</a>
+</li>
+<li><a href="http://geekyprojects.com/cloning/setup-a-clonezilla-server-on-ubuntu/">http://geekyprojects.com/cloning/setup-a-clonezilla-server-on-ubuntu/</a>
+</li>
+<li><a href="http://drbl.sourceforge.net/one4all/">http://drbl.sourceforge.net/one4all/</a>
+</li>
+<li><a href="http://drbl.nchc.org.tw/one4all/desktop/download/stable/RELEASE-NOTES">http://drbl.nchc.org.tw/one4all/desktop/download/stable/RELEASE-NOTES</a>
+</li>
+</ul>
+</div>
+</div>
