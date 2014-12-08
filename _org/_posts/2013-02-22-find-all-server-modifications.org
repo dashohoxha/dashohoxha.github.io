@@ -1,0 +1,117 @@
+#+TITLE:     How to find all the modifications in the configuration of a server
+#+AUTHOR:    Dashamir Hoxha
+#+EMAIL:     dashohoxha@gmail.com
+#+DATE:      2013-02-22
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+begin_html
+---
+layout:     post
+title:      How to find all the modifications in the configuration of a server
+date:       2013-02-22
+summary:    
+---
+#+end_html
+
+I manage a virtual web server in the cloud (https://l10n.org.al) where
+I have made lots of configurations over time: installing new packages,
+tweakings for optimization, changes related to security, etc. Now, if
+I want to build another server that has the same function and purpose
+as the first one, I don't remember all the things that I have touched
+and changed. The long and tedious way would be to go over all the
+installations and configurations again, and still I may miss
+something.
+
+I thought that maybe there is any tool out there that can make
+something like a diff between the current state of the server and the
+initial state of a just installed server. This diff would also help me
+to audit the current system, because some of the things that I have
+tested maybe are not needed anymore. Such a diff could also serve as a
+recipe that I can share with my friends, if they want to build a
+system like mine. It would be much more convenient and safe than
+passing around huge tarballs or images.
+
+However I couldn't find anything suitable that can do it
+automatically, so I tried to do it manually. The basic idea is that
+the configuration files are placed on/etc. If two systems have the
+same packages installed, and you make a diff of their /etc
+directories, you will basically get all the configuration changes
+between them (maybe not 100% of them but still very accurate).
+
+So, what I did to find the configuration changes on my system was
+this:
+
+ 1. Install a minimal system with debootstrap:
+
+    1. Install the packages debootstrap and dchroot:
+       #+BEGIN_EXAMPLE
+       sudo apt-get install debootstrap dchroot
+       #+END_EXAMPLE
+
+    2. Add these line to ~/etc/schroot/schroot.conf~:
+       #+BEGIN_EXAMPLE
+       [precise]
+       description=Ubuntu Precise LTS
+       location=/var/chroot/precise
+       priority=3
+       users=ubuntu
+       groups=sbuild
+       root-groups=root
+       #+END_EXAMPLE
+
+    3. Bootstrap the chroot with a minimal Ubuntu installation:
+       #+BEGIN_EXAMPLE
+       debootstrap --variant=minbase --arch=amd64 precise \
+	   /var/chroot/precise http://mirror.rackspace.com/ubuntu/
+       cp /etc/resolv.conf /var/chroot/precise/etc/resolv.conf
+       cp /etc/apt/sources.list /var/chroot/precise/etc/apt/
+       mount -o bind /proc /var/chroot/precise/proc
+       chroot /var/chroot/precise/ apt-get install ubuntu-minimal
+       #+END_EXAMPLE
+
+ 2. Make sure to install on the chroot system all the packages that
+    are installed on the main system:
+
+    1. Find a list of the packages installed in the main (host)
+       system:
+       #+BEGIN_EXAMPLE
+       dpkg --get-selections \
+	 | grep '[[:space:]]install$' \
+	 | awk '{print $1}' > installedpackages
+       #+END_EXAMPLE
+
+    2. Find a list of the packages installed in the chroot system:
+       #+BEGIN_EXAMPLE
+       chroot /var/chroot/precise/  dpkg --get-selections \
+	 | grep '[[:space:]]install$' \
+	 | awk '{print $1}' > installedpackages_chroot
+       #+END_EXAMPLE
+
+    3. Make a diff between the two package lists:
+       #+BEGIN_EXAMPLE
+       diff -ubB installedpackages installedpackages_chroot > packages.diff
+       Install on the chroot system all the packages that are installed on the main system:
+       cp installedpackages /var/chroot/precise/
+       chroot /var/chroot/precise/
+       cat installedpackages | xargs apt-get install -y
+       #+END_EXAMPLE
+
+ 3. Make a diff between the /etc dirs of both systems:
+    #+BEGIN_EXAMPLE
+    diff -rubB /etc /var/chroot/precise/etc > etc.diff
+    #+END_EXAMPLE
+
+Of course, this diff cannot be readily used to install and configure
+another system, but knowing where are the differences and what they
+are, can help to redo them manually.
+
+It can also help to build a tklpatch (like this:
+https://github.com/dashohoxha/B-Translator/tree/master/tklpatch),
+which of course is not quite easy to be done and requires some
+work. Then, I can distribute/publish this tklpatch and everybody can
+build easily a system quite similar to mine.
+
+Referencies:
+ - http://dashohoxha.fs.al/setup-chroot-for-testing/
+ - http://www.debianadmin.com/clone-your-ubuntu-installation.html
+ - http://www.turnkeylinux.org/docs/tklpatch
