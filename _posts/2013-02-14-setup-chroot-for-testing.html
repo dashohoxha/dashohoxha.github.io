@@ -1,0 +1,116 @@
+---
+layout:     post
+title:      How to set up a chroot environment for testing
+date:       2013-02-14
+summary:    
+---
+
+<p>
+Recently I have suffered a total system destruction in one of my
+computers. It happened while I was testing a software that I am
+developing, due to a <a href="https://github.com/dashohoxha/B-Translator/commit/522d3e919d8104e9419b0ac060067c484291cb6e">simple bug</a>. It helped me realize my lack of
+caution while testing unstable things, and I learned that it is always
+better to do the testing inside a chroot environment. Chroot’s provide
+isolation from the rest of the operating system, so that in case of
+severe errors damage can be mitigated.
+</p>
+
+<p>
+Here are the steps that I took for installing a chroot environment for
+testing.
+</p>
+
+<ul class="org-ul">
+<li>Install the packages debootstrap and dchroot:
+<pre class="example">
+sudo apt-get install debootstrap dchroot
+</pre>
+</li>
+
+<li>Add these line to /etc/schroot/schroot.conf:
+<pre class="example">
+[precise]
+description=Ubuntu Precise LTS
+location=/var/chroot/btranslator
+priority=3
+users=ubuntu
+groups=sbuild
+root-groups=root
+</pre>
+</li>
+
+<li>Bootstrap the chroot with a minimal Ubuntu installation:
+<pre class="example">
+debootstrap --variant=minbase --arch=amd64 precise \
+    /var/chroot/btranslator http://mirror.rackspace.com/ubuntu/
+cp /etc/resolv.conf /var/chroot/btranslator/etc/resolv.conf
+cp /etc/apt/sources.list /var/chroot/btranslator/etc/apt/
+mount -o bind /proc /var/chroot/btranslator/proc
+chroot /var/chroot/btranslator/
+
+apt-get install ubuntu-minimal
+apt-get update
+apt-get upgrade
+apt-get install language-pack-en-base
+apt-get install vim aptitude
+</pre>
+</li>
+
+<li>Install LAMP:
+<pre class="example">
+apt-get install aptitude tasksel
+tasksel install lamp-server
+</pre>
+</li>
+
+<li>Make a startup script /etc/init.d/chroot-btranslator with a content
+like this:
+<pre class="example">
+CHROOT=/var/chroot/btranslator
+
+case "$1" in
+  start)
+    service apache2 stop
+    service mysql stop
+
+    mount -o bind /proc $CHROOT/proc
+    mount -o bind /dev $CHROOT/dev
+    mount -o bind /sys $CHROOT/sys
+    mount -o bind /dev/pts $CHROOT/dev/pts
+
+    chroot $CHROOT/  service mysql start
+    chroot $CHROOT/  service apache2 start
+    ;;
+
+  stop)
+    chroot $CHROOT/  service apache2 stop
+    chroot $CHROOT/  service mysql stop
+
+    umount $CHROOT/dev/pts
+    umount $CHROOT/sys
+    umount $CHROOT/dev
+    umount $CHROOT/proc
+
+    service mysql start
+    service apache2 start
+    ;;
+esac
+</pre>
+</li>
+
+<li>Make it executable and start it at boot:
+<pre class="example">
+chmod +x /etc/init.d/chroot-btranslator
+update-rc.d chroot-btranslator defaults
+service chroot-btranslator start
+</pre>
+</li>
+</ul>
+
+<p>
+Referencies:
+</p>
+<ul class="org-ul">
+<li><a href="http://joshrendek.com/2013/01/securing-ubuntu/#chroot">http://joshrendek.com/2013/01/securing-ubuntu/#chroot</a>
+</li>
+</ul>
