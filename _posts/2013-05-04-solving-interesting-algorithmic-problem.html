@@ -1,0 +1,62 @@
+---
+layout:     post
+title:      Solving an interesting algorithmic problem
+date:       2013-05-04
+summary:    
+---
+
+<p>
+The second problem on <i>Google CodeJam 2013, Round 1B</i> was interesting:
+<a href="https://code.google.com/codejam/contest/2418487/dashboard#s=p1&a=1">Problem B. Manage your Energy</a> . The obvious solution of trying all the
+possible cases and combinations would not work, unless the input had
+very small limits (besides being not so easy to implement).
+</p>
+
+<p>
+The solution, as described on the <a href="https://code.google.com/codejam/contest/2418487/dashboard#s=a&a=1">Contest Analysis</a> was a <i>greedy
+algorithm</i>: try to spend as much energy as possible for the activity
+with the highest value, neglecting the other activities if needed;
+then try to spend as much energy as possible for the activity with the
+second highest values, neglecting the others if needed, and so on.
+</p>
+
+<p>
+Actually, I suspected during the contest that a greedy algorithm may
+be the solution, however I couldn't find a way of implementing it
+properly. Even days after the contest I was not able to think of a
+suitable implementation. Only after seeing the solution on the <a href="https://code.google.com/codejam/contest/2418487/dashboard#s=a&a=1">Contest
+Analysis</a> I could see how it could possibly be implemented (keeping a
+pair of constraints for each value on the list, and updating them
+while processing the list).
+</p>
+
+<p>
+But then I saw a post on the <a href="https://plus.google.com/u/0/communities/108868943712030139628">CodeJam Community</a>, that somebody had
+implemented a recursive solution, and then suddenly things became much
+clear and cleaner. Usually the recursive solutions are more elegant
+and more easy to understand and implement, and this is true for this
+case as well.
+</p>
+
+<p>
+Below is the recursive implementation that I did to solve this
+problem:
+</p>
+
+{% gist 5517373 %}
+
+<p>
+But there was something more interesting to this problem. Usually, the
+good (fast) solution, as described on the CodeJam Analysis, is of
+complexity <b>O(N*N)</b>. Using special implementation techniques it could
+also be improved to <b>O(N*logN)</b>. But during the contest there was
+somebody that had solved it with a linear algorithm, complexity
+<b>O(N)</b>! This was surprising because even the contest organizers were
+not aware of such a solution before the contest!
+</p>
+
+<p>
+Below is my implementation of this solution of complexity <b>O(N)</b>:
+</p>
+
+{% gist 5517391 %}
