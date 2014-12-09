@@ -1,0 +1,534 @@
+---
+layout:     post
+title:      Development Setup of B-Translator
+date:       2013-07-08
+summary:    I describe the development setup that I use for B-Translator.
+    Most of the the tips are project specific, however some of
+    them can be used on any Drupal project.
+---
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. Installation</a></li>
+<li><a href="#sec-2">2. Changing the webserver</a></li>
+<li><a href="#sec-3">3. Re-installing the application</a></li>
+<li><a href="#sec-4">4. Making a clone for development</a></li>
+<li><a href="#sec-5">5. Making a backup of the application</a></li>
+<li><a href="#sec-6">6. Accessing the code of the application from outside chroot</a></li>
+<li><a href="#sec-7">7. Pushing commits to github</a></li>
+<li><a href="#sec-8">8. The commit workflow</a></li>
+<li><a href="#sec-9">9. Making a local git clone of the dev application</a></li>
+<li><a href="#sec-10">10. Working with a dev-test-live workflow</a></li>
+</ul>
+</div>
+</div>
+
+<p>
+B-Translator helps to get feedback about <i>l10n</i> (translations of the
+programs). It tries to collect very small translation contributions
+from a wide crowd of people and to dilute them into something useful.
+It is developed as a Drupal7 profile and the <a href="https://github.com/B-Translator">code</a> is hosted on GitHub.
+Here I describe the development setup and process that I use for this
+project. Most of the the tips are project specific, however some of
+them can be used on any Drupal project.
+</p>
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Installation</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Installation for development is the same as the installation for a
+production server, inside a chroot. The steps are like this:
+</p>
+<pre class="example">
+mkdir /var/chroot
+cd /var/chroot/
+git clone https://github.com/dashohoxha/B-Translator.git
+nohup nice B-Translator/install/install.sh btr &amp;
+tail -f nohup.out
+chroot btr/ /tmp/install/config.sh
+chroot btr/ rm -rf /tmp/install
+reboot  ## it is advisable to reboot the host after this installation
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Changing the webserver</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+The webserver that is used for production is NGINX because it is
+more responsive in high load, has build in cache, etc. The
+configuration of NGINX is also tweaked for production (has DoS
+protection, short timeout, etc.) For development Apache2 can be more
+suitable. It can be started and stopped like this:
+</p>
+<pre class="example">
+chroot /var/chroot/btr/
+/var/www/btranslator/profiles/btranslator/dev/apache2.sh start
+/var/www/btranslator/profiles/btranslator/dev/apache2.sh stop
+</pre>
+
+<p>
+<b>Important:</b> When <i>apache2</i> is started, the services <i>nginx</i>,
+<i>memcached</i> and <i>php5-fpm</i> are stopped. Don't forget to modify the
+init script <code>/etc/init.d/chroot-btr</code> like this:
+</p>
+<pre class="example">
+#CHROOT_SERVICES="cron php5-fpm memcached mysql nginx"
+CHROOT_SERVICES="cron mysql apache2"
+</pre>
+<p>
+The script <code>apache2.sh</code> cannot make this modification automatically
+because it runs inside the chroot, and the init script is outside
+the chroot (on the host system). So it has to be done manually.
+</p>
+
+<p>
+I also add something like this on <b>/etc/hosts</b>, so that I can access
+it on the browser with a domain name:
+</p>
+<pre class="example">
+127.0.1.1  l10n.org.xx dev.l10n.org.xx
+</pre>
+<p>
+This modification has to be done manually as well.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> Re-installing the application</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+It can be done with the script <code>dev/install.sh</code>:
+</p>
+<pre class="example">
+chroot /var/chroot/btr/
+/var/www/btranslator/profiles/btranslator/dev/reinstall.sh
+</pre>
+<p>
+It will rebuild the Drupal directory with <b>drush make</b> and install
+the btranslator profile with <b>drush site-install</b>, and then do all
+the rest of configurations just like they are done during
+installation.
+</p>
+
+<p>
+Normally there is no need to reinstall the application, unless we
+want to test the installation profile and the installation scripts.
+</p>
+
+<p>
+Another kind of re-installation, which touches only the database of
+Drupal (btranslator) and nothing else, can be done with the script
+<code>dev/install.sh</code>:
+</p>
+<pre class="example">
+chroot /var/chroot/btr/
+/var/www/btranslator/profiles/btranslator/dev/reinstall-db.sh
+</pre>
+
+<p>
+It is useful for testing the features. Usually, when features are
+un-installed, things are not undone properly. In order to leave out
+a feature, it should not be installed since the beginning. So, it is
+important to test different combinations of them to see which one
+works better for us.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> Making a clone for development</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+Inside the chroot I make a clone for development like this:
+</p>
+<pre class="example">
+chroot /var/chroot/btr/
+cd /var/www/btranslator/profiles/btranslator/
+dev/clone.sh dev
+</pre>
+
+<p>
+It creates a new application with root <b><i>var/www/btranslator_dev</i></b>
+and with DB named <b>btranslator_dev</b>. It also creates the drush alias
+<b>@dev</b>, and modifies the configuration of the webserver so that the
+cloned application can be accessed at <b>dev.l10n.org.xx</b>.
+</p>
+
+<p>
+<b>Caution:</b> The root directory and the DB of the clone will be
+erased, if they exist.
+</p>
+
+<p>
+Other clones like this can be created for testing etc. To cleanup
+(remove/erase) a clone, we can use <b>clone_rm.sh</b> like this:
+</p>
+<pre class="example">
+chroot /var/chroot/btr/
+cd /var/www/btranslator/profiles/btranslator/
+dev/clone_rm.sh dev
+</pre>
+
+<p>
+By the way, we can also modify a little bit the configuration of a
+development copy of the application (in order to help us not confuse
+a development copy with a live or testing one), with the script <code>dev/config.php</code>:
+</p>
+<pre class="example">
+chroot /var/chroot/btr/
+cd /var/www/
+drush php-script btranslator/profiles/btranslator/config.php dev1
+drush @dev php-script btranslator/profiles/btranslator/config.php dev2
+</pre>
+
+<p>
+It will set site_name to 'B-Translator (dev1)', will make site email
+something like 'user+dev1@gmail.com', will enable email re-routing,
+display the <i>devel</i> menu on the footer region, etc. It is not
+required, but sometimes may be useful.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5"><span class="section-number-2">5</span> Making a backup of the application</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+Sometimes, when testing things on Drupal (installing/uninstalling
+modules etc.) things get messy and it is not possible anymore to
+revert to the state that you were before starting the test. In this
+case the only way to get safely to a previous stable state is by
+restoring a backup (or installing from the scratch and repeating all
+the configurations).
+</p>
+
+<p>
+A snapshot of the application is just like a full backup with a time
+stamp. It saves the state of the application at a certain time, both
+the code (the whole Drupal directory) and the database. It can be
+done like this:
+</p>
+<pre class="example">
+chroot /var/chroot/btr/
+cd /var/www/
+ln -s btranslator_dev/profiles/btranslator/ B-Translator
+
+B-Translator/dev/snapshot.sh make
+B-Translator/dev/snapshot.sh make @dev
+</pre>
+<p>
+These will create the files <code>snapshot-btranslator-20130602.tgz</code>
+and <code>snapshot-btranslator_dev-20130602.tgz</code>. They can be restored
+like this:
+</p>
+<pre class="example">
+B-Translator/dev/snapshot.sh restore --file=snapshot-btranslator-20130602.tgz
+B-Translator/dev/snapshot.sh restore --file=snapshot-btranslator_dev-20130602.tgz
+B-Translator/dev/snapshot.sh restore @dev --file=snapshot-btranslator-20130602.tgz
+B-Translator/dev/snapshot.sh restore @dev --file=snapshot-btranslator_dev-20130602.tgz
+</pre>
+<p>
+As you may notice, a snapshot of @dev can also be restored on the
+main application, and the other way around.
+</p>
+
+<p>
+However, in many cases a backup/restore of the database is all that
+is needed, and it is more efficient. It can be done with <b>drush
+sql-dump</b> and <b>drush sql-query</b> like this:
+</p>
+<pre class="example">
+drush sql-dump &gt; btranslator.sql
+drush sql-dump @dev &gt; btranslator_dev.sql
+
+drush sql-query --file=$(pwd)/btranslator.sql
+drush sql-query --file=$(pwd)/btranslator_dev.sql
+
+drush @dev sql-query --file=$(pwd)/btranslator.sql
+drush @dev sql-query --file=$(pwd)/btranslator_dev.sql
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-sec-6" class="outline-2">
+<h2 id="sec-6"><span class="section-number-2">6</span> Accessing the code of the application from outside chroot</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+In order to access easily the code of the application from outside
+chroot, I create a symbolic link like this:
+</p>
+<pre class="example">
+cd /var/chroot/
+ln -s btr/var/www/btranslator_dev/profiles/btranslator/ \
+      dev
+</pre>
+
+<p>
+Now I can go to <b><i>var/chroot/dev</i></b> and start <i>emacs</i> or any other
+tools. This way I don't have to install <i>emacs</i> or any other
+development tools inside the <i>chroot</i> and can use the best of
+development tools that my host environment can offer me.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-7" class="outline-2">
+<h2 id="sec-7"><span class="section-number-2">7</span> Pushing commits to github</h2>
+<div class="outline-text-2" id="text-7">
+<p>
+The copy of the application on
+<code>/var/www/btranslator_dev/profiles/btranslator/</code> (as well as the one
+on <code>/var/www/btranslator/profiles/btranslator/</code>) are actually clones
+of the git repository at <a href="https://github.com/dashohoxha/B-Translator">https://github.com/dashohoxha/B-Translator</a>
+so we can <b>pull</b> from it and <b>push</b> to it. Pulling (to get
+up-to-date) can be done by everybody, however pushing requires a
+username and password (the ones that are used to access the account
+at GitHub).
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-8" class="outline-2">
+<h2 id="sec-8"><span class="section-number-2">8</span> The commit workflow</h2>
+<div class="outline-text-2" id="text-8">
+<p>
+For small or straight-forward changes I can also work directly on
+the <b>master</b> branch, then <b>commit</b>, and then <b>push</b> to github.
+</p>
+
+<p>
+However I usually use a bit more complicated workflow. First I
+create and checkout a <b>dev</b> branch. When the work is done I merge
+this branch to <b>master</b> and then delete it. Finally <b>push</b> the
+commit(s) to github.
+</p>
+<pre class="example">
+git checkout -d dev     ### create a branch and switch to it
+[work-commit-work-comit]
+git checkout master     ### switch back to master
+git pull                ### get any latest commits from github
+git merge dev [--squash]
+git push                ### send commits to github
+git branch -D dev       ### erase the branch
+</pre>
+
+<p>
+Usually there are no commits comming from github, since I am
+the only developper (unless I have worked and commited from some
+other location). So, when I merge without <b>&#x2013;squash</b> this usually
+results in <b>fast-forward</b> merge, which means that all the
+commits that I have done on the branch <b>dev</b> are automatically
+transferred to the branch <b>master</b>.
+</p>
+
+<p>
+However sometimes there may be <i>dirty commits</i> on the <b>dev</b> branch,
+which means that there may be incomplete commits, or commits that
+reverse what was done on the previous commits etc. When I wish to
+reorganise commits and make them cleaner, I use the <b>&#x2013;squash</b>
+option, which collects all the changes on the <b>dev</b> branch and
+leaves them on the <b>master</b> sandbox as local modifications
+(uncommitted). Then I can redo the commits on a cleaner or more
+logical way. Afterwards the <b>dev</b> branch will be deleted and the old
+commits will be lost.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-9" class="outline-2">
+<h2 id="sec-9"><span class="section-number-2">9</span> Making a local git clone of the dev application</h2>
+<div class="outline-text-2" id="text-9">
+<p>
+Sometimes it is not easy or suitable to test modifications on the
+<b>@dev</b> application (<code>/var/www/btranslator_dev</code>). For example this is
+the case when I have to test install/uninstall, enable/disable
+modules, features, etc. In this case I test them on the main
+application instance (<code>/var/www/btranslator</code>). Since both
+applications are clones of the <a href="https://github.com/dashohoxha/B-Translator">GitHub repository</a>, it is easy to push
+commits from <i>btranslator_dev</i> to <i>github</i> and to pull them from
+<i>github</i> to <i>btranslator</i>.
+</p>
+
+<p>
+However, sometimes it is better to test modifications and make sure
+that they work, before pushing them to <i>github</i>. This can be done if
+the code on <i>btranslator</i> is a git clone of the code on
+<i>btranslator_dev</i> (instead of being a clone from <i>github</i>).
+</p>
+
+<p>
+The script <code>dev/git-clone-dev.sh</code> makes just this. It replaces the
+code of <i>btranslator</i> with a git clone of the <b>dev branch</b> from
+<i>btranslator_dev</i>. Then the workflow is like this:
+</p>
+<ol class="org-ol">
+<li>Work and commit on the branch <b>dev</b> of <b>btranslator_dev</b>
+</li>
+<li>Pull on <b>btranslator</b> and test.
+</li>
+<li>Repeat steps <b>1</b> and <b>2</b> until the modification that we are
+making is OK.
+</li>
+<li>Push changes upwards to github, like this:
+<pre class="example">
+cd /var/www/btranslator_dev/profiles/btranslator
+git checkout master
+git merge dev [--squash]
+git push
+git branch -D dev
+git checkout -b dev
+</pre>
+<p>
+So, after merging to <b>master</b> and pushing to <i>github</i>, we delete
+the branch <b>dev</b> and create a new one.
+</p>
+</li>
+<li>Make a git pull on <b>btranslator</b> and sync it with <b>btranslator_dev</b>
+<pre class="example">
+cd /var/www/btranslator/profiles/btranslator
+git pull
+</pre>
+</li>
+</ol>
+</div>
+</div>
+
+
+<div id="outline-container-sec-10" class="outline-2">
+<h2 id="sec-10"><span class="section-number-2">10</span> Working with a dev-test-live workflow</h2>
+<div class="outline-text-2" id="text-10">
+<p>
+All the work that is described on the sections above is about
+development and local testing that is done on a working copy
+(sandbox) of a <i>chroot</i> installation. This is usually installed on
+my personal machine (that I use for development).
+</p>
+
+<p>
+At some point, all the modifications have to be transferred to a
+public server, where the application is in "production", performing
+"live". On that public server there is the same <i>chroot</i> environment
+as in the development server. The synchronisation of the application
+can be done via git push and pull.
+</p>
+
+<p>
+However <b>drush rsync</b> and <b>drush sql-sync</b> offer another option for
+synchronisation. For more details see:
+</p>
+<pre class="example">
+drush help rsync
+drush help sql-sync
+drush topic docs-aliases
+</pre>
+
+<p>
+These commands use drush <b>aliases</b>, which allow also remote
+execution of drush commands. On my development environment I have
+created the file <code>/etc/drush/remote.aliases.drushrc.php</code>, which has
+a content like this:
+</p>
+<pre class="example">
+&lt;?php
+
+$aliases['live'] = array (
+  'root' =&gt; '/var/www/btranslator',
+  'uri' =&gt; 'http://l10n.org.al',
+
+  'remote-host' =&gt; 'l10n.org.al',
+  'remote-user' =&gt; 'root',
+  'ssh-options' =&gt; '-p 2201 -i /root/.ssh/id_rsa',
+
+  'path-aliases' =&gt; array (
+    '%profile' =&gt; 'profiles/btranslator',
+    '%data' =&gt; '/var/www/btranslator_data',
+    '%pofiles' =&gt; '/var/www/PO_files',
+    '%exports' =&gt; '/var/www/exports',
+    '%downloads' =&gt; '/var/www/downloads',
+  ),
+
+  'command-specific' =&gt; array (
+    'sql-sync' =&gt; array (
+      'simulate' =&gt; '1',
+    ),
+    'rsync' =&gt; array (
+      'simulate' =&gt; '1',
+    ),
+  ),
+);
+
+$aliases['test'] = array (
+  'parent' =&gt; '@live',
+  'root' =&gt; '/var/www/btranslator',
+  'uri' =&gt; 'http://www2.l10n.org.al',
+  'remote-host' =&gt; 'www2.l10n.org.al',
+
+  'command-specific' =&gt; array (
+    'sql-sync' =&gt; array (
+      'simulate' =&gt; '0',
+    ),
+    'rsync' =&gt; array (
+      'simulate' =&gt; '0',
+    ),
+  ),
+);
+</pre>
+
+<p>
+It defines the aliases <b>live</b> and <b>test</b>. The test/stage application
+is almost identical to the live/production one, however it is not
+for public use. The idea is to test there first any updates/upgrades
+of the application, in order to make sure that they don't break any
+things, before applying them to the real live application. In my case
+it is placed on a different server, however it can also be placed on
+the same server as the live application (just make a clone of the main
+application with <code>dev/clone.sh test</code>).
+</p>
+
+<p>
+When everything is set up correctly, the synchronisation can be done
+as simply as this:
+</p>
+<pre class="example">
+drush rsync @live @test
+drush sql-sync @live @test
+drush rsync @live @dev
+drush sql-sync @live @dev
+</pre>
+
+<p>
+<b>Note:</b> Synchronising this way from <b>@test</b> to <b>@live</b> or from
+<b>@dev</b> to <b>@live</b>, usually is a HUGE mistake, but the <i>simulate</i>
+option on the config file will make sure that it fails.
+</p>
+
+<p>
+For drush commands to work remotely, <b>ssh</b> daemon has to be running
+on the remote server, inside the chroot environment. By default it
+is not installed, but it can be installed with the script
+<b>dev/install-sshd.sh</b>. This script will also take care to change the
+ssh port to <b>2201</b>, in order to avoid any conflicts with any
+existing daemon on the host environment, and also for increased
+security.
+</p>
+
+<p>
+For remote access to work correctly, the public/private key ssh
+access should be set up and configured as well. For more detailed
+instructions on how to do it see:
+<a href="http://dashohoxha.blogspot.com/2012/08/how-to-secure-ubuntu-server.html">http://dashohoxha.blogspot.com/2012/08/how-to-secure-ubuntu-server.html</a>
+</p>
+</div>
+</div>
