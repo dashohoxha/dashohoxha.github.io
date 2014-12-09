@@ -1,0 +1,69 @@
+#+TITLE:     Dual Boot Puppy Linux With Ubuntu
+#+AUTHOR:    Dashamir Hoxha
+#+EMAIL:     dashohoxha@gmail.com
+#+DATE:      2013-06-21
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+begin_html
+---
+layout:     post
+title:      Dual Boot Puppy Linux With Ubuntu
+date:       2013-06-21
+summary:    
+---
+#+end_html
+
+Puppy Linux is so nice that I always keep it around even if I don't
+need it. I have a small partition on my laptop where I install
+different versions of Puppy, and they co-exist with my main Ubuntu
+(actually Xubuntu) system. The installation is very easy.
+
+Lately I have installed [[http://bkhome.org/blog2/?viewDetailed=00275][Precise Puppy 5.6.1]] and [[http://bkhome.org/blog2/?viewDetailed=00164][Slacko Puppy 5.5]]
+. After downloading the *.iso* files, I extracted them and copied
+their content on */dev/sda9* like this:
+
+#+BEGIN_EXAMPLE
+sudo su
+
+mkdir sda9
+mount /dev/sda9 sda9/
+
+mkdir iso
+mount -o loop precise-5.6.1.iso iso/
+mkdir -p sda9/puppy/precise5.6.1
+cp -a iso/* sda9/puppy/precise5.6.1/
+
+umount iso/
+mount -o loop slacko-5.5-PAE.iso iso/
+mkdir -p sda9/puppy/slacko5.5
+cp -a iso/* sda9/puppy/slacko5.5/
+
+umount iso/
+rmdir iso/
+umount sda9/
+rmdir sda9
+#+END_EXAMPLE
+
+The installation is already finished! But we need a way to boot the
+puppies. We can do this by modifying the grub menu. First add these
+lines on the config file ~/etc/grub.d/40_custom~:
+
+#+BEGIN_EXAMPLE
+menuentry "Puppy Linux Slacko 5.5 frugal (sda9/puppy/slacko5.5)" --class gnu-linux --class gnu --class os {
+    set root='(hd0,msdos9)'
+    #find --set-root --ignore-floppies /puppy/slacko5.5/initrd.gz
+    linux /puppy/slacko5.5/vmlinuz pmedia=atahd psubdir=puppy/slacko5.5
+    initrd /puppy/slacko5.5/initrd.gz
+}
+
+menuentry "Puppy Linux Precise 5.6.1 frugal (sda9/puppy/precise5.6.1)" --class gnu-linux --class gnu --class os {
+    set root='(hd0,msdos9)'
+    #find --set-root --ignore-floppies /puppy/precise5.6.1/initrd.gz
+    linux /puppy/precise5.6.1/vmlinuz pmedia=atahd psubdir=puppy/precise5.6.1
+    initrd /puppy/precise5.6.1/initrd.gz
+}
+#+END_EXAMPLE
+
+Then run the command =sudo update-grub=.
+
+Now reboot the PC and have fun with Puppy.
