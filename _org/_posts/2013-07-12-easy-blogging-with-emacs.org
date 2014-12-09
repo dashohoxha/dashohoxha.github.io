@@ -1,0 +1,254 @@
+#+TITLE:     Easy Blogging With Emacs
+#+AUTHOR:    Dashamir Hoxha
+#+EMAIL:     dashohoxha@gmail.com
+#+DATE:      2013-07-12
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+# #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
+#+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
+#+begin_html
+---
+layout:     post
+title:      Easy Blogging With Emacs
+date:       2013-07-12
+summary:    Time after time I write technical blogs and articles that describe
+    and summarise my experiences. Nowadays all the blogging sites and tools
+    offer WYSIWYG editors. And it makes blogging so easy, right? Not for
+    me! I always find WYSIWYG editing tedious and frustrating.
+---
+#+end_html
+
+Time after time I write technical blogs and articles that describe and
+summarise my experiences. Nowadays all the blogging sites and tools
+offer WYSIWYG editors.  And it makes blogging so easy, right? Not for
+me! I always find WYSIWYG editing tedious and frustrating.
+
+
+* Why WYSIWYG sucks
+
+  One reason is that you have to make manually every single change (no
+  styles like CSS for example), which makes the process tedious, error
+  prone and inconsistent. If you decide later to change some styles,
+  you have to go all over the document and modify all occurrences one
+  by one... Oh man, better don't touch it at all!
+
+  But the worst thing about WYSIWYG is that actually its last name is
+  WYGIANWYW (What You Get Is Almost Never What You Want). I have
+  struggled many times with the editor because it would never
+  understand correctly what I wanted and would display a totally broken
+  formatting (long live *undo* that comes quickly to the rescue).
+
+  So, I'd rather write plain text HTML than use WYSIWYG editing,
+  unless the structure and formatting of the document is very
+  simple. Maybe not everybody finds WYSIWYG so difficult and annoying,
+  but the technical blogs (articles, documents, etc.) that I write are
+  a bit long and with complex structure, and WYSIWYG would never be
+  suitable for me. I have also tried different wiki systems, which in
+  a sense are better than WYSIWYG, but still they are a bit simple and
+  do not support all the features that I need.
+
+
+* Org-mode of Emacs
+
+  After trying different tools and systems, I decided that the [[http://orgmode.org][orgmode]]
+  of Emacs is the best for my needs. Quoting from its webpage:
+  #+BEGIN_QUOTE
+  "Org mode is for keeping notes, maintaining TODO lists, planning
+  projects, and authoring documents with a fast and effective
+  plain-text system."
+  #+END_QUOTE
+  So, among other things, org-mode can be used for /authoring
+  documents/, that is writing blogs, articles etc.
+
+  It has a wiki-like syntax that is lightweight but also complex
+  (not-simple). Combined with the editing power of Emacs it becomes a
+  powerful tool for writing blogs, articles and other docs. Then, it
+  can be converted automatically to other formats, like /HTML/,
+  /LaTeX/, /PDF/, etc.
+
+  I will try to describe how I use it for my needs (writing blogs,
+  articles, etc.)
+
+
+* Installing Emacs
+
+  On Ubuntu it can be installed like this: =sudo apt-get install
+  emacs= On other Linux systems it should be very easy too. If you are
+  using Windows, then look at the instructions on this [[http://www.claremontmckenna.edu/pages/faculty/alee/emacs/emacs.html][page]].
+
+  The latest versions of Emacs include org-mode by default, so there
+  is no need to do anything special for installing it. Just use the
+  extension *.org* for the file and the /org editing mode/ will be
+  enabled automatically.
+
+
+* Using org-mode for writing documents
+
+  Emacs is an advanced editing tool and org-mode has lots of features,
+  however not all of them are needed. For what we want to do (writing
+  technical blogs and docs), we need some very basic and simple things.
+
+  I will list the ones that I use most frequently:
+
+  + Paragraphs are marked by empty lines:
+    #+BEGIN_EXAMPLE
+    Paragraph1
+    Paragraph1 continued
+
+    Paragraph2
+    Paragraph2 continued
+    #+END_EXAMPLE
+
+  + Headings are marked by stars at the beginning of a line:
+    #+BEGIN_EXAMPLE
+    * Heading1
+    ** Heading2
+    *** Heading3
+    ** Heading2
+
+    * Heading1
+    ** Heading2
+    #+END_EXAMPLE
+
+  + Ordered and unordered lists:
+    #+BEGIN_EXAMPLE
+      + item-1
+        1. item-1.1
+        2. item-1.2
+        3. item-1.3
+      + item-2
+	- item-2.1
+	- item-2.2
+	- item-2.3
+      + item-3
+    #+END_EXAMPLE
+    + item-1
+      1. item-1.1
+      2. item-1.2
+      3. item-1.3
+    + item-2
+      - item-2.1
+      - item-2.2
+      - item-2.3
+    + item-3
+
+  + Inline markup:
+    #+BEGIN_EXAMPLE
+    *bold*, /italic/, _underlined_, =code= and ~verbatim~
+    #+END_EXAMPLE
+    *bold*, /italic/, _underlined_, =code= and ~verbatim~
+
+  + Hyperlink:
+    #+BEGIN_EXAMPLE
+    [[http://info.btranslator.org][B-Translator]]
+    #+END_EXAMPLE
+    [[http://info.btranslator.org][B-Translator]]
+
+  + Preformatted:
+    #+BEGIN_EXAMPLE
+    #+BEGIN_EXAMPLE
+    Some example from a text file.
+    # +END_EXAMPLE
+    #+END_EXAMPLE
+    #+BEGIN_EXAMPLE
+    Some example from a text file.
+    #+END_EXAMPLE
+
+  It is so simple, intuitive and familiar, that you don't even need a
+  tutorial and can start using it right away.
+
+  You can find more about the markup that can be used, on the
+  [[http://orgmode.org/org.html#Markup][documentation of org-mode]] (or try =info org= on the terminal).
+
+  As an example, you can see the /org/ code of this document itself on
+  gist: [[https://gist.github.com/dashohoxha/5981222][easy-blogging-with-emacs.org]]
+
+
+* Publishing the document
+
+  In order to publish the document, I do these steps:
+  1. First, convert it to HTML (with the emacs command: =C-c C-e h=).
+  2. Then open the generated HTML file in a browser.
+  3. And then copy/paste the content of the article from the browser
+     to the editor of the blog site.
+
+  I don't know why, but a copy/paste like this usually works very
+  well. I use [[http://dashohoxha.blogspot.com/][Blogger]] for my blogs, but I think that it should work on
+  other blog sites and WYSIWYG editors as well.
+
+  After the copy/paste, I still have to do some minor manual
+  corrections, but this is much easier than writing the whole thing
+  on the WYSIWYG editor.
+
+  Pay attention to these lines that are at the beginning of the /org/
+  file:
+  #+BEGIN_EXAMPLE
+  #+OPTIONS: num:nil toc:t ^:nil f:nil TeX:nil LaTeX:nil
+  #+STYLE: <link href="css/org.css" rel="stylesheet" type="text/css"/>
+  #+END_EXAMPLE
+
+  They control the look of the generated HTML file. The first one
+  defines some settings/options, like: don't number headers, generate
+  a TOC, turn off TeX syntax for subscripts, etc. More details and
+  other options you can find on the documentation for [[http://orgmode.org/org.html#Export-settings][export settings]].
+  
+  The second line tells it which CSS file to use, so that the
+  generated HTML looks nice and beautiful. For a quick start, just
+  download and use my [[https://gist.github.com/dashohoxha/5980833][org.css]] file, and later you can customise it for
+  yourself. For example, it defines the style of preformatted text like this:
+  #+BEGIN_HTML
+  {% highlight css %}
+  pre {
+	 padding: 10px;
+	 border: 1pt solid #AEBDCC;
+	 border-radius: 5px;
+	 background-color: #000000;
+	 color: #eeeeee;
+	 font-family: Ubuntu Mono, monospace, courier;
+  }
+  {% endhighlight %}
+  #+END_HTML
+ 
+
+* Converting the document to PDF
+
+  Org-mode can convert directly to PDF. However there is no way (as
+  far as I know) to modify how the generated PDF file looks like.  It
+  always has the same standard look of an old scientific paper (I
+  guess that the conversion to PDF is done by converting first to
+  LaTeX).
+
+  I prefer to take another approach for generating PDF docs:
+  1. First I generate the HTML file (where I can control how it looks
+     by customising the CSS file).
+  2. Then I copy/paste from the browser to LibreOffice (yes, this
+     copy/paste works well too, preserving all the formatting and
+     styles from HTML).
+  3. Finally save it as PDF. LibreOffice has a built-in PDF converter.
+  
+  However, before the third step I do again some minor manual
+  modifications. I also define styles for headings, preformatted text,
+  text body, etc.
+
+  One of the things that I change in LibreOffice/PDF document is the
+  style of the preformatted text. In the HTML version it is white font
+  on a black background, and this is good because it looks like a
+  terminal. However PDF documents sometimes can be printed and that
+  style doesn't look nice on paper (and also it would consume lots of
+  ink), so I change it to black font on white background.
+
+  To apply the new style on a preformatted text, I select it, then from
+  the list of styles (on top-left) select "Clear formatting", then
+  select the style "Preformatted Text". I have to do this for all the
+  preformatted texts. I do the same thing for headings as well.
+
+  In order to not re-define the styles for each document, I open an
+  old document, replace its content with the new content, and then
+  save it with a new name. This will ensure that the styles of the new
+  document are the same as the styles of the old one. Maybe
+  LibreOffice has some other means for defining the styles and using
+  them on each document, but I am not so familiar with LibreOffice and
+  this trick works anyway.
+
+  If you want to use my styles, you can download the *.odt* document
+  from [[http://academia.edu/4005672/Easy_Blogging_With_Emacs][here]] and use it as a template for your own docs.
