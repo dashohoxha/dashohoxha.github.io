@@ -1,0 +1,146 @@
+#+TITLE:     Exporting Custom Configurations From a Drupal 7 Site
+#+AUTHOR:    Dashamir Hoxha
+#+EMAIL:     dashohoxha@gmail.com
+#+DATE:      2013-03-15
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+begin_html
+---
+layout:     post
+title:      Exporting Custom Configurations From a Drupal 7 Site
+date:       2013-03-15
+summary:    After installing a Drupal7 site, I have made several
+    configurations/customizations over time. Now I would like to export
+    them somehow, in order to load them to another site. But the problem
+    is that I don't remember exactly what I have done. The Features module
+    does not help because you have to tell it exactly what to export, but
+    I don't remember all the changes.
+---
+#+end_html
+
+After installing a Drupal7 site, I have made several
+configurations/customizations over time. Now I would like to export
+them somehow, in order to load them to another site. But the problem
+is that I don't remember exactly what I have done. The Features module
+does not help because you have to tell it exactly what to export, but
+I don't remember all the changes.
+
+This is a difficult problem on Drupal 7, which is expected to be
+solved on Drupal 8, by the Config Management Initiative. However there
+is the Configuration Module that tries to solve the configuration
+problem on Drupal 7, as a backport feature from Drupal 8.
+
+With the help of the Configuration module you basically track certain
+elements of configuration on your site (this bit is relatively similar
+to Features), and then it tells you when there are differences between
+what is stored in the filesystem and what is stored in the database
+(referred to as ActiveStore and DataStore). These config files can
+then be versioned and deployed. If the Diff module is installed, you
+can also see what has been changed with regards to ActiveStore vs
+DataStore.
+
+This is useful for keeping track of specific configurations on a
+Drupal site, provides the ability to move these configurations between
+different environments (local, dev, qa, prod), and also allows to move
+configurations between completely different sites (migrate
+configurations).
+
+This module helped me to solve my problem, although the solution was
+not 100% automatic and required some manual work. The basic steps are
+these:
+
+ 1. Install a fresh Drupal 7 site. Install also the Configuration
+    module.
+ 2. Export all of its configurations (with the help of the
+    Configuration module).
+ 3. Install the Configuration and Diff modules on the original
+    (customized) Drupal 7 site.
+ 4. Export all the configurations of the customized site (with the
+    help of the Configuration module).
+ 5. Migrate the configuration of the fresh Drupal site to the
+    customized site. Now the ActiveStore (DB) is different from the
+    DataStore (files) and the Configuration module will show you what
+    are the differences.
+ 6. Untrack all the configurations that are not different. Some of the
+    configurations that may contain sensitive data or useless data
+    (for example cached data) should be untracked as well.
+ 7. Export again the remaining configurations. Now these
+    configurations can be imported on another Drupal 7 site, in order
+    to make it very similar to the original customized site.
+
+Below is described in more details how to accomplish some of these
+steps.
+
+
+* Installing the Configuration Module and the Diff Module
+
+  These modules are installed on both Drupal sites. Doing it through
+  the admin GUI takes a lot of time, and in my server very often the
+  web server times out, so I have to do it with drush on command line,
+  no matter whether I like it or not (actually I like it).
+
+  #+BEGIN_EXAMPLE
+  cd sites/all/modules/
+  wget http://ftp.drupal.org/files/projects/configuration-7.x-2.x-dev.tar.gz
+  tar xfz configuration-7.x-2.x-dev.tar.gz
+  drush --yes pm-enable configuration configuration_ui
+
+  cd ../../
+  sudo mkdir sites/default/files/config
+  sudo chown www-data: sites/default/files/config
+
+  cd sites/all/modules/
+  wget http://ftp.drupal.org/files/projects/diff-7.x-3.2.tar.gz
+  tar xfz diff-7.x-3.2.tar.gz
+  drush --yes pm-enable diff
+
+  drush php-eval "menu_rebuild();"
+  #+END_EXAMPLE
+
+
+* Exporting all the configurations of the site
+
+  This is also done on both sites. Again I prefer to do it from the
+  command line.
+
+  #+BEGIN_EXAMPLE
+  drush cc drush
+  drush config-start-tracking --all
+  drush config-export --all
+  #+END_EXAMPLE
+
+  After this, the directory ~sites/default/files/config/~ will contain
+  all the exported configurations of the corresponding site. The
+  ActiveStore (DB) and the DataStore (~config/~ directory) will have
+  the same configuration.
+
+
+* Migrating the configurations of the fresh site to the customized site
+
+  This can be done maybe using Export and Import from the GUI. However
+  it is much more easy to just copy the directories from the command
+  line. We can move the ~config/~ directory of the old site to
+  ~config_bak/~ (or something like this), and in its place we copy the
+  config/ directory of the new site.
+
+  After this, the ActiveStore (DB) and the DataStore (~config/~ dir)
+  will have different contents. Comparing them from the UI of the
+  Configuration module is more easy and reliable that using any other
+  tricks (for example from command line).
+
+
+* Finding changes in the configuration of the old site
+
+  On the path =admin/config/system/configuration= we will find all the
+  configurations that are being tracked. Since we have changed the
+  DataStore from the command line, the status of each configuration
+  will be 'Processing...' for some time. After all the processing is
+  done, the status will show us what configurations are the same and
+  what are different with the ActiveStore.
+
+  Now we simply select and stop tracking all the configurations that
+  have not been changed. We should also stop tracking some of the
+  configurations that are not relevant or that contain any sensitive
+  data (this part is a bit manual and tedious, since we have to check
+  all the configurations one by one). In the end, we can export the
+  remaining configurations and import them on another site.
