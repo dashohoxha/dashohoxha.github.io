@@ -1,0 +1,303 @@
+---
+layout:     post
+title:      How to Setup a WiFi Access Point on Ubuntu
+date:       2013-06-12
+summary:    If you have a single wired Internet connection you can create
+    Wireless Access Point with Ubuntu and share the Internet connection
+    among multiple devices.
+---
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. Check whether the wireless card supports Access Point mode</a></li>
+<li><a href="#sec-2">2. Setup and host a network</a></li>
+<li><a href="#sec-3">3. Set up DHCP server for IP address management</a></li>
+<li><a href="#sec-4">4. Share the internet connection</a></li>
+<li><a href="#sec-5">5. Script to Automate the Installation</a></li>
+<li><a href="#sec-6">6. Referencies</a></li>
+</ul>
+</div>
+</div>
+
+<p>
+If you have a single wired Internet connection (like in a hotel room)
+you can create Wireless Access Point with Ubuntu and share the
+Internet connection among multiple devices. This can be done very
+easily on Ubuntu (whatch this tutorial:
+<a href="http://www.youtube.com/watch?v=G0FFQVy3RUg">http://www.youtube.com/watch?v=G0FFQVy3RUg</a>) It will create an ad-hoc
+wifi network. However ad-hoc networks are not supported in some
+android models, windows mobile, and iOS devices. A more universal
+solution is to create an Access Point (or Infrastructure, or Hotspot)
+wifi network. This is a bit more complicated but not so
+difficult. Here I will describe how to do it.
+</p>
+
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Check whether the wireless card supports Access Point mode</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+First thing to be done is to test whether your wireless card
+supports going into wireless access point mode. This test is for
+mac80211 framework based driver.
+</p>
+
+<p>
+Install <code>iw</code> and run the command <code>iw list</code>:
+</p>
+<pre class="example">
+sudo aptitude install iw
+iw list
+</pre>
+
+<p>
+Look for supported interface section, where it should be a entry called <b>AP</b> like this:
+</p>
+<pre class="example">
+Supported interface modes:
+	 * IBSS
+	 * managed
+	 * AP
+	 * AP/VLAN
+	 * monitor
+	 * mesh point
+</pre>
+
+<p>
+If your driver doesn't show this <b>AP</b>, it doesn't mean it can't create
+wireless hotspot. But those cards aren't in the scope of this
+tutorial.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Setup and host a network</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+Install <b>hostapd</b> (sudo aptitude install hostapd) and create the
+configuration file <code>/etc/hostapd/hostapd.conf</code> with a content like
+this:
+</p>
+<pre class="example">
+interface=wlan0
+driver=nl80211
+ssid=name_of_network
+hw_mode=g
+channel=1
+macaddr_acl=0
+auth_algs=1
+ignore_broadcast_ssid=0
+wpa=3
+wpa_passphrase=1234567890
+wpa_key_mgmt=WPA-PSK
+wpa_pairwise=TKIP
+rsn_pairwise=CCMP
+</pre>
+
+<p>
+Things that you need to change here are:
+</p>
+<ul class="org-ul">
+<li>Change <code>interface=wlan0</code> to your wireless card name. If you have
+one wireless card it should be <b>wlan0</b>.
+</li>
+<li>Change <code>ssid=name_of_network</code> with the name that you want to give
+to yout hosted network.
+</li>
+<li>Change <code>wpa_passphrase=1234567890</code> with the password for accessing
+your network.
+</li>
+</ul>
+
+<p>
+The name of the wifi interface can be found with a command like this:
+</p>
+<pre class="example">
+lshw -quiet -c network | sed -n -e '/Wireless interface/,+12 p' | sed -n -e '/logical name:/p' | cut -d: -f2 | sed -e 's/ //g
+</pre>
+
+<p>
+The configuration above creates a WPA &amp; WPA2 enabled access point in
+<b>g</b> mode. A more detailed instruction on how to build the
+configuration file can be found here:
+<a href="http://wireless.kernel.org/en/users/Documentation/hostapd">http://wireless.kernel.org/en/users/Documentation/hostapd</a>
+</p>
+
+<p>
+Before starting hostapd, we should also edit the file
+<code>/etc/default/hostapd</code> and modify the line of <code>DAEMON_CONF</code> like
+this:
+</p>
+<pre class="example">
+DAEMON_CONF="/etc/hostapd/hostapd.conf"
+</pre>
+
+<p>
+Now we can start <b>hostapd</b> with the command <code>sudo service hostapd
+  start</code> . It should start a wireless network. In your mobile device
+now you can see a wireless network and can authenticate. But the
+device won't get IP address. Stop it with the command <code>sudo service
+  hostapd stop</code> .
+</p>
+
+<p>
+<b>Note:</b> If you get any errors, maybe your card doesn't support <b>g</b>
+mode. Try with other modes (see:
+<a href="http://linuxwireless.org/en/users/Documentation/hostapd">http://linuxwireless.org/en/users/Documentation/hostapd</a>).
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> Set up DHCP server for IP address management</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+Install <b>isc-dhcp-server</b> (<code>aptitude install isc-dhcp-server</code>).
+Edit the file <code>/etc/default/isc-dhcp-server</code> and set <code>INTERFACES</code>
+like this:
+</p>
+<pre class="example">
+INTERFACES="wlan0"
+</pre>
+
+<p>
+Modify the name of the wireless interface accordingly, as in the section above.
+Then modify the configuration file <code>/etc/dhcp/dhcpd.conf</code> like this:
+</p>
+<ol class="org-ol">
+<li>Comment the following lines:
+<pre class="example">
+#option domain-name “example.org”;
+#option domain-name-servers ns1.example.org, ns2.example.org;
+
+#default-lease-time 600;
+#max-lease-time 7200;
+</pre>
+</li>
+
+<li>Append these lines as the end:
+<pre class="example">
+subnet 10.10.0.0 netmask 255.255.255.0 {
+	range 10.10.0.2 10.10.0.16;
+	option domain-name-servers 8.8.4.4, 208.67.222.222;
+	option routers 10.10.0.1;
+}
+</pre>
+</li>
+</ol>
+
+<p>
+Range describes how large the address pool will be. You need to
+adjust subnet value also. The config above can give IP up to 15
+devices.
+</p>
+
+<p>
+Now edit <code>/etc/network/interfaces</code> and add the following lines:
+</p>
+<pre class="example">
+auto wlan0
+iface wlan0 inet static
+address 10.10.0.1
+netmask 255.255.255.0
+</pre>
+
+<p>
+<code>wlan0</code> is your wireless interface; change it accordingly.
+</p>
+
+<p>
+<b>Note:</b> After reboot, the wireless will be shown as not managed. So
+you can't use any other wi-fi network. To get wireless with normal
+behaviour, put <code>#</code> before those newly added lines and execute <code>sudo
+  service networking restart</code>
+</p>
+
+<p>
+If you start now the services <b>isc-dhcp-server</b> and <b>hostapd</b>, your
+mobile device will see a network, authenticate to it and after
+authentication it will get as IP address something like <code>10.10.0.2</code>
+But still it can't connect to internet.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> Share the internet connection</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+For Internet connection sharing we need <i>IP forwarding</i> and <i>IP masquerading</i>.
+</p>
+
+<p>
+Enable IP forwarding like this:
+</p>
+<pre class="example">
+echo 1 &gt; /proc/sys/net/ipv4/ip_forward
+</pre>
+
+<p>
+Setup IP masquerading like this:
+</p>
+<pre class="example">
+iptables -t nat -A POSTROUTING -s 10.10.0.0/16 -o ppp0 -j MASQUERADE
+</pre>
+
+<p>
+Here <b>ppp0</b> is the logical interface name if you are using a dial
+up/usb modem connection to Internet. It may be <b>eth0</b> if you are
+using an Ethernet cable connection. If you are connecting to
+Internet through an android device with USB tethering, then the
+interface name could be <b>usb0</b>.
+</p>
+
+<p>
+You can find out the name of the logical interface that you are
+using to connect to the Internet with a command like this:
+</p>
+<pre class="example">
+ip route | grep default | cut -d' ' -f5
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5"><span class="section-number-2">5</span> Script to Automate the Installation</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+I like to automate configuration steps whenever it is possible and
+it is something that can be reused. Here is a script on gist that
+can be used to install a wifi access point automatically:
+<a href="https://gist.github.com/dashohoxha/5767262">https://gist.github.com/dashohoxha/5767262</a>
+</p>
+
+<p>
+It should work well on Ubuntu 12.04 or its derivatives (for example
+Linux Mint). Let me know if there are any bugs on it or things that
+can be fixed or improved.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-6" class="outline-2">
+<h2 id="sec-6"><span class="section-number-2">6</span> Referencies</h2>
+<div class="outline-text-2" id="text-6">
+<ul class="org-ul">
+<li><a href="http://askubuntu.com/questions/180733/how-to-setup-a-wi-fi-hotspot-access-point-mode/180734#180734">http://askubuntu.com/questions/180733/how-to-setup-a-wi-fi-hotspot-access-point-mode/180734#180734</a>
+</li>
+<li><a href="https://help.ubuntu.com/community/SharingMobileBroadband">https://help.ubuntu.com/community/SharingMobileBroadband</a>
+</li>
+<li><a href="http://askubuntu.com/questions/140126/how-do-i-configure-a-dhcp-server">http://askubuntu.com/questions/140126/how-do-i-configure-a-dhcp-server</a>
+</li>
+<li><a href="http://linuxwireless.org/en/users/Documentation/hostapd">http://linuxwireless.org/en/users/Documentation/hostapd</a>
+</li>
+</ul>
+</div>
+</div>
