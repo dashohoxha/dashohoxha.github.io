@@ -1,0 +1,162 @@
+---
+layout:     post
+title:      Visualization with Gourse
+date:       2013-12-08
+summary:    Recently I made a visualization for contributors to
+    https://l10n.org.al for the last two years (2012-2013). This
+    visualization was done with gource. It was a bit of hacking,
+    so I would like to describe how I did it.
+---
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. Getting the data to be visualized</a></li>
+<li><a href="#sec-2">2. Transforming data to the right format</a></li>
+<li><a href="#sec-3">3. Feeding the data to gource and generating the output</a></li>
+</ul>
+</div>
+</div>
+
+<p>
+Recently I made <a href="http://www.youtube.com/watch?v=qNCbEVVasto">this visualization</a> for contributors to
+<a href="https://l10n.org.al">https://l10n.org.al</a> for the last two years (2012-2013). This
+visualization was done with <a href="https://code.google.com/p/gource/">gource</a>. It was a bit of hacking, so I
+would like to describe here how I did it.
+</p>
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Getting the data to be visualized</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+For each translation or vote on <a href="https://l10n.org.al/">https://l10n.org.al/</a> the time and
+the name of the author is saved as well. So, we would like to get
+this information from the database, as well as the project to which
+this translation belonged, for all votes and translations.
+</p>
+
+<p>
+First have a look at this diagram: <a href="https://github.com/B-Translator/B-Translator.github.io/raw/master/docs/uml/db_diagram.png">db_diagram.png</a> just to get an
+idea of the structure of the database.
+</p>
+
+
+<div class="figure">
+<p><a href="https://github.com/B-Translator/B-Translator.github.io/raw/master/docs/uml/db_diagram.png"><img src="https://github.com/B-Translator/B-Translator.github.io/raw/master/docs/uml/db_diagram.png" alt="db_diagram.png" /></a>
+</p>
+</div>
+
+<p>
+Then look at the script below which I used to extract the data.
+</p>
+
+{% highlight bash %}
+#!/bin/bash
+query="
+  SELECT v.time, u.name, (v.time=t.time) AS new, project, origin
+  FROM votes v
+  LEFT JOIN users u ON (u.ulng = v.ulng AND u.umail = v.umail)
+  LEFT JOIN translations t ON (t.tguid = v.tguid)
+  LEFT JOIN strings s ON (s.sguid = t.sguid)
+  LEFT JOIN locations l ON (l.sguid = s.sguid)
+  LEFT JOIN templates tpl ON (tpl.potid = l.potid)
+  LEFT JOIN projects p ON (p.pguid = tpl.pguid)
+"
+mysql -u root -D btranslator_data -B -e "$query" > contrib.txt
+{% endhighlight %}
+
+<p>
+This is simply a join of the tables and extracting the fields that
+are needed. When the time of vote is the same as the time of
+translation, then this is a new translation and the field <code>new</code> is
+true.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Transforming data to the right format</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+In the result file <code>contrib.txt</code> fields are separated by TAB, so
+first I replaced tabs with commas (,) for easy processing. I did it
+with find/replace on Emacs, but any other editor can do this.
+</p>
+
+<p>
+Gource expects the input file (which is called log file) in the
+format <code>timestamp|username|action|filename</code>. Gource was designed to
+work with version control systems (like git, subversion, etc.) in
+order to visualize the project activity, so the <code>action</code> is expected
+to be A, or M, or D etc. (respectively for adding, modifying,
+deleting a file) and <code>filename</code> is the file that was touched.
+</p>
+
+<p>
+I had to transform the data to this format and I did it with a script
+like this:
+</p>
+{% highlight bash %}
+#!/bin/bash
+
+while read l
+do
+    time=$(echo $l | cut -d, -f1)
+    name=$(echo $l | cut -d, -f2)
+    new=$(echo $l | cut -d, -f3)
+    project=$(echo $l | cut -d, -f4)
+    origin=$(echo $l | cut -d, -f5)
+    timestamp=$(date -d "$time" +%s)  # convert to timestamp
+    if [ "$new" = "1" ]; then action='A'; else action='M'; fi
+    path="/$origin/$project"
+    echo "$timestamp|$name|$action|$path"
+done < contrib.txt > contrib.log  
+{% endhighlight %}
+
+<p>
+I also made sure that there are no lines containing NULL and that
+the file is sorted in increasing order by the timestamp:
+</p>
+<pre class="example">
+sed -i contrib.log -e '/NULL/d'
+
+sort -t'|' -k1 contrib.log &gt; contrib-1.log
+rm contrib.log
+mv contrib-1.log contrib.log
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> Feeding the data to gource and generating the output</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+First make sure that the tools that we need are installed:
+</p>
+<pre class="example">
+sudo apt-get install gource ffmpeg
+</pre>
+
+<p>
+Then generate the video with a script like this:  
+</p>
+<pre class="example">
+#!/bin/bash
+
+gource contrib.log -s 0.1 -i 0 --max-files 0 \
+       --date-format "%B %Y" --hide dirnames,filenames \
+       -640x360 -o - \
+  | ffmpeg -y -r 25 -f image2pipe -vcodec ppm -i - \
+           -vcodec libvpx -b 10000K contrib.webm
+</pre>
+
+<p>
+How did I know that these are the right options? I didn't know
+(especially for <code>ffmpeg</code>), I simply googled and found some examples,
+then I played with some options of <code>gource</code> in order to get it
+right.
+</p>
+</div>
+</div>

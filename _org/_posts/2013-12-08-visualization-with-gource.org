@@ -1,0 +1,129 @@
+#+TITLE:     Visualization with Gourse
+#+AUTHOR:    Dashamir Hoxha
+#+EMAIL:     dashohoxha@gmail.com
+#+DATE:      2013-12-08
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+# #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
+#+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
+#+begin_html
+---
+layout:     post
+title:      Visualization with Gourse
+date:       2013-12-08
+summary:    Recently I made a visualization for contributors to
+    https://l10n.org.al for the last two years (2012-2013). This
+    visualization was done with gource. It was a bit of hacking,
+    so I would like to describe how I did it.
+---
+#+end_html
+
+Recently I made [[http://www.youtube.com/watch?v=qNCbEVVasto][this visualization]] for contributors to
+https://l10n.org.al for the last two years (2012-2013). This
+visualization was done with [[https://code.google.com/p/gource/][gource]]. It was a bit of hacking, so I
+would like to describe here how I did it.
+
+* Getting the data to be visualized
+
+  For each translation or vote on https://l10n.org.al/ the time and
+  the name of the author is saved as well. So, we would like to get
+  this information from the database, as well as the project to which
+  this translation belonged, for all votes and translations.
+
+  First have a look at this diagram: [[https://github.com/B-Translator/B-Translator.github.io/raw/master/docs/uml/db_diagram.png][db_diagram.png]] just to get an
+  idea of the structure of the database.
+
+  [[https://github.com/B-Translator/B-Translator.github.io/raw/master/docs/uml/db_diagram.png][https://github.com/B-Translator/B-Translator.github.io/raw/master/docs/uml/db_diagram.png]]
+
+  Then look at the script below which I used to extract the data.
+
+  #+BEGIN_HTML
+  {% highlight bash %}
+  #!/bin/bash
+  query="
+    SELECT v.time, u.name, (v.time=t.time) AS new, project, origin
+    FROM votes v
+    LEFT JOIN users u ON (u.ulng = v.ulng AND u.umail = v.umail)
+    LEFT JOIN translations t ON (t.tguid = v.tguid)
+    LEFT JOIN strings s ON (s.sguid = t.sguid)
+    LEFT JOIN locations l ON (l.sguid = s.sguid)
+    LEFT JOIN templates tpl ON (tpl.potid = l.potid)
+    LEFT JOIN projects p ON (p.pguid = tpl.pguid)
+  "
+  mysql -u root -D btranslator_data -B -e "$query" > contrib.txt
+  {% endhighlight %}
+  #+END_HTML
+
+  This is simply a join of the tables and extracting the fields that
+  are needed. When the time of vote is the same as the time of
+  translation, then this is a new translation and the field =new= is
+  true.
+
+
+* Transforming data to the right format
+
+  In the result file ~contrib.txt~ fields are separated by TAB, so
+  first I replaced tabs with commas (,) for easy processing. I did it
+  with find/replace on Emacs, but any other editor can do this.
+
+  Gource expects the input file (which is called log file) in the
+  format =timestamp|username|action|filename=. Gource was designed to
+  work with version control systems (like git, subversion, etc.) in
+  order to visualize the project activity, so the =action= is expected
+  to be A, or M, or D etc. (respectively for adding, modifying,
+  deleting a file) and =filename= is the file that was touched.
+
+  I had to transform the data to this format and I did it with a script
+  like this:
+  #+BEGIN_HTML
+  {% highlight bash %}
+  #!/bin/bash
+
+  while read l
+  do
+      time=$(echo $l | cut -d, -f1)
+      name=$(echo $l | cut -d, -f2)
+      new=$(echo $l | cut -d, -f3)
+      project=$(echo $l | cut -d, -f4)
+      origin=$(echo $l | cut -d, -f5)
+      timestamp=$(date -d "$time" +%s)  # convert to timestamp
+      if [ "$new" = "1" ]; then action='A'; else action='M'; fi
+      path="/$origin/$project"
+      echo "$timestamp|$name|$action|$path"
+  done < contrib.txt > contrib.log  
+  {% endhighlight %}
+  #+END_HTML
+
+  I also made sure that there are no lines containing NULL and that
+  the file is sorted in increasing order by the timestamp:
+  #+BEGIN_EXAMPLE
+  sed -i contrib.log -e '/NULL/d'
+
+  sort -t'|' -k1 contrib.log > contrib-1.log
+  rm contrib.log
+  mv contrib-1.log contrib.log
+  #+END_EXAMPLE
+
+
+* Feeding the data to gource and generating the output
+
+  First make sure that the tools that we need are installed:
+  #+BEGIN_EXAMPLE
+  sudo apt-get install gource ffmpeg
+  #+END_EXAMPLE
+
+  Then generate the video with a script like this:  
+  #+BEGIN_EXAMPLE
+  #!/bin/bash
+
+  gource contrib.log -s 0.1 -i 0 --max-files 0 \
+         --date-format "%B %Y" --hide dirnames,filenames \
+         -640x360 -o - \
+    | ffmpeg -y -r 25 -f image2pipe -vcodec ppm -i - \
+             -vcodec libvpx -b 10000K contrib.webm
+  #+END_EXAMPLE
+
+  How did I know that these are the right options? I didn't know
+  (especially for =ffmpeg=), I simply googled and found some examples,
+  then I played with some options of =gource= in order to get it
+  right.
