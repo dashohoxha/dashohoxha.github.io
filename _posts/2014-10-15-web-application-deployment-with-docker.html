@@ -1,0 +1,564 @@
+---
+layout:     post
+title:      Web Application Deployment With Docker
+date:       2014-10-15
+summary:    Docker is a platform for developers and sysadmins to develop,
+    ship, and run applications. Docker lets you quickly assemble applications
+    from components and eliminates the friction that can come when
+    shipping code. Docker lets you get your code tested and deployed into
+    production as fast as possible. In this workshop we will try hands-on
+    the basic commands for building and managing docker containers and
+    images for a web application.
+---
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. Installation</a></li>
+<li><a href="#sec-2">2. About Docker</a></li>
+<li><a href="#sec-3">3. Basic Concepts</a></li>
+<li><a href="#sec-4">4. Basic Tutorial</a></li>
+<li><a href="#sec-5">5. A real world example</a></li>
+<li><a href="#sec-6">6. Run a command in a docker container</a></li>
+<li><a href="#sec-7">7. Other docker commands</a></li>
+<li><a href="#sec-8">8. Create a web application container</a></li>
+<li><a href="#sec-9">9. Create more web application containers</a></li>
+<li><a href="#sec-10">10. Upload image to Docker Hub</a></li>
+<li><a href="#sec-11">11. Building images</a></li>
+<li><a href="#sec-12">12. Using container wsproxy</a></li>
+<li><a href="#sec-13">13. Installing a Drupal Application</a></li>
+</ul>
+</div>
+</div>
+
+<p>
+Docker is a platform for developers and sysadmins to develop, ship,
+and run applications. Docker lets you quickly assemble applications
+from components and eliminates the friction that can come when
+shipping code. Docker lets you get your code tested and deployed into
+production as fast as possible. In this workshop we will try hands-on
+the basic commands for building and managing docker containers and
+images for a web application.
+</p>
+
+<p>
+(Available also in presentation format:
+<a href="http://info.btranslator.org/docker-workshop/">http://info.btranslator.org/docker-workshop/</a> .)
+</p>
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Installation</h2>
+<div class="outline-text-2" id="text-1">
+<ul class="org-ul">
+<li>Install Docker:
+<a href="https://docs.docker.com/installation/#installation">https://docs.docker.com/installation/#installation</a>
+<pre class="example">
+docker version
+</pre>
+</li>
+
+<li>Pull the Docker image <code>ubuntu:14.04</code>:
+<pre class="example">
+docker pull ubuntu:14.04
+</pre>
+</li>
+
+<li>Pull the Docker image <code>ubuntu-upstart:14.04</code>:
+<pre class="example">
+docker search ubuntu-upstart
+docker pull ubuntu-upstart:14.04
+</pre>
+</li>
+
+<li>Pull the Docker image <code>btranslator/btr_client:v2.2</code>:
+<pre class="example">
+docker search btranslator
+docker pull btranslator/btr_client:v2.2
+</pre>
+</li>
+
+<li>Install <code>docker-enter</code>:
+<pre class="example">
+docker run -v /usr/local/bin:/target jpetazzo/nsenter
+</pre>
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> About Docker</h2>
+<div class="outline-text-2" id="text-2">
+<ul class="org-ul">
+<li><a href="https://docker.com/">https://docker.com/</a>
+</li>
+
+<li>What is Docker? (<a href="https://www.youtube.com/watch?v=ZzQfxoMFH0U">https://www.youtube.com/watch?v=ZzQfxoMFH0U</a>)
+</li>
+
+<li>Docker's features and advantages
+</li>
+
+<li>How it is different from a VM?
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> Basic Concepts</h2>
+<div class="outline-text-2" id="text-3">
+<ul class="org-ul">
+<li>What is a docker image.
+</li>
+
+<li>What is the Docker Hub.
+</li>
+
+<li>What is a docker container.
+</li>
+
+<li>Running a command inside docker.
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> Basic Tutorial</h2>
+<div class="outline-text-2" id="text-4">
+<ul class="org-ul">
+<li><a href="https://www.docker.com/tryit/">https://www.docker.com/tryit/</a>
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5"><span class="section-number-2">5</span> A real world example</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+Let's see how Docker is used by installing a B-Translator Client.
+</p>
+
+<ul class="org-ul">
+<li>Create and start a docker container:
+<pre class="example">
+docker images
+docker run -d --name=bcl --hostname=example.org \
+           -p 80:80 -p 443:443 btranslator/btr_client:v2.2
+</pre>
+</li>
+
+<li>Add this line on <code>/etc/hosts</code>.
+<pre class="example">
+127.0.0.1 example.org
+</pre>
+</li>
+
+<li>Open in browser: <a href="https://example.org">https://example.org</a>
+</li>
+
+<li>Stop and start the container:
+<pre class="example">
+docker ps -a
+docker stop bcl
+docker start bcl
+docker restart bcl
+</pre>
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-sec-6" class="outline-2">
+<h2 id="sec-6"><span class="section-number-2">6</span> Run a command in a docker container</h2>
+<div class="outline-text-2" id="text-6">
+<ul class="org-ul">
+<li>Hello world:
+<pre class="example">
+docker run ubuntu:14.04 /bin/echo 'Hello world'
+</pre>
+</li>
+
+<li>An interactive container:
+<pre class="example">
+docker run -t -i ubuntu:14.04 /bin/bash
+pwd
+ls
+exit
+</pre>
+</li>
+
+<li>A daemonized hello world:
+<pre class="example">
+docker run -d ubuntu:14.04 \
+    /bin/sh -c "while true; do echo hello world; sleep 1; done"
+docker ps
+docker logs insane_babbage
+docker stop insane_babbage
+docker ps -a
+</pre>
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-sec-7" class="outline-2">
+<h2 id="sec-7"><span class="section-number-2">7</span> Other docker commands</h2>
+<div class="outline-text-2" id="text-7">
+<pre class="example">
+docker
+docker inspect
+docker inspect --help
+docker inspect ubuntu-upstat:14.04
+docker inspect bcl
+docker inspect -f '{{ .NetworkSettings.IPAddress }}' bcl
+docker top bcl
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-sec-8" class="outline-2">
+<h2 id="sec-8"><span class="section-number-2">8</span> Create a web application container</h2>
+<div class="outline-text-2" id="text-8">
+<ul class="org-ul">
+<li>Create a new container from <b>ubuntu-upstart</b>:
+<pre class="example">
+docker run -d --name=webapp --hostname=example.org \
+           -p 8000:80 -p 44300:443 ubuntu-upstart:14.04
+</pre>
+</li>
+
+<li>Update system packages of the container:
+<pre class="example">
+docker-enter webapp
+apt-get update
+apt-get -y upgrade
+</pre>
+</li>
+
+<li>Install apache2 and mysql:
+<pre class="example">
+apt-get install apache2 mysql-server php5 php5-mysql
+</pre>
+</li>
+
+<li>Create a test app:
+<pre class="example">
+cd /var/www/html/
+apt-get install vim
+vim index.php
+exit
+</pre>
+</li>
+
+<li>Try it in browser: <a href="http://example.org:8000">http://example.org:8000</a>
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-sec-9" class="outline-2">
+<h2 id="sec-9"><span class="section-number-2">9</span> Create more web application containers</h2>
+<div class="outline-text-2" id="text-9">
+<ul class="org-ul">
+<li>Save the webapp container as a new image (make a snapshot):
+<pre class="example">
+docker stop webapp
+docker commit webapp lamp:v1.0
+docker images
+</pre>
+</li>
+
+<li>Create new containers from this image:
+<pre class="example">
+mkdir app01
+docker run -d --name=webapp01 --hostname=example.org \
+           -v $(pwd)/app01:/var/www/html \
+           -p 8001:80 -p 44301:443 lamp:v1.0
+mkdir app02
+docker run -d --name=webapp02 --hostname=example.org \
+           -v $(pwd)/app02:/var/www/html \
+           -p 8002:80 -p 44302:443 lamp:v1.0
+</pre>
+</li>
+
+<li>Modify applications:
+<pre class="example">
+vim app01/index.php
+vim app02/index.php
+</pre>
+</li>
+
+<li>Test them in browser: 
+<ul class="org-ul">
+<li><a href="http://example.org:8001">http://example.org:8001</a>
+</li>
+<li><a href="http://example.org:8002">http://example.org:8002</a>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-sec-10" class="outline-2">
+<h2 id="sec-10"><span class="section-number-2">10</span> Upload image to Docker Hub</h2>
+<div class="outline-text-2" id="text-10">
+<ul class="org-ul">
+<li>Register on Docker Hub: <a href="https://hub.docker.com">https://hub.docker.com</a>
+</li>
+
+<li>Set a tag:
+<pre class="example">
+docker tag lamp:v1.0 username/lamp:v1.0
+</pre>
+</li>
+
+<li>Push to Docker Hub:
+<pre class="example">
+docker login 
+docker push username/lamp:v1.0
+</pre>
+</li>
+
+<li>Edit the information on:
+<a href="https://registry.hub.docker.com/u/username/lamp/">https://registry.hub.docker.com/u/username/lamp/</a>
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-sec-11" class="outline-2">
+<h2 id="sec-11"><span class="section-number-2">11</span> Building images</h2>
+<div class="outline-text-2" id="text-11">
+<ul class="org-ul">
+<li>Create <code>lamp/Dockerfile</code> with a content like this:
+<pre class="example">
+FROM ubuntu-upstart:14.04
+
+RUN apt-get update; apt-get -y upgrade
+RUN apt-get -y purge openssh-server openssh-client ; apt-get -y autoremove
+RUN apt-get update ; DEBIAN_FRONTEND=noninteractive apt-get -y install \
+    vim apache2 mysql-server php5 php5-mysql
+</pre>
+</li>
+
+<li>Build the image:
+<pre class="example">
+docker build --tag=lamp:v1.1 lamp/
+docker images
+</pre>
+</li>
+
+<li>Rebuild and notice that the cache will be used.
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-sec-12" class="outline-2">
+<h2 id="sec-12"><span class="section-number-2">12</span> Using container wsproxy</h2>
+<div class="outline-text-2" id="text-12">
+<ul class="org-ul">
+<li>See: <a href="https://registry.hub.docker.com/u/dashohoxha/wsproxy/">https://registry.hub.docker.com/u/dashohoxha/wsproxy/</a>
+</li>
+
+<li>Get the code from GitHub:
+<pre class="example">
+git clone https://github.com/dashohoxha/wsproxy
+</pre>
+</li>
+
+<li>Build the image and create a container:
+<pre class="example">
+wsproxy/build.sh
+wsproxy/run.sh
+</pre>
+</li>
+
+<li>Create containers of webapps:
+<pre class="example">
+docker stop webapp01 webapp02
+docker rm webapp01 webapp02
+
+docker run -d --name=webapp01 --hostname=example1.org \
+           -v $(pwd)/app01:/var/www/html lamp:v1.0
+docker run -d --name=webapp02 --hostname=example2.org \
+           -v $(pwd)/app02:/var/www/html lamp:v1.0
+</pre>
+</li>
+
+<li>Add apache2 virtual domains for <code>example1.org</code> and <code>example2.org</code>
+<pre class="example">
+cd wsproxy/config/etc/apache2/sites-available/
+
+cp bcl.conf xmp1.conf
+sed -i xmp1.conf -e 's/example.org/example1.org/'
+
+cp bcl-ssl.conf xmp1-ssl.conf
+sed -i xmp1-ssl.conf -e 's/example.org/example1.org/'
+
+cp bcl.conf xmp2.conf
+sed -i xmp2.conf -e 's/example.org/example2.org/'
+
+cp bcl-ssl.conf xmp2-ssl.conf
+sed -i xmp2-ssl.conf -e 's/example.org/example2.org/'
+
+cd ../sites-enabled/
+ln -s ../sites-available/xmp1.conf .
+ln -s ../sites-available/xmp1-ssl.conf .
+ln -s ../sites-available/xmp2.conf .
+ln -s ../sites-available/xmp2-ssl.conf .
+
+cd ../../../../../
+</pre>
+</li>
+
+<li>Edit <code>wsproxy/hosts.txt</code> and add these lines:
+<pre class="example">
+webapp01: example1.org
+webapp02: example2.org
+</pre>
+</li>
+
+<li>Restart container <i>wsproxy</i>:
+<pre class="example">
+wsproxy/restart.sh
+</pre>
+</li>
+
+<li>Add these lines on <code>/etc/hosts</code>:
+<pre class="example">
+127.0.0.1 example1.org
+127.0.0.1 example2.org
+</pre>
+</li>
+
+<li>Try in browser:
+<ul class="org-ul">
+<li><a href="https://example1.org">https://example1.org</a>
+</li>
+<li><a href="https://example2.org">https://example2.org</a>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-sec-13" class="outline-2">
+<h2 id="sec-13"><span class="section-number-2">13</span> Installing a Drupal Application</h2>
+<div class="outline-text-2" id="text-13">
+<ul class="org-ul">
+<li>See: <a href="https://github.com/dashohoxha/dbox">https://github.com/dashohoxha/dbox</a>
+</li>
+
+<li>Get the code of DBox from github:
+<pre class="example">
+git clone --branch openatrium https://github.com/dashohoxha/dbox.git
+</pre>
+</li>
+
+<li>Rename the project:
+<pre class="example">
+dbox/rename-project.sh  # see usage
+dbox/rename-project.sh labdoo:webapp03 lbd:w03
+mv dbox webapp03
+</pre>
+</li>
+
+<li>Initialize a git repository:
+<pre class="example">
+cd webapp03/
+git init .
+git add $(git ls-files --others)
+git commit -a -m 'My new project.'
+cd ..
+</pre>
+</li>
+
+<li>Build a docker image:
+<pre class="example">
+cp webapp03/install/settings.sh cfg.sh
+vim cfg.sh
+webapp03/docker-build.sh cfg.sh
+</pre>
+</li>
+
+<li>Create a docker container:
+<pre class="example">
+docker run -d --name=webapp03 --hostname=example3.org webapp03:master
+</pre>
+</li>
+
+<li>Add apache2 virtual domain for <code>example3.org</code>:
+<pre class="example">
+cd wsproxy/config/etc/apache2/sites-available/
+
+cp bcl.conf xmp3.conf
+sed -i xmp3.conf -e 's/example.org/example3.org/'
+
+cp bcl-ssl.conf xmp3-ssl.conf
+sed -i xmp3-ssl.conf -e 's/example.org/example3.org/'
+
+cp bcl_dev.conf xmp3_dev.conf
+sed -i xmp3_dev.conf -e 's/example.org/example3.org/'
+
+cp bcl_dev-ssl.conf xmp3_dev-ssl.conf
+sed -i xmp3_dev-ssl.conf -e 's/example.org/example3.org/'
+
+cd ../sites-enabled/
+ln -s ../sites-available/xmp3.conf .
+ln -s ../sites-available/xmp3-ssl.conf .
+ln -s ../sites-available/xmp3_dev.conf .
+ln -s ../sites-available/xmp3_dev-ssl.conf .
+
+cd ../../../../../
+</pre>
+</li>
+
+<li>Edit <code>wsproxy/hosts.txt</code> and add these lines:
+<pre class="example">
+webapp03: example3.org
+webapp03: dev.example3.org
+</pre>
+</li>
+
+<li>Restart container <i>wsproxy</i>:
+<pre class="example">
+wsproxy/restart.sh
+</pre>
+</li>
+
+<li>Add these lines on <code>/etc/hosts</code>:
+<pre class="example">
+127.0.0.1 example3.org
+127.0.0.1 dev.example3.org
+</pre>
+</li>
+
+<li>Try in browser:
+<ul class="org-ul">
+<li><a href="https://example3.org">https://example3.org</a>
+</li>
+<li><a href="https://dev.example3.org">https://dev.example3.org</a>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
