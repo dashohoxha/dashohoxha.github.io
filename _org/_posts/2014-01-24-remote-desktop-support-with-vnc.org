@@ -18,6 +18,7 @@ summary:    VNC is a well-known tool for remote desktop view and control.
     from the Internet. However, if you have access to an external server
     (for example a server in the cloud) there is still a workaround and
     things can be fixed to work.
+tags: [VNC, SSH]
 ---
 #+end_html
 

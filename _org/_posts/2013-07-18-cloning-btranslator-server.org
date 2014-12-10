@@ -15,6 +15,7 @@ summary:    It can be possible and even simple to make identical clones just
     by copying the physical disk or the filesystem. However I prefer to build
     a new server from scratch and copy only the relevant data from the old
     server.
+tags: [B-Translator]
 ---
 #+end_html
 

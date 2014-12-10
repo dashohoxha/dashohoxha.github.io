@@ -14,6 +14,7 @@ date:       2013-07-08
 summary:    I describe the development setup that I use for B-Translator.
     Most of the the tips are project specific, however some of
     them can be used on any Drupal project.
+tags: [B-Translator, Development]
 ---
 #+end_html
 

@@ -16,6 +16,7 @@ summary:    Recently I have suffered a total system destruction in one
     better to do the testing inside a chroot environment. Chroot’s provide
     isolation from the rest of the operating system, so that in case of
     severe errors damage can be mitigated.
+tags: [Ubuntu, chroot]
 ---
 #+end_html
 

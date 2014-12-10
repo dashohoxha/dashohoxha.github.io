@@ -12,6 +12,7 @@ summary:    We have two labs with 16 computers each. In each computer we have
     workarounds to manage all of them at once. There are different ways
     and solutions to accomplish this in Linux, but we have adopted a
     simple and practical one, suitable for our case.
+tags: [Ubuntu, Linux, System Administration]
 ---
 #+end_html
 

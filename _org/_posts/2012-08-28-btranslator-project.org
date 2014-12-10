@@ -5,6 +5,7 @@ title:      B-Translator as a Software Engineering Project
 date:       2012-08-28 12:23:00
 summary:    Using the project B-Translator as an example for illustrating
             some of software development concepts and practices.
+tags: [Software Engineering, Programing, B-Translator]
 ---
 #+end_html
 

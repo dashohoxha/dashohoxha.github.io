@@ -15,6 +15,7 @@ summary:    Features are very useful for building Drupal profiles (re-usable
     applications). They provide a way to capture and save in code the
     customizations that are done to a Drupal site/application. I will
     describe how I use them in B-Translator.
+tags: [Drupal Features, Development, B-Translator]
 ---
 #+end_html
 
