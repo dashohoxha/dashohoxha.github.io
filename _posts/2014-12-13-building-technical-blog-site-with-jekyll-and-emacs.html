@@ -1,0 +1,685 @@
+---
+layout:     post
+title:      Building a Technical Blog Site With Jekyll And Emacs
+date:       2014-12-13
+summary:    This article shows how I set up my own blog site on GitHub,
+    using the org-mode of Emacs for editing articles and HPSTR Jekyll Theme
+    for displaying them.
+tags: [Jekyll, Emacs, org-mode, Blogging]
+---
+
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. Installing Jekyll and the HPSTR theme</a></li>
+<li><a href="#sec-2">2. Customizing the HPSTR theme</a></li>
+<li><a href="#sec-3">3. Uploading your website to GitHub</a></li>
+<li><a href="#sec-4">4. Posting articles</a></li>
+<li><a href="#sec-5">5. Customizing CSS</a></li>
+<li><a href="#sec-6">6. Using org-mode for creating and editing articles</a></li>
+<li><a href="#sec-7">7. Converting org-mode articles to HTML format</a></li>
+<li><a href="#sec-8">8. Generating a TOC for an article</a></li>
+<li><a href="#sec-9">9. Displaying images properly</a></li>
+<li><a href="#sec-10">10. Post-processing html exports</a></li>
+<li><a href="#sec-11">11. Higlighting the syntax of the code examples</a></li>
+<li><a href="#sec-12">12. Referencies</a></li>
+</ul>
+</div>
+</div>
+<p>
+<a href="http://wiki.github.com/mojombo/jekyll">Jekyll</a> is a static web site generator written in Ruby. It can
+transform various text markups, using a templating language, into
+static html. The resulting site can be served by almost any web server
+without requiring additional components such as php. Jekyll is the
+tool used to produce Github's pages.
+</p>
+
+<p>
+<a href="http://org-mode.org/">Org-mode</a> of <a href="http://www.gnu.org/software/emacs/">Emacs</a> is very convenient for all-around editing, from
+simple note taking to managing one's tasks and to writing
+fully-fledged articles (which can later be exported to LaTeX, for
+instance). Hence it feels just natural to write blogs and articles in
+org-mode (rather than in markdown or textile, which are the formats
+supported by Jekyll).
+</p>
+
+<p>
+This article shows how I set up my own blog site on GitHub, using the
+org-mode of Emacs for editing articles and <a href="https://github.com/mmistakes/hpstr-jekyll-theme/">HPSTR Jekyll Theme</a> for
+displaying them.
+</p>
+
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Installing Jekyll and the HPSTR theme</h2>
+<div class="outline-text-2" id="text-1">
+<ul class="org-ul">
+<li>Fork the <a href="https://github.com/mmistakes/hpstr-jekyll-theme/fork">HPSTR Jekyll Theme</a> repo and rename it to something like
+this: <code>username.github.io</code> (where <code>username</code> is your GitHub
+username).
+</li>
+
+<li>Make a local clone of your website repo:
+<pre class="example">
+git clone https://github.com/username/username.github.io
+</pre>
+</li>
+
+<li>Install Ruby and Bundler:
+<pre class="example">
+sudo apt-get install ruby
+gem install bundler
+</pre>
+</li>
+
+<li>Install Jekyll and all dependencies:
+<pre class="example">
+cd username.github.io/
+bundle install
+</pre>
+</li>
+
+<li>Test it locally:
+<pre class="example">
+bundle exec jekyll serve
+</pre>
+<p>
+Now open in browser: <a href="http://localhost:4000">http://localhost:4000</a>
+</p>
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Customizing the HPSTR theme</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+Edit <code>_config.yml</code> to personalize your site. Most of the variables
+found here are used in the .html files found in <code>_includes/</code> if you
+need to add or remove anything.
+</p>
+
+<p>
+Check out the sample posts in <code>_posts/</code> to see examples for pulling
+in large feature images, assigning categories and tags, and other
+YAML data.
+</p>
+
+<p>
+For more details about customizing the theme see:
+<a href="http://mmistakes.github.io/hpstr-jekyll-theme/theme-setup/">http://mmistakes.github.io/hpstr-jekyll-theme/theme-setup/</a>
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> Uploading your website to GitHub</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+Since it is a git repository, we can commit our changes and push
+them to GitHub with <code>git push origin master</code>. In a few moments our
+changes will be available online and we can access it at
+<a href="http://username.github.io">http://username.github.io</a>. However we should make sure first that
+the URL of the site on <code>_config.yml</code> is correct. It should be like
+this: <code>url: http://username.github.io</code>, not empty or <code>url:
+  http://localhost:4000</code>, which are used for local development.
+</p>
+
+<p>
+Here are a few tips that can be useful during development:
+</p>
+
+<ul class="org-ul">
+<li><b>Tip1:</b> Everytime that you make a <code>git push origin master</code>, you
+have to give the github username and password. To avoid this, you
+can modify the file <code>.git/config</code> like this:
+<pre class="example">
+[remote "origin"]
+	url = https://username:password@github.com/usename/username.github.io
+</pre>
+<p>
+(adding <b>username:password@</b> before <i>github.com</i>).
+</p>
+</li>
+
+<li><b>Tip2:</b> Since the line <code>url:</code> in <code>_config.yml</code> has to be different
+for the online and local copy of the website, I have created a git
+branch named <b>local</b> where I do the development and testing, and
+then <b>cherry-pick</b> commits to the branch master and push them to
+github.
+</li>
+
+<li><b>Tip3:</b> To automate the workflow on the previous tip I use the script
+<code>push.sh</code> with a content like this:
+<pre class="example">
+#!/bin/bash
+
+### get the parameter commit
+if [ "$1" = '' ]
+then
+    echo "Usage: $0 &lt;commit_id&gt;"
+    exit 1
+fi
+commit=$1
+
+### transfer the commit to branch gh-pages
+git stash
+git checkout master
+git cherry-pick $commit
+
+### push to github gh-pages
+git push origin master
+
+### switch back to the local branch
+git checkout local
+git stash pop
+</pre>
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> Posting articles</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+Jekyll expects the posted articles to be on the directory <code>_posts/</code>,
+with a file name like <code>yyyy-mm-dd-title-of-the-article.extension</code>.
+They can be in <a href="http://assemble.io/docs/Cheatsheet-Markdown.html">markdown</a> or <a href="http://redcloth.org/textile">textile</a> format and jekyll will convert
+them to HTML. But they can also be just plain HTML and jekyll will
+not touch their content. The extension can be <code>.markdown</code> (or
+<code>.md</code>), <code>.textile</code>, or <code>.html</code>.
+</p>
+
+<p>
+In each case jekyll expects a <i>front-matter</i> in YAML format at the
+very top of each file, which looks like this:
+</p>
+<pre class="example">
+---
+layout:     post
+title:      Building a Technical Blog Site With Jekyll And Emacs
+date:       2014-12-11
+summary:    This article shows how I set up my own blog site on GitHub,
+    using the org-mode of Emacs for editing articles and HPSTR Jekyll Theme
+    for displaying them.
+tags: [Jekyll, Emacs, org-mode, Blogging]
+---
+</pre>
+<p>
+It defines the layout (from directory <code>_layouts/</code>) that will be used
+to render the article and other variables that are used in the
+templates.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5"><span class="section-number-2">5</span> Customizing CSS</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+To customize CSS, I added this line on <code>assets/css/main.scss</code>:
+</p>
+<pre class="example">
+@import "custom";
+</pre>
+
+<p>
+Then created the file <code>_sass/_custom.scss</code> with a content like this:
+</p>
+{% highlight css %}
+// Change the colors of the selected text.
+::-moz-selection { 
+        background-color: blue;
+        color: white; 
+        text-shadow: none; 
+}     
+::selection { 
+        background-color: blue;
+        color: white; 
+        text-shadow: none; 
+}
+
+// Decrease the space between the links in the section About.
+#dl-menu .dl-submenu li a {
+    padding: 10px 20px;
+}
+
+// Improve the display of figures by adding borders, centering, etc.
+.figure {
+    text-align: center;
+    border: 1px solid #eeeeee;
+    margin: 20px 0;
+}
+.figure img {
+    border: 1px solid #cccccc;
+    border-radius: 5px;
+    box-shadow: 0 0 10px #cccccc;
+}
+.figure p:nth-child(2) {
+    background-color: #eeeeee;
+    margin: 0;
+}
+.figure .figure-number {
+    font-style: italic;
+}
+{% endhighlight %}
+
+<p>
+Of course you will need to make your own customizations.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-6" class="outline-2">
+<h2 id="sec-6"><span class="section-number-2">6</span> Using org-mode for creating and editing articles</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+I have created the directory <code>_org/_posts/</code> for the articles in
+org-mode format. The filename of an article looks like this:
+<code>2014-12-11-building-technical-blog-site-with-jekyll-and-emacs.org</code>.
+</p>
+
+<p>
+The filename of an article looks like this:
+</p>
+<pre class="example">
+#+TITLE:     Building a Technical Blog Site With Jekyll And Emacs
+#+AUTHOR:    Dashamir Hoxha
+#+EMAIL:     dashohoxha@gmail.com
+#+DATE:      2014-12-11
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t &lt;:t
+#+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+# #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
+# #+STYLE: &lt;link rel="stylesheet" type="text/css" href="css/org-info.css" /&gt;
+#+BEGIN_HTML
+---
+layout:     post
+title:      Building a Technical Blog Site With Jekyll And Emacs
+date:       2014-12-11
+summary:    This article shows how I set up my own blog site on GitHub,
+    using the org-mode of Emacs for editing articles and HPSTR Jekyll Theme
+    for displaying them.
+tags: [Jekyll, Emacs, org-mode, Blogging]
+---
+# +END_HTML
+
+Jekyll is a static web site generator written in Ruby. It can
+transform various text markups, using a templating language, into
+static html. The resulting site can be served by almost any web server
+without requiring additional components such as php. Jekyll is the
+tool used to produce Github's pages.
+
+. . . . . . . . . .
+</pre>
+
+<p>
+The top lines that start with <code>#+TITLE:</code>, <code>#+AUTHOR:</code>, etc. are not
+displayed on the converted HTML document. So, the first lines that
+are outputed is the YAML front matter which is included between the
+lines <code>#+BEGIN_HTML</code> and <code>#+END_HTML</code>:
+</p>
+<pre class="example">
+---
+layout:     post
+title:      Building a Technical Blog Site With Jekyll And Emacs
+date:       2014-12-11
+summary:    This article shows how I set up my own blog site on GitHub,
+    using the org-mode of Emacs for editing articles and HPSTR Jekyll Theme
+    for displaying them.
+tags: [Jekyll, Emacs, org-mode, Blogging]
+---
+</pre>
+
+<p>
+Other resources:
+</p>
+<ul class="org-ul">
+<li>See the full content of the article here:
+<a href="https://github.com/dashohoxha/dashohoxha.github.io/raw/master/_org/_posts/2014-12-11-building-technical-blog-site-with-jekyll-and-emacs.org">2014-12-11-building-technical-blog-site-with-jekyll-and-emacs.org</a>
+</li>
+<li>Here is an org-mode cheat-sheet which shows the basic formating
+syntax of org-mode (headings, lists, text formating, etc.):
+<a href="http://emacsclub.github.io/html/org_tutorial.html">http://emacsclub.github.io/html/org_tutorial.html</a>
+</li>
+<li>For more details about the export settings see:
+<a href="http://orgmode.org/manual/Export-settings.html">http://orgmode.org/manual/Export-settings.html</a>
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-sec-7" class="outline-2">
+<h2 id="sec-7"><span class="section-number-2">7</span> Converting org-mode articles to HTML format</h2>
+<div class="outline-text-2" id="text-7">
+<p>
+We need to export (convert) org-mode articles to HTML format and to
+place the HTML article in the directory <code>_posts/</code>, so that it can be
+found and processed by Jekyll. We do this by defining an org-mode
+<i>publish project</i> in the file <b>~/.emacs</b>, like this:
+</p>
+{% highlight lisp %}
+(setq org-publish-project-alist '(
+
+  ("org-blog"
+          ;; Path to your org files.
+          :base-directory "~/username.github.io/_org/"
+          :base-extension "org"
+
+          ;; Path to your Jekyll project.
+          :publishing-directory "~/username.github.io/"
+          :recursive t
+          :publishing-function org-html-publish-to-html
+          :headline-levels 4
+          :html-extension "html"
+          :body-only t ;; Only export section between <body> </body>
+          :section-numbers nil
+          :with-toc nil
+    )
+
+    ("org-static-blog"
+          :base-directory "~/username.github.io/_org/"
+          :base-extension any
+          :exclude ".*\.org"
+          :publishing-directory "~/username.github.io/"
+          :recursive t
+          :publishing-function org-publish-attachment)
+
+    ("blog" :components ("org-blog" "org-static-blog"))
+
+))
+{% endhighlight %}
+
+<p>
+The first project ("org-blog") defines how the org files are
+published.  <code>:base-directory ~/username.github.io/_org/</code> is the
+directory that will be searched recursively for <code>.org</code> files. They
+will be converted to html with <code>:publishing-function
+  org-html-publish-to-html</code> and will be saved to
+<code>:publishing-directory ~/username.github.io/</code> with the same
+directory structure.
+</p>
+
+<p>
+The setting <code>:body-only t</code> makes sure that only the body of the HTML
+document will be exported (the rest of the webpage will be
+constructed by jekyll according to the layout given in the config
+section).
+</p>
+
+<p>
+The second project ("org-static-blog") just copies anything else
+from the <code>_org/</code> directory to the main jekyll directory. They can be
+images, css/js files, etc.
+</p>
+
+<p>
+The project "blog" calls both of these publishing projects.
+</p>
+
+<p>
+Now we can export the project with <code>C-c C-e P x blog</code>.
+</p>
+
+<p>
+<b>Note:</b> If you don't have org-mode version 8.0 or later (check it
+with <code>M-x org-version</code>), you should update it. You can do it like
+this:
+</p>
+<ol class="org-ol">
+<li>Go to the list of packages: <code>M-x package-list-packages</code>
+</li>
+<li>Find the package <b>org</b>:  <code>C-s org</code>
+</li>
+<li>Go to it and press <code>&lt;Enter&gt;</code>
+</li>
+<li>Install it by clicking on <code>[Install]</code>
+</li>
+</ol>
+</div>
+</div>
+
+
+<div id="outline-container-sec-8" class="outline-2">
+<h2 id="sec-8"><span class="section-number-2">8</span> Generating a TOC for an article</h2>
+<div class="outline-text-2" id="text-8">
+<p>
+Let us look closer at the export settings on the org file:
+</p>
+<pre class="example">
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t &lt;:t
+#+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+</pre>
+<p>
+We notice the option <code>toc:t</code> which tells the export function to generate
+a <i>Table Of Content</i> on the HTML file (to disable it use <code>toc:nil</code>).
+</p>
+
+<p>
+However there is a problem because the TOC is generated before
+anything else, even before the YAML config section. We don't want
+this because jekyll can process the config section of an HTML file
+only if it is at the top of the file.
+</p>
+
+<p>
+But we can fix it with commands like this:
+</p>
+<pre class="example">
+(sed -n -e '/^---$/,/^---$/p' file.html; sed -e '/^---$/,/^---$/d' file.html) &gt; file.new
+mv file.new file.html
+</pre>
+<p>
+(More on it later.)
+</p>
+
+<p>
+Now the TOC is displayed at the top of the article. However it is
+possible to make it look more nice and professional. Add these lines
+at the file <code>_sass/_custom.scss</code> and you will see that they create
+the slendid efect of a dynamic TOC:
+</p>
+{% highlight css %}
+// TOC copied from: http://orgmode.org/worg/
+#table-of-contents {
+    font-size: 10pt;
+    position: fixed;
+    right: 0em;
+    top: 0em;
+    background: white;
+    line-height: 12pt;
+    text-align: right;
+    box-shadow: 0 0 1em #777777;
+    -webkit-box-shadow: 0 0 1em #777777;
+    -moz-box-shadow: 0 0 1em #777777;
+    -webkit-border-bottom-left-radius: 5px;
+    -moz-border-radius-bottomleft: 5px;
+    /* ensure doesn't flow off the screen when expanded */
+    max-height: 80%;
+    overflow: auto;
+}
+#table-of-contents h2 {
+    font-size: 13pt;
+    max-width: 9em;
+    border: 0;
+    font-weight: normal;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    padding-top: 0.05em;
+    padding-bottom: 0.05em;
+}
+#table-of-contents #text-table-of-contents {
+    display: none;
+    text-align: left;
+}
+#table-of-contents:hover #text-table-of-contents {
+    display: block;
+    padding: 0.5em;
+    margin-top: -1.5em;
+}
+{% endhighlight %}
+</div>
+</div>
+
+
+<div id="outline-container-sec-9" class="outline-2">
+<h2 id="sec-9"><span class="section-number-2">9</span> Displaying images properly</h2>
+<div class="outline-text-2" id="text-9">
+<p>
+Images in the org-mode file are included like this:
+</p>
+
+<pre class="example">
+#+CAPTION:    Tables and their relations.
+#+NAME:       fig:db_diagram
+#+ATTR_LaTeX: width=13cm
+[[file:images/btranslator-project/db_diagram.png][file:images/btranslator-project/db_diagram.png] ]
+</pre>
+
+<p>
+On the final document it looks like this:
+</p>
+
+<div id="fig:db_diagram" class="figure">
+<p><a href="/images/btranslator-project/db_diagram.png"><img src="/images/btranslator-project/db_diagram.png" alt="db_diagram.png" /></a>
+</p>
+<p><span class="figure-number">Figure 1:</span> Tables and their relations.</p>
+</div>
+
+<p>
+The image itself is initially placed on the directory
+<code>_org/images/btranslator_project/</code>. When the export comand is
+executed, besides converting to HTML it will also copy everything on
+the directory <code>_org/</code> to the main directory of jekyll, so it will go
+to <code>images/btranslator_project/</code>. However the source of the image on
+the generated HTML file will look like this:
+</p>
+{% highlight html %}
+<img src="images/btranslator_project/db_diagram.png" />
+{% endhighlight %}
+
+<p>
+It is missing a slash (/) in front. It can be corrected after
+exporting with a command like this:
+</p>
+<pre class="example">
+sed -e 's|="images/|="/images/|g' -i file.html
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-sec-10" class="outline-2">
+<h2 id="sec-10"><span class="section-number-2">10</span> Post-processing html exports</h2>
+<div class="outline-text-2" id="text-10">
+<p>
+I have created a bash script for fixing the problems in the two
+sections above (making sure that the YAML section is at the very
+top of the generated HTML file, and correcting the URL of images).
+It is in the file <code>_org/post-process.sh</code> and looks like this:
+</p>
+{% highlight bash %}
+#!/bin/bash
+### Post-process .html files (after being converted from .org)
+### to make sure that they are properly formatted for jekyll.
+### Example:
+###     ./post-process.sh ../_posts/*.html
+
+### if there are no argument, display the usage
+if [ $# -eq 0 ]
+then
+    echo "
+Usage: $0 [<file>|<glob>]...
+
+Example:
+    ./post-process.sh ../_posts/*.html
+"
+    exit 1
+fi
+
+### process each file given as an argument
+for file in $@
+do
+    echo $file
+
+    ### make sure that the yaml front matter is on top of the file
+    (sed -n -e '/^---$/,/^---$/p' $file; sed -e '/^---$/,/^---$/d' $file) > $file.new
+    mv $file.new $file
+
+    ### fix the path (url) of images by adding a slash (/) in front of it
+    sed -i $file -e 's|="images/|="/images/|g'
+done
+{% endhighlight %}
+
+<p>
+To make sure that all the HTML post are OK, I call it like this:
+</p>
+<pre class="example">
+_org/post_process.sh _posts/*.html
+</pre>
+<p>
+It is also idempotent (runing it multiple times on the same HTML
+file will not break it).
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-11" class="outline-2">
+<h2 id="sec-11"><span class="section-number-2">11</span> Higlighting the syntax of the code examples</h2>
+<div class="outline-text-2" id="text-11">
+<p>
+My articles often include code examples, so I am interested in
+displaying them prettily. I use the tags <code>#+BEGIN_EXAMPLE</code> and
+<code>#+END_EXAMPLE</code> to display terminal commands and output, and
+sometimes even for code, but it does not do syntax highlighting.
+</p>
+
+<p>
+For syntax highlighting I let jekyll do it, using the tags
+<code>{ % highlight %}</code> and <code>{ % endhighlight %}</code>, like this:
+</p>
+<pre class="example">
+#+BEGIN_HTML
+{ % highlight bash %}
+#!/bin/bash
+
+. . . . . . . . . . .
+
+{ % endhighlight %}
+#+END_HTML
+</pre>
+<p>
+Of course it has to be wrapped in org tags <code>#+BEGIN_HTML</code> and
+<code>#+END_HTML</code>, so that it is copied verbatim while exporting to HTML.
+</p>
+
+<p>
+For other tips about code examples see also this:
+<a href="http://mmistakes.github.io/hpstr-jekyll-theme/code-highlighting-post/">http://mmistakes.github.io/hpstr-jekyll-theme/code-highlighting-post/</a>
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-12" class="outline-2">
+<h2 id="sec-12"><span class="section-number-2">12</span> Referencies</h2>
+<div class="outline-text-2" id="text-12">
+<ul class="org-ul">
+<li><a href="http://mmistakes.github.io/hpstr-jekyll-theme/theme-setup/">http://mmistakes.github.io/hpstr-jekyll-theme/theme-setup/</a>
+</li>
+<li><a href="http://orgmode.org/worg/org-tutorials/org-jekyll.html">http://orgmode.org/worg/org-tutorials/org-jekyll.html</a>
+</li>
+<li><a href="http://www.gorgnegre.com/linux/using-emacs-orgmode-to-blog-with-jekyll.html">http://www.gorgnegre.com/linux/using-emacs-orgmode-to-blog-with-jekyll.html</a>
+</li>
+</ul>
+</div>
+</div>
