@@ -12,52 +12,73 @@ tags: [Jekyll, Emacs, org-mode, Blogging]
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#sec-1">1. Installing Jekyll and the HPSTR theme</a></li>
-<li><a href="#sec-2">2. Customizing the HPSTR theme</a></li>
-<li><a href="#sec-3">3. Uploading your website to GitHub</a></li>
-<li><a href="#sec-4">4. Posting articles</a></li>
-<li><a href="#sec-5">5. Customizing CSS</a></li>
-<li><a href="#sec-6">6. Using org-mode for creating and editing articles</a></li>
-<li><a href="#sec-7">7. Converting org-mode articles to HTML format</a></li>
-<li><a href="#sec-8">8. Generating a TOC for an article</a></li>
-<li><a href="#sec-9">9. Displaying images properly</a></li>
-<li><a href="#sec-10">10. Post-processing html exports</a></li>
-<li><a href="#sec-11">11. Higlighting the syntax of the code examples</a></li>
-<li><a href="#sec-12">12. Referencies</a></li>
+<li><a href="#sec-1">1. Introduction</a></li>
+<li><a href="#sec-2">2. Jekyll</a>
+<ul>
+<li><a href="#sec-2-1">2.1. Installing Jekyll and the HPSTR theme</a></li>
+<li><a href="#sec-2-2">2.2. Customizing the HPSTR theme</a></li>
+<li><a href="#sec-2-3">2.3. Uploading your website to GitHub</a></li>
+<li><a href="#sec-2-4">2.4. Posting articles</a></li>
+<li><a href="#sec-2-5">2.5. Customizing CSS</a></li>
+</ul>
+</li>
+<li><a href="#sec-3">3. Org-mode</a>
+<ul>
+<li><a href="#sec-3-1">3.1. Using org-mode for creating and editing articles</a>
+<ul>
+<li><a href="#sec-3-1-1">3.1.1. Other resources</a></li>
+</ul>
+</li>
+<li><a href="#sec-3-2">3.2. Converting org-mode articles to HTML format</a></li>
+<li><a href="#sec-3-3">3.3. Generating a TOC for an article</a></li>
+<li><a href="#sec-3-4">3.4. Displaying images properly</a></li>
+<li><a href="#sec-3-5">3.5. Post-processing html exports</a></li>
+<li><a href="#sec-3-6">3.6. Higlighting the syntax of the code examples</a></li>
+</ul>
+</li>
+<li><a href="#sec-4">4. Referencies</a></li>
 </ul>
 </div>
 </div>
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Introduction</h2>
+<div class="outline-text-2" id="text-1">
 <p>
-<a href="http://wiki.github.com/mojombo/jekyll">Jekyll</a> is a static web site generator written in Ruby. It can
+<a href="http://jekyllrb.com/">Jekyll</a> is a static web site generator written in Ruby. It can
 transform various text markups, using a templating language, into
-static html. The resulting site can be served by almost any web server
-without requiring additional components such as php. Jekyll is the
-tool used to produce Github's pages.
+static html. The resulting site can be served by almost any web
+server without requiring additional components such as php. Jekyll
+is the tool used to produce Github's pages.
 </p>
 
 <p>
 <a href="http://org-mode.org/">Org-mode</a> of <a href="http://www.gnu.org/software/emacs/">Emacs</a> is very convenient for all-around editing, from
 simple note taking to managing one's tasks and to writing
 fully-fledged articles (which can later be exported to LaTeX, for
-instance). Hence it feels just natural to write blogs and articles in
-org-mode (rather than in markdown or textile, which are the formats
-supported by Jekyll).
+instance). Hence it feels just natural to write blogs and articles
+in org-mode (rather than in markdown or textile, which are the
+formats supported by Jekyll).
 </p>
 
 <p>
-This article shows how I set up my own blog site on GitHub, using the
-org-mode of Emacs for editing articles and <a href="https://github.com/mmistakes/hpstr-jekyll-theme/">HPSTR Jekyll Theme</a> for
-displaying them.
+This article shows how I set up my own blog site on GitHub, using
+the org-mode of Emacs for editing articles and <a href="https://github.com/mmistakes/hpstr-jekyll-theme/">HPSTR Jekyll Theme</a>
+for displaying them.
 </p>
+</div>
+</div>
 
 
-<div id="outline-container-sec-1" class="outline-2">
-<h2 id="sec-1"><span class="section-number-2">1</span> Installing Jekyll and the HPSTR theme</h2>
-<div class="outline-text-2" id="text-1">
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Jekyll</h2>
+<div class="outline-text-2" id="text-2">
+</div><div id="outline-container-sec-2-1" class="outline-3">
+<h3 id="sec-2-1"><span class="section-number-3">2.1</span> Installing Jekyll and the HPSTR theme</h3>
+<div class="outline-text-3" id="text-2-1">
 <ul class="org-ul">
 <li>Fork the <a href="https://github.com/mmistakes/hpstr-jekyll-theme/fork">HPSTR Jekyll Theme</a> repo and rename it to something like
 this: <code>username.github.io</code> (where <code>username</code> is your GitHub
-username).
+username). Alternatively, you can <a href="https://github.com/dashohoxha/dashohoxha.github.io/fork">fork the repo of my website</a>.
 </li>
 
 <li>Make a local clone of your website repo:
@@ -93,13 +114,13 @@ Now open in browser: <a href="http://localhost:4000">http://localhost:4000</a>
 </div>
 
 
-<div id="outline-container-sec-2" class="outline-2">
-<h2 id="sec-2"><span class="section-number-2">2</span> Customizing the HPSTR theme</h2>
-<div class="outline-text-2" id="text-2">
+<div id="outline-container-sec-2-2" class="outline-3">
+<h3 id="sec-2-2"><span class="section-number-3">2.2</span> Customizing the HPSTR theme</h3>
+<div class="outline-text-3" id="text-2-2">
 <p>
 Edit <code>_config.yml</code> to personalize your site. Most of the variables
-found here are used in the .html files found in <code>_includes/</code> if you
-need to add or remove anything.
+found here are used in the .html files found in <code>_includes/</code> (if you
+need to add or remove anything).
 </p>
 
 <p>
@@ -116,9 +137,9 @@ For more details about customizing the theme see:
 </div>
 
 
-<div id="outline-container-sec-3" class="outline-2">
-<h2 id="sec-3"><span class="section-number-2">3</span> Uploading your website to GitHub</h2>
-<div class="outline-text-2" id="text-3">
+<div id="outline-container-sec-2-3" class="outline-3">
+<h3 id="sec-2-3"><span class="section-number-3">2.3</span> Uploading your website to GitHub</h3>
+<div class="outline-text-3" id="text-2-3">
 <p>
 Since it is a git repository, we can commit our changes and push
 them to GitHub with <code>git push origin master</code>. In a few moments our
@@ -126,7 +147,7 @@ changes will be available online and we can access it at
 <a href="http://username.github.io">http://username.github.io</a>. However we should make sure first that
 the URL of the site on <code>_config.yml</code> is correct. It should be like
 this: <code>url: http://username.github.io</code>, not empty or <code>url:
-  http://localhost:4000</code>, which are used for local development.
+   http://localhost:4000</code>, which are used for local development.
 </p>
 
 <p>
@@ -184,9 +205,9 @@ git stash pop
 </div>
 
 
-<div id="outline-container-sec-4" class="outline-2">
-<h2 id="sec-4"><span class="section-number-2">4</span> Posting articles</h2>
-<div class="outline-text-2" id="text-4">
+<div id="outline-container-sec-2-4" class="outline-3">
+<h3 id="sec-2-4"><span class="section-number-3">2.4</span> Posting articles</h3>
+<div class="outline-text-3" id="text-2-4">
 <p>
 Jekyll expects the posted articles to be on the directory <code>_posts/</code>,
 with a file name like <code>yyyy-mm-dd-title-of-the-article.extension</code>.
@@ -204,7 +225,7 @@ very top of each file, which looks like this:
 ---
 layout:     post
 title:      Building a Technical Blog Site With Jekyll And Emacs
-date:       2014-12-11
+date:       2014-12-13
 summary:    This article shows how I set up my own blog site on GitHub,
     using the org-mode of Emacs for editing articles and HPSTR Jekyll Theme
     for displaying them.
@@ -220,9 +241,9 @@ templates.
 </div>
 
 
-<div id="outline-container-sec-5" class="outline-2">
-<h2 id="sec-5"><span class="section-number-2">5</span> Customizing CSS</h2>
-<div class="outline-text-2" id="text-5">
+<div id="outline-container-sec-2-5" class="outline-3">
+<h3 id="sec-2-5"><span class="section-number-3">2.5</span> Customizing CSS</h3>
+<div class="outline-text-3" id="text-2-5">
 <p>
 To customize CSS, I added this line on <code>assets/css/main.scss</code>:
 </p>
@@ -239,7 +260,7 @@ Then created the file <code>_sass/_custom.scss</code> with a content like this:
         background-color: blue;
         color: white; 
         text-shadow: none; 
-}     
+}    
 ::selection { 
         background-color: blue;
         color: white; 
@@ -276,25 +297,29 @@ Of course you will need to make your own customizations.
 </p>
 </div>
 </div>
+</div>
 
 
-<div id="outline-container-sec-6" class="outline-2">
-<h2 id="sec-6"><span class="section-number-2">6</span> Using org-mode for creating and editing articles</h2>
-<div class="outline-text-2" id="text-6">
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> Org-mode</h2>
+<div class="outline-text-2" id="text-3">
+</div><div id="outline-container-sec-3-1" class="outline-3">
+<h3 id="sec-3-1"><span class="section-number-3">3.1</span> Using org-mode for creating and editing articles</h3>
+<div class="outline-text-3" id="text-3-1">
 <p>
 I have created the directory <code>_org/_posts/</code> for the articles in
 org-mode format. The filename of an article looks like this:
-<code>2014-12-11-building-technical-blog-site-with-jekyll-and-emacs.org</code>.
+<code>2014-12-13-building-technical-blog-site-with-jekyll-and-emacs.org</code>.
 </p>
 
 <p>
-The filename of an article looks like this:
+The content of the article looks like this:
 </p>
 <pre class="example">
 #+TITLE:     Building a Technical Blog Site With Jekyll And Emacs
 #+AUTHOR:    Dashamir Hoxha
 #+EMAIL:     dashohoxha@gmail.com
-#+DATE:      2014-12-11
+#+DATE:      2014-12-13
 #+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t &lt;:t
 #+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
 # #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
@@ -303,7 +328,7 @@ The filename of an article looks like this:
 ---
 layout:     post
 title:      Building a Technical Blog Site With Jekyll And Emacs
-date:       2014-12-11
+date:       2014-12-13
 summary:    This article shows how I set up my own blog site on GitHub,
     using the org-mode of Emacs for editing articles and HPSTR Jekyll Theme
     for displaying them.
@@ -322,49 +347,53 @@ tool used to produce Github's pages.
 
 <p>
 The top lines that start with <code>#+TITLE:</code>, <code>#+AUTHOR:</code>, etc. are not
-displayed on the converted HTML document. So, the first lines that
-are outputed is the YAML front matter which is included between the
+displayed on the converted HTML document. So, the first thing that
+is outputed is the YAML front matter, which is included between the
 lines <code>#+BEGIN_HTML</code> and <code>#+END_HTML</code>:
 </p>
 <pre class="example">
 ---
 layout:     post
 title:      Building a Technical Blog Site With Jekyll And Emacs
-date:       2014-12-11
+date:       2014-12-13
 summary:    This article shows how I set up my own blog site on GitHub,
     using the org-mode of Emacs for editing articles and HPSTR Jekyll Theme
     for displaying them.
 tags: [Jekyll, Emacs, org-mode, Blogging]
 ---
 </pre>
+</div>
 
-<p>
-Other resources:
-</p>
+<div id="outline-container-sec-3-1-1" class="outline-4">
+<h4 id="sec-3-1-1"><span class="section-number-4">3.1.1</span> Other resources</h4>
+<div class="outline-text-4" id="text-3-1-1">
 <ul class="org-ul">
 <li>See the full content of the article here:
-<a href="https://github.com/dashohoxha/dashohoxha.github.io/raw/master/_org/_posts/2014-12-11-building-technical-blog-site-with-jekyll-and-emacs.org">2014-12-11-building-technical-blog-site-with-jekyll-and-emacs.org</a>
+<a href="https://github.com/dashohoxha/dashohoxha.github.io/raw/master/_org/_posts/2014-12-13-building-technical-blog-site-with-jekyll-and-emacs.org">2014-12-13-building-technical-blog-site-with-jekyll-and-emacs.org</a>
 </li>
+
 <li>Here is an org-mode cheat-sheet which shows the basic formating
 syntax of org-mode (headings, lists, text formating, etc.):
 <a href="http://emacsclub.github.io/html/org_tutorial.html">http://emacsclub.github.io/html/org_tutorial.html</a>
 </li>
+
 <li>For more details about the export settings see:
 <a href="http://orgmode.org/manual/Export-settings.html">http://orgmode.org/manual/Export-settings.html</a>
 </li>
 </ul>
 </div>
 </div>
+</div>
 
 
-<div id="outline-container-sec-7" class="outline-2">
-<h2 id="sec-7"><span class="section-number-2">7</span> Converting org-mode articles to HTML format</h2>
-<div class="outline-text-2" id="text-7">
+<div id="outline-container-sec-3-2" class="outline-3">
+<h3 id="sec-3-2"><span class="section-number-3">3.2</span> Converting org-mode articles to HTML format</h3>
+<div class="outline-text-3" id="text-3-2">
 <p>
 We need to export (convert) org-mode articles to HTML format and to
 place the HTML article in the directory <code>_posts/</code>, so that it can be
 found and processed by Jekyll. We do this by defining an org-mode
-<i>publish project</i> in the file <b>~/.emacs</b>, like this:
+<i>publish project</i> in the file <b>~/.emacs</b>, with a content like this:
 </p>
 {% highlight lisp %}
 (setq org-publish-project-alist '(
@@ -403,7 +432,7 @@ The first project ("org-blog") defines how the org files are
 published.  <code>:base-directory ~/username.github.io/_org/</code> is the
 directory that will be searched recursively for <code>.org</code> files. They
 will be converted to html with <code>:publishing-function
-  org-html-publish-to-html</code> and will be saved to
+   org-html-publish-to-html</code> and will be saved to
 <code>:publishing-directory ~/username.github.io/</code> with the same
 directory structure.
 </p>
@@ -448,9 +477,9 @@ this:
 </div>
 
 
-<div id="outline-container-sec-8" class="outline-2">
-<h2 id="sec-8"><span class="section-number-2">8</span> Generating a TOC for an article</h2>
-<div class="outline-text-2" id="text-8">
+<div id="outline-container-sec-3-3" class="outline-3">
+<h3 id="sec-3-3"><span class="section-number-3">3.3</span> Generating a TOC for an article</h3>
+<div class="outline-text-3" id="text-3-3">
 <p>
 Let us look closer at the export settings on the org file:
 </p>
@@ -485,7 +514,7 @@ mv file.new file.html
 Now the TOC is displayed at the top of the article. However it is
 possible to make it look more nice and professional. Add these lines
 at the file <code>_sass/_custom.scss</code> and you will see that they create
-the slendid efect of a dynamic TOC:
+the splendid efect of a dynamic TOC:
 </p>
 {% highlight css %}
 // TOC copied from: http://orgmode.org/worg/
@@ -530,9 +559,9 @@ the slendid efect of a dynamic TOC:
 </div>
 
 
-<div id="outline-container-sec-9" class="outline-2">
-<h2 id="sec-9"><span class="section-number-2">9</span> Displaying images properly</h2>
-<div class="outline-text-2" id="text-9">
+<div id="outline-container-sec-3-4" class="outline-3">
+<h3 id="sec-3-4"><span class="section-number-3">3.4</span> Displaying images properly</h3>
+<div class="outline-text-3" id="text-3-4">
 <p>
 Images in the org-mode file are included like this:
 </p>
@@ -556,10 +585,10 @@ On the final document it looks like this:
 
 <p>
 The image itself is initially placed on the directory
-<code>_org/images/btranslator_project/</code>. When the export comand is
+<code>/_org/images/btranslator_project/</code>. When the export comand is
 executed, besides converting to HTML it will also copy everything on
-the directory <code>_org/</code> to the main directory of jekyll, so it will go
-to <code>images/btranslator_project/</code>. However the source of the image on
+the directory <code>/_org/</code> to the main directory of jekyll, so it will go
+to <code>/images/btranslator_project/</code>. However the source of the image on
 the generated HTML file will look like this:
 </p>
 {% highlight html %}
@@ -577,9 +606,9 @@ sed -e 's|="images/|="/images/|g' -i file.html
 </div>
 
 
-<div id="outline-container-sec-10" class="outline-2">
-<h2 id="sec-10"><span class="section-number-2">10</span> Post-processing html exports</h2>
-<div class="outline-text-2" id="text-10">
+<div id="outline-container-sec-3-5" class="outline-3">
+<h3 id="sec-3-5"><span class="section-number-3">3.5</span> Post-processing html exports</h3>
+<div class="outline-text-3" id="text-3-5">
 <p>
 I have created a bash script for fixing the problems in the two
 sections above (making sure that the YAML section is at the very
@@ -620,7 +649,7 @@ done
 {% endhighlight %}
 
 <p>
-To make sure that all the HTML post are OK, I call it like this:
+To make sure that all the HTML posts are OK, I call it like this:
 </p>
 <pre class="example">
 _org/post_process.sh _posts/*.html
@@ -633,9 +662,9 @@ file will not break it).
 </div>
 
 
-<div id="outline-container-sec-11" class="outline-2">
-<h2 id="sec-11"><span class="section-number-2">11</span> Higlighting the syntax of the code examples</h2>
-<div class="outline-text-2" id="text-11">
+<div id="outline-container-sec-3-6" class="outline-3">
+<h3 id="sec-3-6"><span class="section-number-3">3.6</span> Higlighting the syntax of the code examples</h3>
+<div class="outline-text-3" id="text-3-6">
 <p>
 My articles often include code examples, so I am interested in
 displaying them prettily. I use the tags <code>#+BEGIN_EXAMPLE</code> and
@@ -668,11 +697,12 @@ For other tips about code examples see also this:
 </p>
 </div>
 </div>
+</div>
 
 
-<div id="outline-container-sec-12" class="outline-2">
-<h2 id="sec-12"><span class="section-number-2">12</span> Referencies</h2>
-<div class="outline-text-2" id="text-12">
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> Referencies</h2>
+<div class="outline-text-2" id="text-4">
 <ul class="org-ul">
 <li><a href="http://mmistakes.github.io/hpstr-jekyll-theme/theme-setup/">http://mmistakes.github.io/hpstr-jekyll-theme/theme-setup/</a>
 </li>
