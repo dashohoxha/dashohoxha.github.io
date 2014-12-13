@@ -10,8 +10,7 @@
 ;;; For more details see:
 ;;;  - http://orgmode.org/worg/org-tutorials/org-jekyll.html
 ;;;  - http://www.gorgnegre.com/linux/using-emacs-orgmode-to-blog-with-jekyll.html
-(setq org-publish-project-alist
-      '(
+(setq org-publish-project-alist  '(
 
   ("org-blog"
           ;; Path to your org files.
