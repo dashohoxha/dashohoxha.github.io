@@ -1,0 +1,2557 @@
+#+TITLE:     Developing Applications With SugarCE
+#+AUTHOR:    Dashamir Hoxha
+#+EMAIL:     dashohoxha@gmail.com
+#+DATE:      2010-02-02
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+# #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
+# #+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
+#+begin_html
+---
+layout:     post
+title:      Developing Applications With SugarCE
+date:       2010-02-02
+summary:    Rapid Application Development With SugarCE
+tags: [SugarCE, Development]
+---
+#+end_html
+
+
+* Install and Configure the WebServer
+
+  This section describes how to install a web server for the SugarCRM
+  application.
+
+** Installing the Server
+
+   I installed /Ubuntu 9.04 Server/ as a web server. The root (*/*)
+   was mounted on a /LVM/ partition. However */boot* was mounted on a
+   real ext2 partition, because grub cannot be installed on a LVM
+   partition. I installed only *LAMP Server* packages and *OpenSSH
+   Server* packages. The first one contains /Apache/, /MySQL/ and
+   /PHP/, which are required for the web application to work, and the
+   second contains the /sshd/ daemon, which is needed to access the
+   server remotely.
+
+** Working With LVM
+
+   I decided to use LVM because it is more flexible. If the
+   application needs more space in the future, it can be allocated
+   easily without repartitioning etc. I have noted down some of the
+   commands that are used frequently to manage physical volumes,
+   volume groups and logical volumes.
+
+*** Physical Volumes
+
+    #+BEGIN_EXAMPLE
+    # pvcreate /dev/sda3
+
+    # pvscan
+     PV /dev/sda10   VG vg1   lvm2 [55.41 GB / 36.78 GB free]
+     PV /dev/sda3    VG vg1   lvm2 [29.29 GB / 9.29 GB free]
+     Total: 2 [84.70 GB] / in use: 2 [84.70 GB] / in no VG: 0 [0   ]
+
+    # pvdisplay
+      --- Physical volume ---
+      PV Name               /dev/sda10
+      VG Name               vg1
+      PV Size               55.41 GB / not usable 1.34 MB
+      Allocatable           yes
+      PE Size (KByte)       4096
+      Total PE              14184
+      Free PE               9416
+      Allocated PE          4768
+      PV UUID               gsMdEa-XNZn-Du09-2XXK-W0W0-FgM2-6W80FA
+
+      --- Physical volume ---
+      PV Name               /dev/sda3
+      VG Name               vg1
+      PV Size               29.29 GB / not usable 376.00 KB
+      Allocatable           yes
+      PE Size (KByte)       4096
+      Total PE              7499
+      Free PE               2379
+      Allocated PE          5120
+      PV UUID               TdjYoh-OofJ-OI5j-uLAR-e2tP-bHJn-gVbAqU
+    #+END_EXAMPLE
+
+*** Volume Groups
+
+    #+BEGIN_EXAMPLE
+    # vgextend /dev/sda3
+
+    # vgdisplay
+     --- Volume group ---
+      VG Name               vg1
+      System ID
+      Format                lvm2
+      Metadata Areas        2
+      Metadata Sequence No  4
+      VG Access             read/write
+      VG Status             resizable
+      MAX LV                0
+      Cur LV                2
+      Open LV               2
+      Max PV                0
+      Cur PV                2
+      Act PV                2
+      VG Size               84.70 GB
+      PE Size               4.00 MB
+      Total PE              21683
+      Alloc PE / Size       9888 / 38.62 GB
+      Free  PE / Size       11795 / 46.07 GB
+      VG UUID               LfZv2Z-Ovo2-7Fl3-lcdx-2G1l-QX5Q-DUY9yi
+    #+END_EXAMPLE
+
+*** Logical Volumes
+
+    #+BEGIN_EXAMPLE
+    # lvcreate -L 20G -n data vg1 /dev/sda3
+    # mkfs.ext3 /dev/vg1/data
+    # mkdir /data
+    # mount /dev/vg1/data /data
+
+    # lvdisplay
+     --- Logical volume ---
+     LV Name                /dev/vg1/lv1
+     VG Name                vg1
+     LV UUID                0N2Q0M-Xaxm-wTWa-1tbs-5QQq-oImV-sS1qcR
+     LV Write Access        read/write
+     LV Status              available
+     # open                 1
+     LV Size                18.62 GB
+     Current LE             4768
+     Segments               1
+     Allocation             inherit
+     Read ahead sectors     auto
+     - currently set to     256
+     Block device           252:0
+
+     --- Logical volume ---
+     LV Name                /dev/vg1/data
+     VG Name                vg1
+     LV UUID                lrwVsV-x7E0-4p0r-PBmH-7tLr-QdZf-QPquM5
+     LV Write Access        read/write
+     LV Status              available
+     # open                 1
+     LV Size                20.00 GB
+     Current LE             5120
+     Segments               1
+     Allocation             inherit
+     Read ahead sectors     auto
+     - currently set to     256
+      Block device           252:1
+
+    # lvextend
+    #+END_EXAMPLE
+
+    Also, add this line to ~/etc/fstab~:
+    #+BEGIN_EXAMPLE
+    /dev/vg1/data   /data           ext3     defaults       0       0
+    #+END_EXAMPLE
+
+** Network Configuration
+
+   - Edit the file ~/etc/network/interfaces~:
+     #+BEGIN_EXAMPLE
+     auto eth0
+	 iface eth0 inet static
+	 address 10.10.10.5
+	 netmask 255.255.255.0
+	 gateway 10.10.10.1
+     #+END_EXAMPLE
+
+   - Edit the file ~/etc/resolv.conf~:
+     #+BEGIN_EXAMPLE
+     nameserver  10.10.10.2
+     nameserver  10.10.10.3
+     #+END_EXAMPLE
+
+   - Reconfig the network:
+     #+BEGIN_EXAMPLE
+     /etc/init.d/networking restart
+     #+END_EXAMPLE
+
+** Installing Additional Packages
+
+   Besides the basic installation and the packages /LAMP/ and
+   /OpenSSH/, there are some other packages that need to be
+   installed. They can be installed like this:
+
+   #+BEGIN_EXAMPLE
+   aptitude update
+   aptitude upgrade
+   aptitude install subversion
+   aptitude install unzip
+   aptitude install phpmyadmin
+   aptitude install gawk
+   #+END_EXAMPLE
+
+** Keeping the Time Correct
+
+   For any server it is important to have the correct time. In the
+   case of this server, the time should be correct because the
+   application records automatically the time of creation/modification
+   of a record. Usually the time is kept correct by synchronizing with
+   NTP servers. I have done it like this:
+
+   - Install NTP:
+     #+BEGIN_EXAMPLE
+     aptitude install ntp
+     #+END_EXAMPLE
+
+   - Edit ~/etc/ntp.conf~:
+     #+BEGIN_EXAMPLE
+     #server ntp.ubuntu.com
+     server europe.pool.ntp.org
+     #+END_EXAMPLE
+
+   - Restart the ntp service:
+     #+BEGIN_EXAMPLE
+     /etc/init.d/ntp restart
+     #+END_EXAMPLE
+
+   References:
+    - http://support.ntp.org/bin/view/Servers/WebHome
+    - http://support.ntp.org/bin/view/Servers/NTPPoolServers
+
+** Enable Apache2 Module SSL
+
+   The protocol HTTPS is more secure because it encrypts the
+   communication between the browser and the server. So I have decided
+   to use SSL for accessing the application. I followed these steps to
+   enable it:
+
+   - Enable the Apache2 SSL module:
+     #+BEGIN_EXAMPLE
+     a2enmod ssl
+     #+END_EXAMPLE
+
+   - Enable the default ssl site:
+     #+BEGIN_EXAMPLE
+     cd /etc/apache2
+     ln -s ../sites-available/default-ssl sites-enabled/001-default-ssl
+     #+END_EXAMPLE
+
+   - Restart apache2:
+     #+BEGIN_EXAMPLE
+     /etc/init.d/apache2 restart
+     #+END_EXAMPLE
+
+** Redirect All HTTP(80) Traffic To HTTPS(443)
+
+   - Enable module rewrite (/mod_rewrite/):
+     #+BEGIN_EXAMPLE
+     a2enmod rewrite
+     #+END_EXAMPLE
+
+   - Add the following to ~/etc/apache2/sites-available/default~:
+     #+BEGIN_EXAMPLE
+     RewriteEngine   on
+     RewriteCond     %{SERVER_PORT} ^80$
+     RewriteRule     ^(.*)$ https://%{SERVER_NAME}$1 [L,R]
+     RewriteLog      "/var/log/apache2/rewrite.log"
+     RewriteLogLevel 2
+     #+END_EXAMPLE
+
+   - Reload apache2 configuration:
+     #+BEGIN_EXAMPLE
+     /etc/init.d/apache2 force-reload
+     #+END_EXAMPLE
+
+** Installing SugarCRM
+
+   In order to install the application successfully, first of all we
+   should be able to install SugarCRM successfully (since the
+   application is based on SugarCRM).
+
+   - Download the latest version from:
+     http://www.sugarcrm.com/crm/download/sugar-suite.html
+
+   - Unzip it on the document root and set the permissions:
+     #+BEGIN_EXAMPLE
+     cd /var/www
+     unzip SugarCE-5.2.0j.zip
+     chgrp www-data -R SugarCE-5.2.0j/
+     chmod g+w -R SugarCE-5.2.0j/
+     #+END_EXAMPLE
+
+   - Start the installation from the browser:
+     https://10.10.10.5/SugarCE-5.2.0j/
+
+   It may require some things to be fixed on the server. One of these
+   is the PHP configuration. Edit ~/etc/php5/apach2/php.ini~ and
+   modify these settings:
+   #+BEGIN_EXAMPLE
+   ; Maximum execution time of each script, in seconds
+   max_execution_time = 6000
+   ; Maximum amount of time each script may spend parsing request data
+   max_input_time = 600
+
+   ; Maximum size of POST data that PHP will accept.
+   post_max_size = 24M
+
+   ; Maximum allowed size for uploaded files.
+   upload_max_filesize = 32M
+   #+END_EXAMPLE
+
+   Then restart apache:
+   #+BEGIN_EXAMPLE
+   /etc/init.d/apache2 restart
+   #+END_EXAMPLE
+
+
+* Install and Configure Subversion
+
+  - Install subversion:
+    #+BEGIN_EXAMPLE
+    aptitude install subversion
+    aptitude install libapache2-svn
+    /etc/init.d/apache2 restart
+    #+END_EXAMPLE
+
+  - Edit ~/etc/apache2/sites-available/default-ssl~ and add these
+    lines at the end of the section :
+    #+BEGIN_EXAMPLE
+    <Location "/svn">
+	DAV svn
+	SVNParentPath /data/svn
+	SVNListParentPath on
+
+	# our access control policy
+	AuthzSVNAccessFile /data/svn_access/svn_access.conf
+
+	# try anonymous access first, resort to real
+	# authentication if necessary.
+	Satisfy Any
+	Require valid-user
+
+	# how to authenticate a user
+	AuthType Basic
+	AuthName "Subversion repository"
+	AuthUserFile /data/svn_access/users
+
+	# don't check all the paths
+	SVNPathAuthz off
+    </Location>
+    #+END_EXAMPLE
+
+  - Create an authentication file:
+    #+BEGIN_EXAMPLE
+    htpasswd -cm /data/svn_access/users dasho
+    htpasswd -m /data/svn_access/users test
+    htpasswd -m /data/svn_access/users test1
+    #+END_EXAMPLE
+
+  - Edit ~/data/svn_access/svn_access.conf~ and add these lines:
+    #+BEGIN_EXAMPLE
+    [/]
+    * = r
+    dasho = rw
+    #+END_EXAMPLE
+
+  - Restart apache: =/etc/init.d/apache2 restart=
+
+
+* The Development Process
+
+** Problems with developing on SugarCRM
+
+   SugarCRM is a big and complex software and keeping track of an
+   application that is based on it is a bit difficult and tricky. Some
+   of the problems are these:
+
+   -  When a new release of the SugarCRM comes out, it is difficult to
+      upgrade the application to it. If the new release is installed,
+      it is going to overwrite some of the existing files, so it may
+      erase anything from the custom modules or any change to the core
+      code.  Changes to the core code sometimes are unavoidable
+      because not all the customizations can be done in an
+      upgrade-safe manner. Also, sometimes you run into a bug that you
+      need to fix, but you cannot wait for the next Sugar release.
+   -  SugarCRM has GUI development tools, like Studio and Module
+      Builder, however they generate a lot of files automatically by
+      overwriting existing files and directories and by deleting and
+      replacing .svn directories. This creates problems with keeping
+      the application under version control (subversion).
+   -  Studio is a nice GUI tool, but the code that it generates is not
+      very clean. Sometimes it makes changes only in the database,
+      without reflecting these changes on the code, and this doesn't
+      work well with version control.
+   -  Suppose that a package is developed in Module Builder and then
+      it is deployed. Then some modifications are done on the new
+      modules, either manually or through Studio. If we now go back to
+      the Module Builder and make some modifications or add any new
+      modules, and then deploy the package again, it is going to erase
+      the modifications that we did through Studio. This means that
+      either we should make all the modifications/customizations on
+      the Module Builder (which is not possible yet), or once we
+      deploy a package we should not go back to the module builder
+      again. This implies a "big design up front" or "waterfall"
+      development process. However, an iterative development process
+      is more suitable most of the times.
+
+** Keeping the application under subversion control
+
+   In order to handle the problems that arise during the development
+   of a SugarCRM application, I have used a rather complicated
+   subversion structure, which was inspired by the work of Sander
+   Marechal on his articles:
+   -  [[http://www.jejik.com/articles/2008/12/keeping_sugarcrm_under_subversion_control/][Keeping SugarCRM under Subversion control]]
+   -  [[http://www.jejik.com/articles/2008/12/build_custom_sugarcrm_modules_in_subversion/][Build custom SugarCRM modules in Subversion]]
+
+   The structure of the subversion repository is like this:
+   #+BEGIN_EXAMPLE
+    sugarcrm
+      |
+      +-- app
+      |     |
+      |     +-- trunk
+      |     |
+      |     +-- branches
+      |     |
+      |     +-- tags
+      |
+      +-- vendor
+      |     |
+      |     +-- v520h
+      |     |
+      |     +-- v520i
+      |     |
+      |     +-- v520j
+      |
+      +-- patched
+      |     |
+      |     +-- p520h
+      |     |
+      |     +-- p520i
+      |     |
+      |     +-- p520j
+      |
+      +-- app_package
+            |
+            +-- scripts
+            |
+            +-- vendor
+            |     |
+            |     +-- milestone1
+            |     |
+            |     +-- milestone2
+            |
+            +-- patched
+                  |
+                  +-- milestone1
+                  |
+                  +-- milestone2
+   #+END_EXAMPLE
+
+** Explaining the structure of the subversion repository
+
+*** The main idea
+
+    The main idea is to build an application by installing first
+    SugarCRM, and on top of it installing a custom SugarCRM
+    package. The original SugarCRM code (that comes from the vendor)
+    should be left untouched; all the customizations and modifications
+    should be included in the package.
+
+*** Keeping SugarCRM under subversion control
+
+    However, the original code of SugarCRM has to be patched
+    (modified), for the following reasons:
+    -  Not all the customizations can be done in an "upgrade safe"
+       manner (a term used in the SugarCRM vocabulary), so they have
+       to be done by modifying the base code.
+    -  Sometimes we have to fix a bug, without waiting for the next
+       release that fixes it.
+
+    Installing external (third party) packages/plugins sometimes
+    modifies the base code as well. It is not guaranteed that the
+    external packages are upgrade-safe. So, it is better to consider
+    and handle them as patches (or modifications) of the original
+    SugarCRM code.
+
+    When the next release of SugarCRM comes out from the vendor we
+    want to make sure that we can upgrade to it without loosing our
+    customizations (patches). So, in order to be able to make the
+    upgrade easily, we have different directories for the /vendor/ and
+    for the /patched/ versions of SugarCRM. The directory /vendor/
+    contains all the sugar releases, unmodified. The directory
+    /patched/ keeps the patched versions for each corresponding vendor
+    release. The directory /app/trunk/ contains our application, which
+    is the latest patched version of SugarCRM, on which is installed
+    our custom package.
+
+*** The custom package
+
+    The custom package is a SugarCRM package built with the Module
+    Builder.  If we could do everything on the Module Builder it would
+    be perfect.  However, there are a lot of things that can be done
+    only by modifying the code of the package manually. There are also
+    some small modifications that can be done only after the package
+    is installed, because we cannot figure them out before.
+
+    Once the code of the package is modified manually, then it is not
+    safe anymore to use the Module Builder GUI, because it may
+    override unintentionally our modifications. So, once we start
+    modifying the package manually, we should not go back to the
+    Module Builder again.  This implies a "big design up front", which
+    means that we first do the full analysis and design of the
+    application, then we build as much as possible in the Module
+    Builder GUI, then install the package on SugarCRM, and never go
+    back again to the Module Builder.
+
+    In order to keep track of the modifications that we make manually,
+    we keep the source code of the package under subversion
+    control. Indeed, a SugarCRM package is just a '.zip' file, so to
+    modify the package we can unzip it, modify its php files and zip
+    it again. The directory /app\_package/trunk/ contains the source
+    code of our package (the unzipped package). If something needs to
+    be corrected, we modify manually the source code of the package,
+    rebuild the package manually (from the command line), and
+    reinstall the package on SugarCRM.
+
+    It would be good if we could avoid building and reinstalling the
+    package each time that we make any small modification, because it
+    is a bit tedious (for example the package can be reinstalled only
+    from the GUI of the SugarCRM). It can be avoided by first making
+    the changes on a working copy of the application, and after
+    testing that they work well, applying them on the package code as
+    well. So, the package doesn't need to be built and reinstalled for
+    each small modification, in order to test them, because they have
+    been already tested. It seems like double work to make the changes
+    first on the working copy, and then apply them again on the
+    package, however for small modifications it is OK.
+
+*** Using a more iterative development process
+
+    The "big design up front" approach is the best way to build an
+    application on SugarCRM (due to the limitations of the Module
+    Builder that I described above). This corresponds to the
+    "waterfall" process model (you do first the full analysis and
+    design, then you move to implementation, testing, etc. and never
+    go back to fix anything on analysis and design). The "iterative"
+    model, in my opinion is better, because not always you can get
+    right the analysis and design from the first time.
+
+    In my case, after analysis, it turned out that I had to build a
+    long list of new modules. It was a huge task to do all the
+    implementation at once (actually I also had some time
+    restrictions), so I decided to do it in several steps (or
+    milestones). So, I divided the list of the new modules into
+    several groups, where the modules of each group are somehow
+    related to each-other. Then I planned several milestones for the
+    implementation of the project: milestone1 would implement the
+    first group of modules, milestone2 the second group, and so on.
+
+    For the implementation, I made a "big design for the milestone1"
+    in Module Builder, creating the new modules, relationships,
+    fields, etc.; in short as much as possible. Then I published and
+    installed the new package into the working copy of SugarCRM. I
+    continued testing and refining the modules until everything worked
+    fine and until milestone1 could be called finished.
+
+    After I am done with milestone1, I go back to the Module Builder
+    and build the modules of the milestone2: creating them, creating
+    the relations between them, adding new fields, and trying to do as
+    much as possible. Then I publish the package again and try to
+    merge this new package with the package that I have already
+    imported into the subversion. This step can be a bit difficult,
+    because I have already made manual modifications on the code of
+    the milestone1 package, which may be overwritten by the milestone2
+    version of the package. To facilitate the merge, I try to be
+    careful in the Module Builder so that I don't touch at all the
+    modules that were built during the milestone1, or at least to
+    modify them as little as possible (just any relationship, if
+    necessary, and nothing else). After that, I don't go back to the
+    Module Builder again, until the milestone2 is finished and working
+    correctly and the time comes to start with milestone3.
+
+    The tag =app_package/vendor/milestone1= of the subversion
+    repository contains the original, unmodified source code of the
+    milestone1 package, exactly as it was published from the Module
+    Builder. The branch =app_package/patched/milestone1= contains also
+    the modifications and corrections that I have done to it. The tag
+    =app_package/vendor/milestone2= contains the original code that
+    was generated by the Module Builder during the second milestone,
+    and the branch =app_package/patched/milestone2= contains the
+    corrections and modifications of it. The directory
+    =app_package/scripts/= contains some scripts that are used to
+    automate and facilitate the handling of packages.
+
+    Splitting the development into several milestones makes it more
+    iterative.
+
+    Another approach (as pointed out by Sander Marechal) is to develop
+    a separate package for each milestone and then install them in
+    order. This avoids having to merge the code generated by Module
+    Builder with the code that we have modified. I think that this
+    approach is easier.  However, having a singe package seems to me a
+    bit cleaner. Choosing which approach to use depends on what you
+    want to do and how you plan to do it.
+
+** The development workflow
+
+   From the structure of the subversion repository and from what was
+   discussed on the previous sections you can guess easily the
+   development workflow. However let us discuss it more explicitly on
+   this section.
+
+*** Installing the initial version of SugarCRM
+
+    Let's assume that the latest release of SugarCRM at the time that
+    we start the development is =5.2.0h= . Initially we will install a
+    full version of it. Then we are going to install any
+    customizations, apply any patches, etc.
+
+    1.  Download =SugarCE-5.2.0h.zip= .
+    2.  Install it on the subdirectory =v520h/= of the document_root
+        (which is =/var/www/= on ubuntu). The name of the database
+        should be =v520h=, (the same as the name of the
+        subdirectory). Let's say that the name of the database user is
+        =sugaruser=.
+    3.  Import this subdirectory to the subversion directory
+        =vendor/v520h/=.
+    4.  Make a copy of =vendor/v520h/= to =patched/p520h/= .
+    5.  Checkout =patched/p520h/= to the directory =/var/www/p520h=
+        and give to apache write access on it.
+    6.  Copy the database =v520h= to =p520h= and give full access to
+        =sugaruser= on it.
+    7.  Make any possible modifications/customizations, apply any
+        patches, etc.
+    8.  Install also any third party modules, plug-ins, etc.
+    9.  When the application is ready to be used, make a copy of
+        =patched/p520h/= to =app/trunk/=.
+    10. Then check it out to the directory =/var/www/app/=.
+    11. Make also a copy of the database =p520h= to =app= and give
+        access to the DB user =sugaruser= on it.
+
+    By convention, the name of the web directory is the same as the
+    name of the subversion directory. The name of the corresponding
+    database is the same as well. In all the cases the database user
+    and password are the same and we only grant access to it on the
+    new database. Note that for the vendor branches, the name of the
+    directory (the name of the database, etc.) starts with *v*, and
+    for the patched branches it starts with *p*. These conventions
+    help to facilitate the development and to avoid confusion,
+    mistakes, etc.
+
+*** Installing the initial version of the custom package
+
+    Initially we create a new package on the /Module Builder GUI/,
+    then create all the modules that are planned for the first
+    milestone, create all the relationships between them, create all
+    the fields of the modules, define the layouts, etc. In general, do
+    as much as possible.  Then publish the package and import its
+    source code on subversion. Make also any necessary manual
+    modifications to it and then zip the source code again and install
+    the package on the application.
+
+    The steps are like this:
+
+    1. Check out on the directory =mb_p520h= the latest revision of
+       =patched/p520h/= from subversion. The prefix =mb_= is appended
+       in order to remind us that this is the copy used for the
+       /Module Builder/.
+    2. Copy the database =p520h= to =mb_p520h= and grant access to
+       =sugaruser= on it.
+    3. On the /Module Builder/, create a new package for the
+       application and build it.
+       1. Create a new package.
+       2. Create the modules.
+       3. Create the relationships between the modules.
+       4. Create the fields of the modules.
+       5. Define the layouts, etc.
+
+    4. Optionally, deploy and check the package:
+       1. Click the button /Deploy/ on the /Module Builder/ and
+          deploy the package.
+       2. Check how the application looks like.
+       3. Go back to the /Module Builder/ and refine the module
+          fields, layouts, etc.
+       4. /Deploy/ the package again.
+       5. Repeat these refine-redeploy steps as many times as
+          necessary.
+
+    5. Publish the package.
+    6. Import the source code of the package on
+       =app_package/vendor/milestone1=.
+    7. Make a copy of =app_package/vendor/milestone1= to
+       =app_package/patched/milestone1=.
+    8. Checkout a copy of =patched/p520h/= to
+       =/var/www/app_test=. Make also a copy of the database =p520h=
+       to =app_test= and give access to =sugaruser= on it.
+    9. Build the patched milestone1 package and install it on =app_test=.
+    10. Check the application, refine the package by modifying its
+        source code manually, rebuild the package and reinstall it.
+    11. Repeat the previous step until the package is working as expected.
+    12. Install the package on =app=.
+
+*** Upgrading the custom package to a new version
+
+    When the time comes to start working for another milestone, we go
+    back to the /Module Builder/ again and start modifying the
+    package. We add new modules, set the relationships between them,
+    add their fields, and define their layouts. In general, we try not
+    to touch what we have built previously (unless it is necessary),
+    since it may create problems when we try to apply to the new
+    version of the package the changes of the previous one.
+
+    1. If we have already removed the directory =mb_p520h=, check it
+       out again from the latest revision of =patched/p520h/=. Copy
+       also the database =p520h= to =mb_p520h= and grant access to
+       =sugaruser= on it.
+    2. If the code of the module builder was not stored on subversion,
+       use the /Module Loader/ to import the .zip package that was
+       exported previously. Now the previous version of the package
+       should be on the /Module Builder/ and we can work on it.
+    3. Create new modules, set relationships between the new modules,
+       add their fields, define their layouts, etc. Try not to touch
+       the modules that were build previously.
+    4. Deploy the package time after time, to check how it looks like
+       and how it works.
+    5. Publish the package again. Unzip it and import the source code
+       of the package on =app_package/vendor/milestone2=.
+    6. Copy =app_package/vendor/milestone2= to
+       =app_package/patched/milestone2=.
+    7. Find the differences between =app_package/patched/milestone1=
+       and =app_package/vendor/milestone1=. This is the set of
+       modifications that we have done manually on the package
+       code. We don't want to loose them, so we apply them on
+       =app_package/patched/milestone2=.
+    8. Build the patched milestone2 package and install it on
+       =app_test=.
+    9. Check the application, refine the package by modifying its
+       source code manually, rebuild the package and reinstall it.
+    10. Repeat the previous step until the package is working as expected.
+    11. Install the package on =app=.
+
+*** Upgrading SugarCRM to a new version
+
+    Time after time, SugarCRM will release a new version and we would like
+    to upgrade our application to it. Lets say that SugarCE-5.2.0i is
+    released. Then we can upgrade to it like this:
+
+    1. Copy =vendor/v520h= to =vendor/v520i=. Copy the database
+       =v520h= to =v520i= as well and grant access to =sugaruser= on
+       it.
+    2. Apply the upgrade patch on =vendor/v520i=.
+    3. Copy =patched/p520h= to =patched/p520i=. Copy the database
+       =p520h= to =p520i= as well and grant access to =sugaruser= on
+       it.
+    4. Apply the upgrade patch on =patched/p520i=.
+    5. Most probably, some of the modifications are erased by the
+       upgrade patch. So we should find the difference between
+       =patched/p520h= and =vendor/v520h=, and apply it on
+       =patched/p520i=. Maybe some things will need to be resolved.
+    6. Apply the upgrade patch on =app/trunk=.
+    7. Find the changeset of step 5 on =patched/p520i= and apply it on
+       =app/trunk=.
+
+** Referencies
+
+   1. [[http://www.jejik.com/articles/2008/12/keeping_sugarcrm_under_subversion_control/][Keeping SugarCRM under Subversion control]] by Sander Marechal
+   2. [[http://www.jejik.com/articles/2008/12/build_custom_sugarcrm_modules_in_subversion/][Build custom SugarCRM modules in Subversion]] by Sander Marechal
+   3. [[http://mamchenkov.net/wordpress/2008/08/19/sugarcrm-deployment-efforts/][SugarCRM deployment efforts]] by Leonid Mamchenkov.
+
+
+* Initial SugarCE Installation
+
+** Create a new subversion repository
+
+   - Create a new subvesion repository named *sugarcrm*:
+     #+BEGIN_EXAMPLE
+     svnadmin create /data/svn/sugarcrm
+     #+END_EXAMPLE
+
+   - Since it is going to be accessed through /apache/, apache must
+     have all the access rights on it:
+     #+BEGIN_EXAMPLE
+     chown www-data:www-data -R /data/svn/sugarcrm/
+     #+END_EXAMPLE
+
+   - Create the initial directory structure:
+     #+BEGIN_EXAMPLE
+     mkdir -p temp/vendor/v520h temp/patched temp/app
+     mkdir -p temp/app_package/vendor/milestone1
+     #+END_EXAMPLE
+
+   - Import the initial directory structure into the repository:
+     #+BEGIN_EXAMPLE
+     svn import temp https://10.10.10.5/svn/sugarcrm -m "Creating repository layout."
+     Adding         temp/app
+     Adding         temp/app_package
+     Adding         temp/app_package/vendor
+     Adding         temp/app_package/vendor/milestone1
+     Adding         temp/patched
+     Adding         temp/vendor
+     Adding         temp/vendor/v520h
+     #+END_EXAMPLE
+
+   - Clean the temporary directory:
+     #+BEGIN_EXAMPLE
+     rm -rf temp/
+     #+END_EXAMPLE
+
+** Install the Initial SugarCE Release
+
+   - Checkout from svn the vendor version 5.2.0h :
+     #+BEGIN_EXAMPLE
+     cd /var/www/
+     svn checkout https://10.10.10.5/svn/sugarcrm/vendor/v520h .
+     #+END_EXAMPLE
+
+   - It is just an empty directory, so we should fill it with the
+     files of the release 5.2.0h:
+     #+BEGIN_EXAMPLE
+     unzip SugarCE-5.2.0h.zip
+     mv SugarCE-Full-5.2.0h/* v520h/
+     mv SugarCE-Full-5.2.0h/.htaccess v520h/
+     rmdir SugarCE-Full-5.2.0h/
+     #+END_EXAMPLE
+
+   - In order to install it, apache must have write permissions to
+     some files and directories. To make it easy, lets give it write
+     permissions to the whole directory:
+     #+BEGIN_EXAMPLE
+     chgrp -R www-data v520h/
+     chmod -R g+w v520h/
+     #+END_EXAMPLE
+
+   - Create a new database and a new db_user for the application:
+     #+BEGIN_EXAMPLE
+     mysqladmin create v520h -u root -p
+     echo "create user 'sugaruser'@'localhost' identified by 'sugarpass';" | mysql -u root -p
+     echo "grant usage on *.* to 'sugaruser'@'localhost' identified by 'sugarpass'" | mysql -u root -p
+     echo "grant all privileges on v520h.* to 'sugaruser'@'localhost' with grant option;" | mysql -u root -p
+     #+END_EXAMPLE
+
+   - Start the installation by opening [[https://10.10.10.5/v520h/]] in
+     browser. Use *v520h* for the name of the database, and use
+     *sugaruser* as existing database user.
+
+** Import the application into the subversion repository
+
+   - Tell svn to ignore the log files:
+     #+BEGIN_EXAMPLE
+     svn propset svn:ignore "install.log
+       sugarcrm.log" .
+     #+END_EXAMPLE
+     *Note*: To make it multiline you should press /Ctrl+Return/, not
+     just /Return/!
+
+   - Add the cache directories to svn:
+     #+BEGIN_EXAMPLE
+     cd v520h/
+     mkdir cache/blowfish cache/diagnostic cache/dashlets
+     svn add --depth=empty cache
+     cd cache
+     svn add --depth=empty blowfish csv dashlets diagnostic feeds    \
+			   generated_forms images import jsLanguage  \
+			   layout modules pdf smarty upload xml
+     svn add csv/index.html feeds/index.html images/index.html   \
+	     import/index.html layout/index.html pdf/index.html  \
+	     upload/index.html xml/index.html
+     #+END_EXAMPLE
+     *Note*: If you want to learn more about the content of the
+     ~cache/~ directory, check this article: [[http://www.jejik.com/articles/2008/08/the_sugarcrm_cache_directory_demystified/][The SugarCRM cache
+     directory demystified]]
+
+   - Ignore the rest of the cache content:
+     #+BEGIN_EXAMPLE
+     svn propset svn:ignore '*' blowfish csv dashlets diagnostic feeds \
+	     generated_forms images import jsLanguage layout modules   \
+	     pdf smarty upload xml
+     cd ..
+     #+END_EXAMPLE
+
+   - Add anything else:
+     #+BEGIN_EXAMPLE
+     svn add --force *
+     svn add .htaccess
+     #+END_EXAMPLE
+
+   - Commit:
+     #+BEGIN_EXAMPLE
+     svn commit -m 'Importing the vendor release v520h.'
+     #+END_EXAMPLE
+
+** Create the patched branch and customize it
+
+*** Copy and check out the patched branch
+
+    - Copy the vendor branch to the patched branch:
+      #+BEGIN_EXAMPLE
+      svn copy https://10.10.10.5/svn/sugarcrm/vendor/v520h   \
+	       https://10.10.10.5/svn/sugarcrm/patched/p520h  \
+	       -m "Copying v520h vendor branch to the p520h patched branch."
+      #+END_EXAMPLE
+
+    - Check out the patched branch and set permissions so that it can
+      be written by apache:
+      #+BEGIN_EXAMPLE
+      svn checkout https://10.10.10.5/svn/sugarcrm/patched/p520h
+      cd p520h/
+      chgrp -R www-data .
+      chmod g+w .
+      #+END_EXAMPLE
+
+*** Modify the patched branch
+
+    - Modify /config.php/ like this:
+      #+BEGIN_EXAMPLE
+        'db_name' => basename(dirname(__FILE__)),
+        'site_url' => 'https://10.10.10.5/'.basename(dirname(__FILE__)),
+      #+END_EXAMPLE
+
+    So, the name of the database will be the same as the name of the
+    directory of the application.
+
+*** Create some DB scripts
+
+    - Create the file ~db/dump.sh~ which can be used to make a backup
+      of the database:
+      #+BEGIN_EXAMPLE
+      #!/bin/bash
+      ### dump the database
+
+      ### get the DB name
+      if [ "$1" != "" ]
+      then
+	db_name=$1
+      else
+	cd $(dirname $0)
+	db_name=$(basename $(dirname $(pwd)))
+      fi
+
+      ### make a full dump of the database
+      mysqldump --user=root --extended-insert=false --comments=false \
+		--single-transaction --password \
+		$db_name > ${db_name}.sql
+
+      ### dump only the structure (tables) of the database
+      mysqldump --user=root --no-data --compact --password \
+		$db_name > structure.sql
+
+      ### fix a little bit the dump files
+      sed -e '/^SET /d' -i ${db_name}.sql
+      sed -e '/^SET /d' -i structure.sql
+      #+END_EXAMPLE
+
+    - Create the file ~db/restore.sh~ with this content:
+      #+BEGIN_EXAMPLE
+      #!/bin/bash
+      ### restore the database
+
+      ### check the parameters
+      if [ $# -ne 2 ]
+      then
+	echo "Usage: $0 db_name dump_file.sql"
+	echo
+	exit 1
+      fi
+
+      ### get the DB name and the dump file
+      db_name=$1
+      sql_file=$2
+
+      ### restore the database
+      read -p "The root password:"  passw
+      mysqladmin -p"$passw" drop $db_name
+      mysqladmin -p"$passw" create $db_name
+      mysql -p"$passw" -D $db_name < $sql_file
+      #+END_EXAMPLE
+
+*** Create the database of pached branch
+
+    - Create the database =p520h= and copy the database =v520h= to =p520h=:
+      #+BEGIN_EXAMPLE
+      mysqladmin create p520h -u root -p
+      db/dump.sh v520h
+      db/restore.sh p520h v520h.sql
+      rm v520h.sql
+      #+END_EXAMPLE
+
+    - Give access to user =sugaruser= on the new database =p520h=:
+      #+BEGIN_EXAMPLE
+      echo "grant all privileges on p520h.* to 'sugaruser'@'localhost' with grant option;" | mysql -u root -p
+      #+END_EXAMPLE
+
+*** Synchronize with the svn repository
+
+    - Get the database structure:
+      #+BEGIN_EXAMPLE
+      db/dump.sh
+      rm db/p520h.sql
+      #+END_EXAMPLE
+
+    - Add the directory ~db/~ to the svn:
+      #+BEGIN_EXAMPLE
+      svn add db/
+      Adding         db/dump.sh
+      Adding         db/restore.sh
+      Adding         db/structure.sql
+      #+END_EXAMPLE
+
+    - Commit:
+      #+BEGIN_EXAMPLE
+      svn commit -m 'Adding database scripts and structure.'
+      #+END_EXAMPLE
+
+** Customize SugarCRM
+
+   On =Admin-->System Settings-->Advanced= check =Developer Mode=.
+
+** Install plugins and patches
+
+*** Install Enhanced Studio
+
+*** Install ZuckerReports
+
+    - Install Java Runtime Engine:
+      #+BEGIN_EXAMPLE
+      aptitude install sun-java6-jre
+      #+END_EXAMPLE
+
+    - Edit ~/etc/php5/apache2/php.ini~, and:
+      1. change =post_max_size= to *64M*
+      2. change =upload_max_filesize= to *64M*
+      3. restart apache: =/etc/init.d/apache2 restart=
+
+    - Upload and install /ZuckerReportsCE_1.11_module.zip/.
+
+    - Edit ~modules/ZuckerReports/config.php~ and uncomment the
+      =java_cmdline=:
+      #+BEGIN_EXAMPLE
+            //Unix Environment Default
+            "java_cmdline" => "java -Djava.awt.headless=true %ARGS% 2>&1",
+      #+END_EXAMPLE
+
+** Copy the patched version to the trunk
+
+   #+BEGIN_EXAMPLE
+   svn copy https://10.126.5.5/svn/sugarcrm/patched/p520h \
+	    https://10.126.5.5/svn/sugarcrm/app/trunk   \
+	    -m "Copy patched version p520h to the trunk."
+   chgrp www-data -R app
+   chmod g+w -R app
+
+   mysqladmin create app -p
+   p520j/db/dump.sh
+   mysql -p -D app < p520j/db/p520j.sql
+   echo 'grant all privileges on app.* to sugaruser@localhost with grant option;' | mysql -p
+   #+END_EXAMPLE
+
+** References
+
+   1. http://www.jejik.com/articles/2008/12/keeping_sugarcrm_under_subversion_control/
+
+
+* Create and Manage a Custom Package
+
+  Initially we get a working copy of the latest patched version of
+  SugarCE. Then we create a new package on the Module Builder
+  GUI. Then we create in this package all the modules that are planned
+  for the first milestone, create all the relationships between them,
+  all the fields of the modules, define the layouts, etc. In general,
+  do as much as possible. Then publish the package and import its
+  source code on subversion. Make also any necessary manual
+  modifications to it and then zip the source code again and install
+  the package on the application.
+
+** Get a working copy of the latest patched version of SugarCE
+
+  - Check out =patched/p520h= to =mb_p520h= and give write
+    permissions on it to apache (www-data):
+    #+BEGIN_EXAMPLE
+    cd /var/www/
+    svn checkout https://10.10.10.5/svn/sugarcrm/patched/p520h mb_p520h
+    chgrp -R www-data mb_p520h/
+    chmod -R g+w mb_p520h/
+    #+END_EXAMPLE
+
+  - Notice that on the config file =mb_p520h/config.php= we have:
+    #+BEGIN_EXAMPLE
+        'db_user_name' => 'sugaruser',
+        'db_name' => basename(dirname(__FILE__)),
+    #+END_EXAMPLE
+    So, the name of the database of the application is the same as the
+    name of the directory where it is installed. The database username
+    is allways =sugaruser=.
+
+  - Copy the database =p520h= to =mb_p520h= and grant access on it to
+    =sugaruser=:
+    #+BEGIN_EXAMPLE
+    mysqladmin create mb_p520h -p
+    mb_p520h/db/dump.sh p520h
+    mysql -p -D mb_p520h < p520h.sql
+    echo 'grant all privileges on mb_p520h.= to sugaruser@localhost with grant option;' | mysql -p
+    rm p520h.sql
+    #+END_EXAMPLE
+    So, initially we create a new database named =mb_p520h=, then we
+    make a backup of the database =p520h= to the file =p520h.sql=,
+    then we restore this backup to the database =mb_p520h=. We also
+    grant permissions to the user =sugaruser= on the database
+    =mb_p520h=.
+
+** Create a new package in Module Builder
+
+   On the Module Builder, create a new package for the application and
+   build it:
+
+   1. Create all the modules that are planned for the first milestone.
+   2. Create all the relationships between the modules.
+   3. Create all the fields of the modules.
+   4. Define the layouts, etc.
+
+   In general, do as much as possible.
+
+*** Fixing one-to-many relations
+
+    There is a problem (bug) with one-to-many relations, because the
+    corresponding field is not shown properly on the layout
+    display. This can be fixed easily by appending a label in the file
+    ~custom/modulebuilder/packages/PackageName/modules/ModuleName/languages/en_us.lang.php~
+    like this:
+    #+BEGIN_EXAMPLE
+       // Beginning of file snipped
+       ...
+       'LBL_ACTIVITIES_SUBPANEL_TITLE' => 'Activities',
+       'LBL_SHOP_APPLICATIONS_SUBPANEL_TITLE' => 'Applications',
+       'LBL_NEW_FORM_TITLE' => 'New Applications',
+       'LBL_COMPUTER' => 'Computer', // New label
+     );
+    #+END_EXAMPLE
+
+    Then we can use this label on the layout files, for example on
+    ~custom/modulebuilder/packages/PackageName/modules/ModuleName/metadata/editviewdefs.php~,
+    like this:
+    #+BEGIN_EXAMPLE
+     ...
+       1 =>
+       array (
+         'name' => 'shop_computers_shop_applications_name',
+         'label' => 'LBL_COMPUTER', // New label
+       ),
+     ...
+    #+END_EXAMPLE
+
+    For more details look at: [[http://www.jejik.com/articles/2008/10/fixing_one-to-many_relationships_in_sugarcrm_5_1/][Fixing one-to-many relationships in SugarCRM 5.1]]
+
+** Deploy the package on mb_520h and check it
+
+   If we want, we can deploy the package on =mb_520h=. It is done by
+   clicking the button =Deploy= on the Module Builder. By deploying
+   the package we can check how it looks like when it is installed on
+   the application.
+
+   If there is something to be improved, then we go back to the Module
+   Builder and refine the module fields, layouts, etc. Then we deploy
+   the package again. However, bef ore re-deploying, it is better to
+   go to =Admin-->Module Loader= and first =Disable= and then
+   =Uninstall= the package. By trial-and-error I have found out that
+   this way it works better.
+
+   These refine-redeploy steps can be repeated as many times as
+   necessary, until we are satisfied with the package.
+
+   *Note*: During this phase, some manual modifications on the source
+   code of the package can be done as well, and the Module Builder
+   will preserve them and pick them up, for example modifying the
+   layout metafiles.  However it is not always safe, and sometimes the
+   Module Builder is going to overwrite the manual modifications. So,
+   it is better to do as little manual modifications as possible.
+
+** Publish the package
+
+   Publish the package by clicking the button =Publish= on the =Module
+   Builder=. However, before publishing, remove the directory
+   ~builds/~:
+   #+BEGIN_EXAMPLE
+   cd mb_p520h/custom/modulebuilder/
+   rm -rf package_name/builds/
+   #+END_EXAMPLE
+
+   Now that the package is published, we can add to subversion the
+   directory ~mb_p520h/custom/modulebuilder/package_name/packages/~,
+   so that we can continue later working on it for the milestone2:
+
+   #+BEGIN_EXAMPLE
+   cd mb_p520h/custom/modulebuilder/
+   svn add package_name/
+   svn revert -R package_name/builds/
+   rm -rf package_name/builds/
+   svn commit -m 'The code of Module Builder for milestone1.'
+   #+END_EXAMPLE
+
+   *Attention*: Be careful to *not commit* to the repository anything
+   else.  When deploying the package, other files on the application
+   can be modified, however we should not commit these changes. This
+   is because *mb_p520h* is just a test working copy. These changes
+   will be applied to the application by installing the package.
+
+   Alternatively, in order to save the code of the /Module Builder/,
+   we can /Export/ the package from the /Module Builder/ and store the
+   zip file somewhere. When this zip file is loaded on the /Module
+   Loader/, the package will be available on the /Module Builder/ for
+   further development.
+
+   Once the code of the module builder is preserved, we can delete the
+   directory ~mb_p520h~. We are not going to use /Module Builder/
+   anymore, until we start with the next milestone.
+
+** Import the source code of the package on vendor/milestone1
+
+   - Create the subversion directory structure for the package:
+     #+BEGIN_EXAMPLE
+     svn mkdir https://10.10.10.5/svn/sugarcrm/app_package/ -m 'custom package'
+     svn mkdir https://10.10.10.5/svn/sugarcrm/app_package/vendor/ -m 'unmodified releases of the package'
+     svn mkdir https://10.10.10.5/svn/sugarcrm/app_package/patched/ -m 'modified versions of the package'
+     #+END_EXAMPLE
+
+   - Unzip the package that was published from the /Module Builder/
+     and extract the source code:
+     #+BEGIN_EXAMPLE
+     mkdir milestone1/
+     cd milestone1/
+     unzip ../zip/BID2009_10_07_111944.zip
+     ls
+     icons  LICENSE.txt  manifest.php  SugarModules
+     cd ..
+     #+END_EXAMPLE
+
+   - Clean any files that are not needed (for example subversion
+     directories):
+     #+BEGIN_EXAMPLE
+     find milestone1/ -name '\.svn' | xargs rm -rf
+     #+END_EXAMPLE
+
+   - Import the source code of the package on subversion:
+     #+BEGIN_EXAMPLE
+     svn import milestone1/  https://10.10.10.5/svn/sugarcrm/app_package/vendor/ -m 'Package release BID2009_10_07_111944.zip'
+     rm -rf milestone1/
+     #+END_EXAMPLE
+
+   - Copy =vendor/milestone1= to =patched/milestone1=:
+     #+BEGIN_EXAMPLE
+     svn copy https://10.10.10.5/svn/sugarcrm/app_package/{vendor,patched}/milestone1/ -m 'The modified milestone1 package'
+     #+END_EXAMPLE
+
+** Create the scripts directory and get the working copy of the package
+
+   - Create the subversion directories:
+     #+BEGIN_EXAMPLE
+     svn mkdir https://10.10.10.5/svn/sugarcrm/app_package/scripts/ -m 'package managing scripts'
+     svn mkdir https://10.10.10.5/svn/sugarcrm/app_package/scripts/build/ -m 'built packages'
+     #+END_EXAMPLE
+
+   - Check it out:
+     #+BEGIN_EXAMPLE
+     svn checkout https://10.10.10.5/svn/sugarcrm/app_package/scripts/
+     cd scripts/
+     #+END_EXAMPLE
+
+   - Check out the source code of the package as well (the one that is
+     going to be patched):
+     #+BEGIN_EXAMPLE
+     svn checkout https://10.10.10.5/svn/sugarcrm/app_package/patched/milestone1 src
+     #+END_EXAMPLE
+     *Note:* It is checked out on the directory ~src/~.
+
+   - Create the script ~buildpackage.sh~ with a content like this:
+     #+BEGIN_EXAMPLE
+     #!/bin/bash
+
+     ##############################################################################
+     #
+     # buildpackage.sh
+     #
+     # Build an installable Sugar package $PACKAGE from the $SRCDIR directory.
+     # Written by Sander Marechal <s.marechal@jejik.com>
+     # Released into the Public Domain
+     #
+     ##############################################################################
+
+     PACKAGE="BID"
+     SRCDIR="src"
+     BUILDDIR="build"
+     STAMP=`date '+%Y%m%d%H%M%S'`
+     DATE=`date --rfc-3339 seconds`
+
+     # find the local and remote revision numbers
+     LOCALREV=`svn info -R $SRCDIR | sed -n 's/Revision: \([0-9]\+\)/\1/p' | sort -ur | head -n 1`
+     REMOTEURL=`svn info $SRCDIR | sed -n 's/URL: \(.*\)/\1/p'`
+     REMOTEREV=`svn info $REMOTEURL -R | sed -n 's/Revision: \([0-9]\+\)/\1/p' | sort -ur | head -n 1`
+
+     PACKAGEDIR=$BUILDDIR/$PACKAGE-$STAMP
+     VERSION=r$LOCALREV
+     ZIPFILE=$PACKAGE-$VERSION.zip
+
+     svn_update() {
+	     read UPDATE;
+	     case "$UPDATE" in
+		     [yY]*|"")
+			     svn update;
+			     LOCALREV=`svn info $SRCDIR | sed -n 's/Revision: \([0-9]\+\)/\1/p'`
+			     ZIPFILE=$PACKAGE-r$LOCALREV.zip
+			     ;;
+		     [nN]*)
+			     ;;
+		     [aAqQ]*)
+			     exit 0;
+			     ;;
+		     *)
+			     echo -n "Please enter [Y]es, [n]o or [a]bort: ";
+			     svn_update
+			     ;;
+	     esac
+     }
+
+     keep_local_changes() {
+	     read KEEPCHANGES
+	     case "$KEEPCHANGES" in
+		     [yY]*|"")
+			     VERSION=$VERSION+$STAMP
+			     ZIPFILE=$PACKAGE-$VERSION.zip
+			     ;;
+		     [nNaAqQ]*)
+			     echo "Please commit your changes first";
+			     exit 0;
+			     ;;
+		     *)
+			     echo -n "Please enter [Y]es or [n]o: ";
+			     keep_local_changes
+			     ;;
+	     esac
+     }
+
+     if [ "$LOCALREV" -lt "$REMOTEREV" ]; then
+	     echo "Local working copy seems out of date. Working copy is at r$LOCALREV but HEAD is at r$REMOTEREV";
+	     echo -n "Do you want to run 'svn update' [Y/n/a]? ";
+	     svn_update
+     fi
+
+     # Check for local changes
+     CHANGES=`svn status $PACKAGE | grep -v "^\?" | wc -l`
+
+     if [ "$CHANGES" -gt 0 ]; then
+	     echo -n "Local working copy has uncommitted changes. Continue [Y/n]? ";
+	     keep_local_changes
+     fi
+
+     # Create the build directory
+     if [ ! -d "$BUILDDIR" ]; then
+	     mkdir $BUILDDIR;
+     fi
+
+     # Copy package to the build directory
+     mkdir $PACKAGEDIR;
+     cp -r $SRCDIR/* $PACKAGEDIR/;
+
+     # Remove all the .svn dirs
+     SVNDIRS=`find $PACKAGEDIR -name ".svn"`
+     for SVNDIR in "$SVNDIRS"; do
+	     rm -rf $SVNDIR;
+     done
+
+     # Remove all the .swp files from Vim
+     SWPFILES=`find $PACKAGEDIR -name "*.swp"`
+     for SWPFILE in "$SWPFILES"; do
+	     rm -f $SWPFILE;
+     done
+
+     # Replace @VERSION@ and @DATE@ in the manifest
+     sed -e "s/@VERSION@/$VERSION/g" -e "s/@DATE@/$DATE/g" $PACKAGEDIR/manifest.php > $PACKAGEDIR/manifest2.php
+     rm -f $PACKAGEDIR/manifest.php
+     mv $PACKAGEDIR/manifest2.php $PACKAGEDIR/manifest.php
+
+     # Create the zip file
+     if [ -f $ZIPFILE ]; then
+	     rm -f $ZIPFILE;
+     fi
+
+     cd $PACKAGEDIR
+     zip -qr ../$ZIPFILE .;
+     cd ../..;
+
+     # Clean the build directory
+     rm -rf $PACKAGEDIR;
+
+     # All done
+     echo "Succcesfully built package $BUILDDIR/$ZIPFILE";
+     exit
+     #+END_EXAMPLE
+
+   - Add the script on subversion:
+     #+BEGIN_EXAMPLE
+     svn add buildpackage.sh
+     svn commit -m 'script for building the package automatically'
+     #+END_EXAMPLE
+
+** Modify manually the code of the package
+
+   - Replace the date and version of the package by variables:
+     #+BEGIN_EXAMPLE
+     sed -e "/'published_date' => /   s/ => .*/ => '@DATE@',/"      \
+	 -e "/'version' => /          s/ => .*/ => '@VERSION@',/"   \
+	 -i src/manifest.php
+     #+END_EXAMPLE
+
+     Now the file ~src/manifest.php~ should look like this:
+     #+BEGIN_EXAMPLE
+     . . . . . . . . . .
+		  'is_uninstallable' => true,
+		  'name' => 'BID',
+		  'published_date' => '@DATE@',
+		  'type' => 'module',
+		  'version' => '@VERSION@',
+		  'remove_tables' => 'prompt',
+     . . . . . . . . . .
+     #+END_EXAMPLE
+
+     The script ~buildpackage.sh~ is going to replace the variables
+     =@DATE@= and =@VERSION@= by the correct values, so, each time
+     that the package is built, it is going to have a different
+     version.
+
+   - Generate the package:
+     #+BEGIN_EXAMPLE
+     ./buildpackage.sh
+     Succcesfully built package build/BID-r74.zip
+     #+END_EXAMPLE
+
+** Install package on the working copy of the application
+
+   After the zip package is built (using the script ~buildpackage.sh~)
+   it is installed on SugarCE from the /Module Loader/.
+
+   *Attention*: Before installing a package, make sure that the
+   directory of SugarCE is writable by apache:
+   #+BEGIN_EXAMPLE
+   cd /var/www/
+   chgrp -R www-data app/
+   chmod -R g+w app/
+   #+END_EXAMPLE
+
+   If something needs to be fixed or modified, it should be modified
+   on the source code of the package, the package should be built, and
+   it should be installed again from the /Module Loader/. To repeat
+   all these steps for each small modification can be a bit
+   tedious. So, as an alternative way, the changes can be first made
+   directly on the application, and after they are tested, they can be
+   applied on the code of the package as well. Then the package needs
+   to be rebuilt and reinstalled once in a while, not for each
+   modification.
+
+** Import a new milestone on the subversion
+
+   When *milestone1* is finished, we can go back to *mb_p520h* and
+   build the modules of the *milestone2*. When this is done, we
+   publish the package again. Then we should import the milestone2
+   release of the package on subversion. It can be done like this:
+
+   - Unzip the package that was published from the Module Builder and
+     extract the source code:
+     #+BEGIN_EXAMPLE
+     mkdir milestone2/
+     cd milestone2/
+     unzip ../zip/BID2009_11_17_111955.zip
+     ls
+     icons  LICENSE.txt  manifest.php  SugarModules
+     cd ..
+     #+END_EXAMPLE
+
+   - Clean any files that are not needed (for example subversion
+     directories):
+     #+BEGIN_EXAMPLE
+     find milestone2/ -name '\.svn' | xargs rm -rf
+     #+END_EXAMPLE
+
+   - Import the source code of the package on subversion:
+     #+BEGIN_EXAMPLE
+     svn import milestone2/  https://10.10.10.5/svn/sugarcrm/app_package/vendor/ -m 'Package release BID2009_11_17_111955.zip'
+     rm -rf milestone2/
+     #+END_EXAMPLE
+
+   - Copy ~vendor/milestone2~ to ~patched/milestone2~:
+     #+BEGIN_EXAMPLE
+     svn copy https://10.10.10.5/svn/sugarcrm/app_package/{vendor,patched}/milestone2/ -m 'The modified milestone2 package'
+     #+END_EXAMPLE
+
+   - Now we should find the changes that we did on
+     ~patched/milestone1/~ and apply them again on
+     ~patched/milestone2/~:
+     #+BEGIN_EXAMPLE
+     svn checkout https://10.10.10.5/svn/sugarcrm/app_package/patched/milestone2/
+     svn merge https://10.10.10.5/svn/sugarcrm/app_package/{vendor,patched}/milestone1/ milestone2/
+     svn status
+     svn commit
+     #+END_EXAMPLE
+
+     Here maybe we will have to apply manually any patches that cannot
+     be applied automatically.
+
+   - Rename the directory ~milestone2/~ to ~src/~ and rebuild the
+     package using the script ~buildpackage.sh~. Then install the
+     package again on the /Module Loader/.
+
+
+* Customizing SugarCE Code
+
+** Non-upgrade compatible
+
+   In this section I will describe some of the customizations that I
+   have done to the base SugarCE code. These changes are always done
+   on the patched version of the sugarcrm.
+
+*** Pop-up window size
+
+    The size of the pop-up window (which is opened from /Relate/
+    fields, when you click on the button Select) has a fixed size:
+    600x400 . I would like it to have a default size of 600x800. I
+    would also like it to be configurable, so that for certain pop-up
+    windows I can choose a size that is different from the default.
+
+    In order to achieve this, I have modified the files:
+    -  ~include/SugarFields/Fields/Relate/EditView.tpl~
+    -  ~include/SugarFields/Fields/Relate/SearchView.tpl~
+
+    The modification has changed the size of the window:
+    #+BEGIN_EXAMPLE
+    600, 400, 
+    #+END_EXAMPLE
+    to this:
+    #+BEGIN_EXAMPLE
+	{ {if empty($displayParams.popupWidth) }}600{ {else}}{ {$displayParams.popupWidth}}{ {/if}},
+	{ {if empty($displayParams.popupHeight) }}800{ {else}}{ {$displayParams.popupHeight}}{ {/if}},
+    #+END_EXAMPLE
+    *Note*: It is in one line, without break.
+
+*** Disable Mass Update
+
+    In order to hide/disable mass update on all the modules, I make
+    #+BEGIN_EXAMPLE
+        var $showMassupdateFields = false;
+    #+END_EXAMPLE
+    on the file ~include/ListView/ListViewSmarty.php~.
+
+*** Adding debug functions
+
+    Append these functions to ~include/utils.php~:
+    #+BEGIN_EXAMPLE
+    //function for debug
+    function print_r_tree($data)
+    {
+        // capture the output of print_r
+        $out = print_r($data, true);
+
+        // replace something like '[element] => <newline> (' with <a href="javascript:toggleDisplay('...');">...</a><div id="..." style="display: none;">
+        $out = preg_replace('/([ \t]*)(\[[^\]]+\][ \t]*\=\>[ \t]*[a-z0-9 \t_]+)\n[ \t]*\(/iUe',"'\\1<a href=\"javascript:toggleDisplay(\''.(\$id = substr(md5(rand().'\\0'), 0, 7)).'\');\">\\2</a><div id=\"'.\$id.'\" style=\"display: none;\">'", $out);
+
+        // replace ')' on its own on a new line (surrounded by whitespace is ok) with '</div>
+        $out = preg_replace('/^\s*\)\s*$/m', '</div>', $out);
+
+        // print the javascript function toggleDisplay() and then the transformed output
+        echo '<pre>';
+        echo '<script language="Javascript">function toggleDisplay(id) { document.getElementById(id).style.display = (document.getElementById(id).style.display == "block") ? "none" : "block"; }</script>'."\n$out";
+        echo '</ pre>';
+    }
+    #+END_EXAMPLE
+
+    #+BEGIN_EXAMPLE
+    //function for debug
+    function print_r_log($data)
+    {
+      ob_start();
+      print_r($data);
+      $GLOBALS['log']->fatal(ob_get_contents());
+      ob_end_clean();
+    }
+    #+END_EXAMPLE
+
+    The first function displays the structure of an object as an
+    expandable tree, and the second one outputs the structure of the
+    object on the log file. Sometimes they can be useful.
+
+*** Subpanel configuration
+
+    On the file ~config_override.php~ I have appended these lines:
+    #+BEGIN_EXAMPLE
+    $sugar_config['default_subpanel_tabs'] = false;
+    $sugar_config['hide_subpanels'] = false;
+    $sugar_config['hide_subpanels_on_login'] = true;
+    #+END_EXAMPLE
+
+    It will make subpanel tabs to be disabled by default. Also, all
+    the subpanels will be collapsed when you login to the application,
+    however when a subpanel is expanded, it will remain expanded.
+
+** Upgrade compatible
+
+   The upgrade compatible changes are always done on the package.
+
+*** Modifying manually the view and layout of the modules
+
+    The view and layout of the modules can be changed by modifying the
+    files on the directory ~metadata/~ of the module:
+    ~listviewdefs.php~, ~editviewdefs.php~, ~detailviewdefs.php~, etc.
+
+*** Customize the search and listview of the popups
+
+    The layout of the popup window of a module can be changed by
+    modifying the file ~metadata/popupdefs.php~ of the module.
+
+    #+BEGIN_EXAMPLE
+    $popupMeta['searchdefs'] = array('inventory_number', 'serial_number');
+    $popupMeta['listviewdefs'] =
+    array (
+      'NAME' =>
+      array (
+        'width' => '10%',
+        'label' => 'LBL_NAME',
+        'default' => true,
+        'link' => true,
+      ),
+      'SERIAL_NUMBER' =>
+      array (
+        'width' => '10%',
+        'label' => 'LBL_SERIAL_NUMBER',
+        'default' => true,
+        'link' => true,
+      ),
+      'ITEM_STATUS' =>
+      array (
+        'width' => '10%',
+        'label' => 'LBL_ITEM_STATUS',
+        'default' => true,
+      ),
+      'DATE_MODIFIED' =>
+      array (
+        'width' => '10%',
+        'label' => 'LBL_DATE_MODIFIED',
+        'default' => true,
+      ),
+      'INVENTORY_NUMBER' =>
+      array (
+        'width' => '10%',
+        'label' => 'LBL_INVENTORY_NUMBER',
+        'default' => false,
+        'link' => true,
+      ),
+      'DATE_ENTERED' =>
+      array (
+        'width' => '10%',
+        'label' => 'LBL_DATE_ENTERED',
+        'default' => false,
+      ),
+      [. . . . . . . . . . .]
+    );
+    ?>
+    #+END_EXAMPLE
+
+    The format of the 'listviewdefs' array is the same as the file
+    ~listviewdefs.php~.
+
+*** Filter automatically the list of the pop-up
+
+    When we select an employee from a pop-up, usually we want the list
+    of employees to be filtered automatically for a certain
+    department. This can be done by adding the =initial_filter=
+    option at the =displayParams= of the field, on
+    ~editviewdefs.php~ :
+
+    #+BEGIN_EXAMPLE
+              0 =>
+              array (
+                'name' => 'technicien',
+                'studio' => 'visible',
+                'label' => 'LBL_TECHNICIEN',
+                'displayParams' => array('initial_filter'=>'&department_advanced=it', 'popupHeight'=>600),
+              ),
+    #+END_EXAMPLE
+
+    Note that =_advanced= is appended to the name of the field. Also, the
+    value of this field is searched with wildcards, like this: =%it%=.
+
+*** Change the default sort order of the subpanels
+
+    Suppose that we have a subpanel of items for each workstation, and
+    we would like them to be sorted by the item name, in the ascending
+    order.  It can be done by editing the file
+    ~src/SugarModules/relationships/layoutdefs/bid_Workstation.php~
+    like this:
+    #+BEGIN_EXAMPLE
+    $layout_defs["bid_Workstation"]["subpanel_setup"]["bid_workstation_bid_item"] = array (
+      'sort_order' => 'asc',
+      'sort_by' => 'name',
+    #+END_EXAMPLE
+
+    So, =sort_by= specifies the field that will be used for sorting,
+    and =sort_order= specifies whether it is ascending or descending.
+
+*** Creating logic hooks
+
+    Logic hooks are used to customize the default logic of the
+    modules.  Suppose that we would like to change the default logic
+    of the items module. It can be done like this:
+
+    - Create the file
+      ~src/SugarModules/custom/modules/bid_Item/logic_hooks.php~ with
+      this content:
+      #+BEGIN_EXAMPLE
+      <?php
+      $hook_version = 1;
+
+      $hook_array['before_save'][] =
+	Array(0,
+	      'before_save',
+	      'custom/modules/bid_Item/updateItem.php',
+	      'updateItem',
+	      'before_save'
+	      );
+
+      $hook_array['after_retrieve'][] =
+	Array(0,
+	      'after_retrieve',
+	      'custom/modules/bid_Item/updateItem.php',
+	      'updateItem',
+	      'after_retrieve'
+	      );
+      ?>
+      #+END_EXAMPLE
+
+    - Create the file
+      ~src/SugarModules/custom/modules/bid_Item/logic_hooks.php~ with
+      this content:
+      #+BEGIN_EXAMPLE
+      <?php
+      class updateItem
+      {
+	function before_save(&$bean, $event, $arguments)
+	{
+	  $bean->name = $bean->inventory_number . ' ' . $bean->type;
+
+	  $location = $bean->current_location;
+
+	  $location = ereg_replace('^/.+/', '', $location);
+
+	  if ($bean->bid_workstation_bid_item_name != '')
+	    $location = $bean->bid_workstation_bid_item_name.'/'.$location;
+
+	  if ($bean->bid_idcenter_bid_item_name != '')
+	    $location = $bean->bid_idcenter_bid_item_name.'/'.$location;
+
+	  if ($bean->bid_idcenter_bid_item_name != ''
+	      or $bean->bid_workstation_bid_item_name != '')
+	    $location = '/'.$location;
+
+	  $bean->current_location = $location;
+	}
+
+	function after_retrieve(&$bean, $event, $arguments)
+	{
+	  global $action;
+	  if ($action=='EditView')
+	    {
+	      $bean->current_location = ereg_replace('^/.+/', '', $bean->current_location);
+	    }
+	}
+      #+END_EXAMPLE
+
+    - Modify the section =copy= on the file ~src/manifest.php~ by
+      adding these lines:
+      #+BEGIN_EXAMPLE
+	'copy' =>
+	array (
+	[. . . . . . . . . .]
+	  22 =>
+	  array (
+	    'from' => '<basepath>/SugarModules/custom/modules/bid_Item',
+	    'to' => 'custom/modules/bid_Item',
+	  ),
+	[. . . . . . . . . .]
+      #+END_EXAMPLE
+
+*** Customize the export queries
+
+    The export query is used by the framework when the user clicks the
+    button /Export/ on the list of a module. It takes into account the
+    selected items of the list, the ordering of the list, etc. It
+    returns as a result a CSV file.
+
+    The export query of a module can be customized by overriding the
+    function =create_export_query()= of the module. For example, I
+    have created a custom module about inventory items. I have
+    modified the file
+    ~src/SugarModules/modules/bid_Item/bid_Item.php~ of the package
+    so that it looks like this:
+    #+BEGIN_EXAMPLE
+    <?php
+      /**
+       * THIS CLASS IS FOR DEVELOPERS TO MAKE CUSTOMIZATIONS IN
+       */
+
+    require_once('modules/bid_Item/bid_Item_sugar.php');
+
+    class bid_Item extends bid_Item_sugar
+    {
+      function bid_Item(){
+        parent::bid_Item_sugar();
+      }
+
+      function create_export_query(&$order_by, &$where, $relate_link_join='')
+      {
+        $query = "
+    SELECT
+        code, inventory_number, type, serial_number, product_model,
+        category, item_status, current_location
+    FROM bid_item
+    WHERE (deleted!=1)
+    ";
+
+        if ($where != "")  $query .= " AND ($where) ";
+
+        if (!empty($order_by))
+          $query .=  " ORDER BY ". $this->process_order_by($order_by, null);
+
+        return $query;
+      }
+    }
+    ?>
+    #+END_EXAMPLE
+
+    So, it simply constructs and returns a SELECT query, using also
+    the parameters =$order_by= and =$where= if they are not empty.
+
+    The query can be as complicated as we wish, joining with other
+    modules as well. For example:
+    #+BEGIN_EXAMPLE
+        $query = "
+    SELECT
+        idc.name                 AS 'Remote Site',
+        idc.code                 AS 'CSO Code',
+        idc.address_city         AS 'City',
+        idc.district             AS 'District',
+        idc.region               AS 'Region',
+        bid_workstation.name     AS 'WKS Name',
+        bid_workstation.code     AS 'WKS Number',
+        bid_workstation.type     AS 'Type',
+        bid_workstation.status   AS 'Status',
+        bid_workstation.real_ip  AS 'Real IP',
+        bid_workstation.vpn_ip   AS 'VPN IP',
+        empl.name                AS 'Operator',
+        empl.contract_number     AS 'Operator No.'
+    FROM bid_workstation
+    LEFT JOIN bid_idcente_workstation_c jt1
+        ON (bid_workstation.id = jt1.bid_idcentc582station_idb)
+        AND (jt1.deleted IS NULL OR jt1.deleted=0)
+    LEFT JOIN bid_idcenter idc
+        ON (idc.id = jt1.bid_idcent37badcenter_ida)
+        AND (idc.deleted IS NULL OR idc.deleted=0)
+    LEFT JOIN bid_employee empl
+        ON (bid_workstation.bid_employee_id_c = empl.id)
+        AND (empl.deleted IS NULL OR empl.deleted=0)
+    WHERE
+        (bid_workstation.deleted IS NULL OR bid_workstation.deleted=0)
+    ";
+    #+END_EXAMPLE
+
+    Referencies:
+    - [[http://www.sugarcrm.com/forums/archive/index.php/t-47226.html][Editing export parameters]]
+
+
+* Upgrading SugarCE
+
+  In this page I am going to describe the real steps that I have used
+  to upgrade SugarCE from version 5.2.0j to 5.2.0k, and then to 5.5 .
+
+** Upgrading from 5.2.0j to 5.2.0k
+
+*** Upgrade the vendor branch
+
+    - Copy branch =vendor/v520j= to =vendor/v520k=:
+      #+BEGIN_EXAMPLE
+      svn copy https://10.10.10.5/svn/sugarcrm/vendor/v520{j,k} \
+	    -m 'Upgrading sugarcrm to version 520k'   
+      cd /var/www/
+      svn checkout https://10.10.10.5/svn/sugarcrm/vendor/v520k
+      chgrp -R www-data v520k/
+      chmod g+w -R v520k/
+      #+END_EXAMPLE
+
+    - Copy the database *v520j* to *v520k*:
+      #+BEGIN_EXAMPLE
+      p520j/db/dump.sh v520j
+      p520j/db/restore.sh v520k v520j.sql
+      echo 'grant all privileges on v520k.* to sugarusr@localhost with grant option;' | mysql -p
+      #+END_EXAMPLE
+
+    - Edit ~v520k/config.php~ and fix these lines:
+      #+BEGIN_EXAMPLE
+        'db_name' => 'v520k',
+        'site_url' => 'https://10.10.10.5/v520k',
+      #+END_EXAMPLE
+
+    - Get the SugarCE patch:
+      #+BEGIN_EXAMPLE
+      wget http://www.sugarforge.org/frs/download.php/6104/SugarCE-Patch-5.2.0k.zip
+      #+END_EXAMPLE
+
+    - Open https://10.10.10.5/v520k/ in browser, go to =Admin
+      -->Upgrade Wizard= and install the patch
+      ~SugarCE-Patch-5.2.0k.zip~.
+
+    - Commit the changes to the svn repository:
+      #+BEGIN_EXAMPLE
+      svn status
+      svn commit -m 'Upgrade to version 520k'
+      #+END_EXAMPLE
+
+    - Remove the directory ~v520k/~:
+      #+BEGIN_EXAMPLE
+      rm -rf v520k/
+      #+END_EXAMPLE
+
+*** Upgrade the patched branch
+
+    - Copy the branch =patched/p520j= to =patched/p520k=:
+      #+BEGIN_EXAMPLE
+      svn copy https://10.10.10.5/svn/sugarcrm/patched/p520{j,k} \
+	  -m 'Upgrading the patched version to p520k'
+      cd /var/www/
+      svn checkout https://10.10.10.5/svn/sugarcrm/patched/p520k
+      chgrp -R www-data p520k/
+      chmod g+w -R p520k/ 
+      #+END_EXAMPLE
+
+    - Copy the database *p520j* to *p520k*:
+      #+BEGIN_EXAMPLE
+      p520k/db/dump.sh p520j
+      p520k/db/restore.sh p520k p520j.sql
+      echo 'grant all privileges on p520k.* to sugarusr@localhost with grant option;' | mysql -p
+      #+END_EXAMPLE
+
+    - Edit the file ~p520k/config.php~ and make sure that =db_name=
+      and =site_url= are correct.
+
+    - Open https://10.10.10.5/p520k/ in browser, go to =Admin -->
+      Upgrade Wizard= and install the patch
+      ~SugarCE-Patch-5.2.0k.zip~.
+
+    - Check that https://10.10.10.5/p520k/ has no problems and commit
+      the changes to the svn repository:
+      #+BEGIN_EXAMPLE
+      svn commit -m 'Upgrading the patched version to p520k'
+      #+END_EXAMPLE
+
+    - Apply the manual modifications that were done for the version
+      520j:
+      #+BEGIN_EXAMPLE
+      cd /var/www/p520k/
+      svn merge https://10.10.10.5/svn/sugarcrm/vendor/v520j \
+		https://10.10.10.5/svn/sugarcrm/patched/p520j .
+      #+END_EXAMPLE
+
+    - Make sure that ~p520k/config.php~ has =db_name= and =site_url=
+      like this:
+      #+BEGIN_EXAMPLE
+	'db_name' => basename(dirname(__FILE__)),
+	'site_url' => 'https://10.126.5.5/'.basename(dirname(__FILE__)),
+      #+END_EXAMPLE
+
+    - Resolve any conflicts, check that https://10.10.10.5/p520k/ has
+      no problems, and commit the changes:
+      #+BEGIN_EXAMPLE
+      svn commit -m 'Merge the manual modifications between vendor/v520j and patched/p520j to patched/p520k'
+      #+END_EXAMPLE
+
+*** Upgrade the application
+
+    - Build the script ~app_copy.sh~ like this:
+      #+BEGIN_EXAMPLE
+      #!/bin/bash
+      ### make a copy of the given application
+
+      ### check the parameters
+      if [ $# -ne 2 ]
+      then
+	echo "
+      Usage: $0 app1 app2
+
+      Make a copy of the first application with the second name.
+      "
+	exit 1
+      fi
+
+      ### get the parameters
+      app1=$1
+      app2=$2
+
+      ### check the destination directory
+      if [ -d $app2 ]
+      then
+	echo "Directory $app2 already exists."
+	exit 2
+      fi
+
+      ### backup the database of app1
+      $app1/db/dump.sh
+
+
+      ### copy the application directory
+      cp -a $app1 $app2
+
+      ### copy the database
+      $app2/db/restore.sh $app2 $app2/db/$app1.sql
+
+      ### grant access to the database
+      echo 'grant all privileges on $app2.* to sugarusr@localhost with grant option;' | mysql -p
+      #+END_EXAMPLE
+
+      It is used to make another copy of an application directory,
+      with a different name. It makes a copy of the database as well,
+      and it will ask several times for the password of the database
+      administrator (root).
+
+      Making a copy of the application can be useful for testing some
+      changes before applying them to the main copy.
+
+    - Using the script ~app_copy.sh~ make a copy of the application:
+      #+BEGIN_EXAMPLE
+      rm -rf app1/
+      ./app_copy.sh app app1
+      chgrp www-data -R app1/
+      chmod g+w -R app1/    
+      #+END_EXAMPLE
+
+    - Open https://10.10.10.5/app1/, go to =Admin --> Upgrade Wizard=
+      and upgrade with ~SugarCE-Patch-5.2.0k.zip~.
+
+    - Check that https://10.10.10.5/app1/ is OK (upgrade has not
+      broken anything).
+
+    - Installing the upgrade patch may overwrite any of the files that
+      we have modified/patched previously, so we should re-apply the
+      sugarcrm patches:
+      #+BEGIN_EXAMPLE
+      cd /var/www/
+      svn info p520k/
+      svn log https://10.10.10.5/svn/sugarcrm/patched/p520k | more
+      svn help merge
+      svn merge -c 79 https://10.10.10.5/svn/sugarcrm/patched/p520k app1/
+      svn status app1/
+      svn commit app1/ -m 'Reapply sugarcrm patches from patched/p520k (merge -c 79)'
+      #+END_EXAMPLE
+
+      It is the change-set that we did on =patched/p520k= that we
+      apply again on =app1=.
+
+    - On https://10.10.10.5/app1/ go to =Admin --> Module Loader= and
+      re-install the application package ~BID-r84.zip~. Then check the
+      modifications, if any, and commit them again.
+
+    - Make a copy of =app1= to =app=:
+      #+BEGIN_EXAMPLE
+      cd /var/www/
+      rm -rf app/
+      ./app_copy.sh app1 app
+      #+END_EXAMPLE
+
+      The application =app1= now can be cleaned (removed), or it can
+      be kept for testing purposes.
+
+** Upgrading from 5.2.0k to 5.5.0
+
+*** Upgrade the vendor branch
+
+    - Copy branch =vendor/v520k= to =vendor/v550=:
+      #+BEGIN_EXAMPLE
+      svn copy https://10.10.10.5/svn/sugarcrm/vendor/{v520k,v550} \
+	  -m 'Upgrading sugarcrm to version 550'
+      cd /var/www/
+      svn checkout https://10.10.10.5/svn/sugarcrm/vendor/v550
+      chgrp -R www-data v550/
+      chmod g+w -R v550/
+      #+END_EXAMPLE
+
+    - Copy the database =v520k= to =v550=:
+      #+BEGIN_EXAMPLE
+      p520k/db/dump.sh v520k
+      p520k/db/restore.sh v550 v520k.sql
+      echo 'grant all privileges on v550.* to sugarusr@localhost with grant option;' | mysql -p
+      #+END_EXAMPLE
+
+    - Edit ~v550/config.php~ and fix these lines:
+      #+BEGIN_EXAMPLE
+	'db_name' => 'v550',
+	'site_url' => 'https://10.10.10.5/v550',
+      #+END_EXAMPLE
+
+    - Get the SugarCE upgrade patch:
+      #+BEGIN_EXAMPLE
+      wget http://www.sugarforge.org/frs/download.php/6212/SugarCE-Upgrade-5.2.0-to-5.5.0.zip
+      wget http://www.sugarforge.org/frs/download.php/6210/silentUpgrade-CE-5.5.0.zip
+      #+END_EXAMPLE
+
+    - Make sure that the PHP command-line interface is installed (we
+      need it in order to run the silent upgrade script from the
+      command-line):
+      #+BEGIN_EXAMPLE
+      aptitude install php5-cli
+      #+END_EXAMPLE
+
+    - Modify ~/etc/php5/cli/php.ini~ like this:
+      #+BEGIN_EXAMPLE
+      ;max_execution_time = 30      ; Maximum execution time of each script, in seconds
+      max_execution_time = 6000     ; Maximum execution time of each script, in seconds
+      ;max_input_time = 60 ; Maximum amount of time each script may spend parsing request data
+      max_input_time = 600 ; Maximum amount of time each script may spend parsing request data
+      ;max_input_nesting_level = 64 ; Maximum input variable nesting level
+      ;memory_limit = 32M      ; Maximum amount of memory a script may consume (32MB)
+      memory_limit = 128M      ; Maximum amount of memory a script may consume (32MB)
+
+      ;post_max_size = 8M
+      post_max_size = 64M
+
+      ;upload_max_filesize = 2M
+      upload_max_filesize = 64M
+      #+END_EXAMPLE
+
+    - Run the silent upgrade script from the shell:
+      #+BEGIN_EXAMPLE
+      cd /var/www/
+      mkdir upgrade
+      cd upgrade/
+      unzip ../zip/silentUpgrade-CE-5.5.0.zip
+      php -f silentUpgrade.php ../zip/SugarCE-Upgrade-5.2.0-to-5.5.0.zip upgrade.log ../v550/ admin
+      #+END_EXAMPLE
+
+    - Open https://10.10.10.5/v550/ in browser and check that it works.
+
+    - In case that you get an error like this:
+      #+BEGIN_EXAMPLE
+      Fatal error: Call to a member function getQuery() on a
+      non-object Contact.php on ...
+      #+END_EXAMPLE
+      Then check this discussion:
+      http://www.sugarcrm.com/forums/showthread.php?t=48126 So, it can
+      be fixed by opening this is browser and doing repair:
+      https://10.10.10.5/v550/index.php?module=Administration&action=index
+
+    - Synchronize with the svn repository and commit the
+      modifications:
+      #+BEGIN_EXAMPLE
+      cd ../v550/
+      svn status
+      svn status | grep '!' | gawk '{print $2}' | xargs svn rm
+      svn status | grep '?' | gawk '{print $2}' | xargs svn add
+      svn commit -m 'Upgrade to version 550'
+      chgrp www-data -R .
+      chmod g+w -R .
+      #+END_EXAMPLE
+
+    - Remove the directory ~v550/~:
+      #+BEGIN_EXAMPLE
+      rm -rf v550/
+      #+END_EXAMPLE
+
+*** Upgrade the patched branch
+
+    - Copy the branch =patched/p520k= to =patched/p550=:
+      #+BEGIN_EXAMPLE
+      svn copy https://10.10.10.5/svn/sugarcrm/patched/{p520k,p550} \
+	  -m 'Upgrading the patched version to p550'
+      cd /var/www/
+      svn checkout https://10.10.10.5/svn/sugarcrm/patched/p550
+      chgrp -R www-data p550/
+      chmod g+w -R p550/ 
+      #+END_EXAMPLE
+
+    - Copy the database *p520k* to *p550*:
+      #+BEGIN_EXAMPLE
+      p520k/db/dump.sh p520k
+      p520k/db/restore.sh p550 p520k.sql
+      echo 'grant all privileges on p550.* to sugarusr@localhost with grant option;' | mysql -p
+      #+END_EXAMPLE
+
+    - Edit the file ~p550/config.php~ and make sure that =db_name= and
+      =site_url= are correct.
+
+    - Get the SugarCE patch:
+      #+BEGIN_EXAMPLE
+      wget http://www.sugarforge.org/frs/download.php/6104/SugarCE-Patch-5.2.0k.zip
+      #+END_EXAMPLE
+
+    - Run the silent upgrade script from the command-line interface:
+      #+BEGIN_EXAMPLE
+      cd upgrade/
+      php -f silentUpgrade.php ../zip/SugarCE-Upgrade-5.2.0-to-5.5.0.zip upgrade.log ../p550/ admin
+      cd ../p550/
+      chgrp www-data -R .
+      chmod g+w -R .
+      #+END_EXAMPLE
+
+    - Open https://10.10.10.5/p550/ in browser and check that it works.
+
+    - Synchronize with the svn repository and commit the modifications:
+      #+BEGIN_EXAMPLE
+      cd ../p550/
+      svn status
+      svn status | grep '!' | gawk '{print $2}' | xargs svn rm
+      svn status | grep '?' | gawk '{print $2}' | xargs svn add
+      svn commit -m 'Upgrade to version 550'
+      chgrp www-data -R .
+      chmod g+w -R .
+      #+END_EXAMPLE
+
+    - Merge the manual modifications:
+      #+BEGIN_EXAMPLE
+      cd /var/www/p550/
+      svn merge https://10.10.10.5/svn/sugarcrm/vendor/v520k \
+		https://10.10.10.5/svn/sugarcrm/patched/p520k .
+      #+END_EXAMPLE
+
+    - Open https://10.10.10.5/p550/ in browser and check that it works.
+
+    - Commit modifications in the svn repository:
+      #+BEGIN_EXAMPLE
+      svn commit -m 'Merge the manual modifications between vendor/v520k and patched/p520k to patched/p550'  
+      #+END_EXAMPLE
+
+*** Upgrade the application
+
+    -  Make a copy of the application using the script ~app_copy.sh~:
+       #+BEGIN_EXAMPLE
+      rm -rf app1/
+      ./app_copy.sh app app1
+      chgrp www-data -R app1/
+      chmod g+w -R app1/    
+      #+END_EXAMPLE
+
+    - Run the silent upgrade script from the command-line interface:
+      #+BEGIN_EXAMPLE
+      cd upgrade/
+      php -f silentUpgrade.php ../zip/SugarCE-Upgrade-5.2.0-to-5.5.0.zip upgrade.log ../app1/ admin
+      cd ../app1/
+      chgrp www-data -R .
+      chmod g+w -R .
+      #+END_EXAMPLE
+
+    - Open https://10.10.10.5/app1/ in browser and test that it works.
+
+    - Synchronize with the svn repository and commit the modifications:
+      #+BEGIN_EXAMPLE
+      svn status
+      svn status | grep '!' | gawk '{print $2}' | xargs svn rm
+      svn status | grep '?' | gawk '{print $2}' | xargs svn add
+      svn status | grep '^~' | gawk '{print $2}' | xargs rm -rf
+      svn update
+      svn commit -m 'Upgrading to version 550'
+      chgrp www-data -R .
+      chmod g+w -R .
+      #+END_EXAMPLE
+
+    - Reapply sugarcrm patches:
+      #+BEGIN_EXAMPLE
+      cd /var/www/
+      svn info p550/
+      svn log https://10.10.10.5/svn/sugarcrm/patched/p550 | more
+      svn help merge
+      svn merge -r92:98 https://10.10.10.5/svn/sugarcrm/patched/p550 app1/
+      svn status app1/
+      svn commit app1/ -m 'Reapply sugarcrm patches from patched/p550 (svn merge -r92:98 https://10.10.10.5/svn/sugarcrm/patched/p550)'
+      #+END_EXAMPLE
+
+    - On https://10.10.10.5/app1/ go to =Admin --> Module Loader= and
+      re-install the application package ~BID-r84.zip~. Then check the
+      modifications, if any, and commit them again.
+
+    - Make a copy of *app1* to *app*:
+      #+BEGIN_EXAMPLE
+      cd /var/www/
+      rm -rf app/
+      ./app_copy.sh app1 app
+      #+END_EXAMPLE
+
+      Now app1/ can be removed or can be kept for making tests.
+
+
+* Generating Custom Excel Reports
+
+*** Register a new entry point
+
+    Create the file
+    ~src/SugarModules/custom/include/MVC/Controller/entry_point_registry.php~
+    with this content:
+    #+BEGIN_EXAMPLE
+    <?php
+    $entry_point_registry['report'] = array('file' => 'custom/include/reports/report.php',
+                                            'auth' => true);
+    ?>
+    #+END_EXAMPLE
+
+    It will register a special entry point for the reports. The file
+    that will handle the requests on this entry point is
+    ~custom/include/reports/report.php~.
+
+*** Add a link to the report
+
+    Append these lines to the file
+    ~src/SugarModules/modules/bid_Workstation/Menu.php~:
+    #+BEGIN_EXAMPLE
+    if (ACLController::checkAccess('bid_Workstation', 'export', true))
+      {
+        $params = "report=inventory_all&format=csv&module=bid_Workstation";
+        $module_menu[] = Array("index.php?entryPoint=report&$params",
+                               "Get Full Inventory",
+                               "Import",
+                               'bid_Item');
+      }
+    #+END_EXAMPLE
+
+    It is going to add a new button on the left menu of the module
+    /Workstations/. The label of the button will be "Get Full
+    Inventory" and the icon will be the same one that is used for the
+    "Import". The action of the button will access the /entry point/
+    *report* (index.php?entryPoint=report) and the parameters of the
+    action specify the type of the report (inventory_all), the format
+    of the report (csv) and the module (bid_Workstation). The button
+    will be displayed only if the user has /export/ permission on the
+    module.
+
+*** Create the PHP code that generates the reports
+
+    - Create the file
+      ~src/SugarModules/custom/include/reports/report.php~ with this
+      content:
+      #+BEGIN_EXAMPLE
+      <?php
+      ob_start();
+      require_once('custom/include/reports/report_utils.php');
+
+      check_access();
+
+      $report = clean_string($_REQUEST['report']);
+      $format = clean_string($_REQUEST['format']);
+      if (empty($format))  $format='csv';
+      $report_function = "get_${format}_report";
+      $content = $report_function($report);
+      $filename = "$report.$format";
+
+      ob_clean();
+
+      //send the reply to the browser
+      global $locale;
+      header("Pragma: cache");
+      header("Content-type: application/octet-stream; charset=".$locale->getExportCharset());
+      header("Content-Disposition: attachment; filename=$filename");
+      header("Content-transfer-encoding: binary");
+      header("Expires: Mon, 26 Jul 1997 05:00:00 GMT" );
+      header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT" );
+      header("Cache-Control: post-check=0, pre-check=0", false );
+      header("Content-Length: ".strlen($content));
+
+      print $locale->translateCharset($content, 'UTF-8', $locale->getExportCharset());
+
+      sugar_cleanup(true);
+      ?>
+      #+END_EXAMPLE
+
+      It gets the content of the report and sends it to the browser as
+      a binary file.
+
+    - Create the file
+      ~src/SugarModules/custom/include/reports/report_utils.php~ with
+      this content:
+      #+BEGIN_EXAMPLE
+      <?php
+      function check_access()
+      {
+	if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
+
+	if( empty($_REQUEST['report']) || empty($_REQUEST['report'])
+	    || !isset($_SESSION['authenticated_user_id']) )
+	  {
+	    die("Not a Valid Entry Point");
+	  }
+
+	global $sugar_config;
+	global $current_user;
+	$the_module = clean_string($_REQUEST['module']);
+	if ( $sugar_config['disable_export']
+	     || ( !empty($sugar_config['admin_export_only'])
+		  && !(is_admin($current_user)
+		       || (ACLController::moduleSupportsACL($the_module)
+			   && ACLAction::getUserAccessLevel($current_user->id,
+							    $the_module,
+							    'access') == ACL_ALLOW_ENABLED
+			   && (ACLAction::getUserAccessLevel($current_user->id,
+							     $the_module,
+							     'admin') == ACL_ALLOW_ADMIN
+			       || ACLAction::getUserAccessLevel($current_user->id,
+								$the_module,
+								'admin') == ACL_ALLOW_ADMIN_DEV)))))
+	  {
+	    die($GLOBALS['app_strings']['ERR_EXPORT_DISABLED']);
+	  }
+
+      }
+
+      function getDelimiter()
+      {
+	global $sugar_config;
+	global $current_user;
+
+	$userDelimiter = $current_user->getPreference('export_delimiter');
+	if (!empty($userDelimiter))  return $userDelimiter;
+
+	$sugarDelimiter = $sugar_config['export_delimiter'];
+	if (!empty($sugarDelimiter))  return $sugarDelimiter;
+
+	$delimiter = ','; // default to "comma"
+	return $delimiter;
+      }
+
+      function get_csv_report($report)
+      {
+	global $app_strings;
+
+	$content = '';
+
+	$db = DBManagerFactory::getInstance();
+
+	//get the query of the report
+	switch ($report)
+	  {
+	  default:
+	  case 'inventory_all':
+	    $query = "call get_workstation_inventory();";
+	    break;
+	  }
+
+	//run the query and get the result
+	$result = $db->query($query, true, $app_strings['ERR_EXPORT_TYPE'].": <BR>.".$query);
+
+	//build the header
+	$fields_array = $db->getFieldsArray($result, true);
+	$content .= get_csv_line($fields_array);
+
+	while($val = $db->fetchByAssoc($result, -1, false))
+	  {
+	    $new_arr = array();
+	    foreach (array_values($val) as $key => $value)
+	      {
+		array_push($new_arr, preg_replace('/"/','""', $value));
+	      }
+	    $content .= get_csv_line($new_arr);
+	  }
+
+	return $content;
+      }
+
+      function get_csv_line($arr)
+      {
+	$line = '"' . implode('"'.getDelimiter().'"', $arr) . '"';
+	$line .= "\r\n";
+	return $line;
+      }
+      ?>
+      #+END_EXAMPLE
+
+    The function =get_csv_report($report)= gets a query for the given
+    report type, executes it, converts the result to CSV format and
+    returns it.
+
+*** Create the MySQL stored procedures of the reports
+
+    The query that is used for the report is just =call
+    get_workstation_inventory();=. It is a call to the MySQL stored
+    procedure =get_workstation_inventory=.
+
+    - This stored procedure is created by the SQL script
+      ~src/SugarModules/custom/include/reports/get_workstation_inventory.sql~,
+      which has a content like this:
+      #+BEGIN_EXAMPLE
+      DELIMITER ;;
+
+      DROP PROCEDURE IF EXISTS get_workstation_inventory;;
+
+      CREATE PROCEDURE get_workstation_inventory()
+      BEGIN
+
+      [. . . . . . . . . . .]
+
+      END;;
+
+      DELIMITER ;
+      #+END_EXAMPLE
+
+    - Create the PHP file
+      ~src/SugarModules/custom/include/reports/install_stored_procedures.php~,
+      which has a content like this:
+      #+BEGIN_EXAMPLE
+      <?php
+      require('config.php');
+
+      $dbhost = $sugar_config['dbconfig']['db_host_name'];
+      $dbuser = $sugar_config['dbconfig']['db_user_name'];
+      $dbpass = $sugar_config['dbconfig']['db_password'];
+      $dbname = $sugar_config['dbconfig']['db_name'];
+
+      $sql_script = 'custom/include/reports/get_workstation_inventory.sql';
+
+      $sql_cmd = "mysql --host='$dbhost' --user='$dbuser' --password='$dbpass' --database='$dbname' < $sql_script";
+
+      $output = shell_exec($sql_cmd);
+      print "<xmp>$output</xmp>";
+      ?>
+      #+END_EXAMPLE
+
+    It is used to execute the SQL script
+    ~src/SugarModules/custom/include/reports/get_workstation_inventory.sql~
+    during the installation of the package, in order to create the
+    stored procedures.
+
+*** Install the code of the reports
+
+    - Modify the file ~src/manifest.php~ of the package and on the
+      section =copy= add entries like these:
+      #+BEGIN_EXAMPLE
+	'copy' =>
+	array (
+
+	[. . . . . . . . . . . . .]
+
+	  24 =>
+	  array (
+	    'from' => '<basepath>/SugarModules/custom/include/MVC/Controller',
+	    'to' => 'custom/include/MVC/Controller',
+	  ),
+	  25 =>
+	  array (
+	    'from' => '<basepath>/SugarModules/custom/include/reports',
+	    'to' => 'custom/include/reports',
+	  ),
+      #+END_EXAMPLE
+
+      This is needed so that when the package is installed, the files
+      that we created are copied to the proper places on the
+      application.
+
+    - At the end of the file ~src/manifest.php~ append also this code:
+      #+BEGIN_EXAMPLE
+	'post_execute' =>
+	array (
+	       0 => '<basepath>/SugarModules/custom/include/reports/install_stored_procedures.php',
+	       ),
+      #+END_EXAMPLE
+
+      This is in order to run the script
+      =install_stored_procedures.php= after installing the
+      package. This script will run the SQL script that creates the
+      stored procedure =get_workstation_inventory= which is used to
+      generate the report.
+
+    Referencies:
+    - [[http://www.osintegra.com/blog/2009/03/18/sugarcrm-entry-points/][SugarCRM entry points]]
+    - [[http://www.redinkdesign.net/node/14][Sugar CRM - Entry Point Registry]]
