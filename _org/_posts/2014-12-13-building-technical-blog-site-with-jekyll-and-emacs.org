@@ -48,13 +48,15 @@ tags: [Jekyll, Emacs, org-mode, Blogging]
 
    + Make a local clone of your website repo:
      #+BEGIN_EXAMPLE
+     sudo apt-get install git
      git clone https://github.com/username/username.github.io
      #+END_EXAMPLE
 
    + Install Ruby and Bundler:
      #+BEGIN_EXAMPLE
-     sudo apt-get install ruby
-     gem install bundler
+     sudo apt-get install build-essential
+     sudo apt-get install ruby ruby-dev
+     sudo gem install bundler
      #+END_EXAMPLE
 
    + Install Jekyll and all dependencies:
