@@ -54,7 +54,7 @@ tags: [Jekyll, Emacs, org-mode, Blogging]
 
    + Install Ruby and Bundler:
      #+BEGIN_EXAMPLE
-     sudo apt-get install build-essential
+     sudo apt-get install build-essential nodejs
      sudo apt-get install ruby ruby-dev
      sudo gem install bundler
      #+END_EXAMPLE
