@@ -13,7 +13,7 @@ comments: false
   <header>
     {% if post.image.feature %}
       <div class="entry-image-index">
-        <img src="{{ site.url }}/images/{{ post.image.feature }}" alt="{{ post.title }}">
+        <a href="{{ site.url }}{{ post.url }}" title="{{ post.title }}"><img src="{{ site.url }}/images/{{ post.image.feature }}" alt="{{ post.title }}"></a>
       </div><!-- /.entry-image -->
     {% endif %}
     <div class="entry-meta">
