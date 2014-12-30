@@ -1,0 +1,95 @@
+#+TITLE:     DOS and Turbo Pascal Nostalgia
+#+AUTHOR:    Dashamir Hoxha
+#+EMAIL:     dashohoxha@gmail.com
+#+DATE:      2014-12-30
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+# #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
+#+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
+#+begin_html
+---
+layout:     post
+title:      DOS and Turbo Pascal Nostalgia
+date:       2014-12-30
+summary:    A DOS game that I have written 20 years ago with Turbo Pascal.
+tags: [DOS, Turbo Pascal, Game, AI, MiniMax]
+---
+#+end_html
+
+Recently I made an "archaeological" discovery, I found an old game
+that I have written almost 20 years ago in DOS. This is one of the
+first programs that I have written, and it is also one of the most
+beautiful ones that I have ever written. The computer can also play
+against a human and it uses Artificial Intelligence (MiniMax algorithm
+with alpha and beta pruning). I have written it during the summer
+holidays of 1995 (in about 3 months). The code of this game is now on
+GitHub: https://github.com/dashohoxha/reversi
+
+I had already studied Computer Science for two years in the Faculty of
+Natural Sciences in Tirana, Albania. During the first year we learned
+lots of algorithms and data structures (and a lot of maths of course),
+but we did very little programming practice. We didn't have personal
+computers at home and the resources of the university were very
+limited. There was a VAX VMS miniframe donated by a German university
+and a room of black-and-white terminals (actually the colors were
+black and green or black and yellow, or something like this). So, we
+never had enough time to practice as much as we wanted, and we mostly
+wrote our programs with paper and pencil, simulating the computer in
+our heads.
+
+During the second year a PC lab of about 10-20 computers was installed
+in the university (again with some foreign help and donations) and we
+started to write our programs in DOS with Turbo Pascal. But again we
+couldn't get enough time to practice programming as much as we wanted
+and to write the great programs that we wished.  We also didn't have
+any good books about programming, there was no internet around yet, and
+the quality of lectures was lacking. We mostly learned by trying
+things ourselves and by helping each-other.  The older students were
+helpful to us and we were always eager to help any younger students.
+
+After the second year I got a scholarship for studying in Turkey.
+Since I couldn't speak neither English nor Turkish at that time, I had
+to spend the first year in the preparatory school, learning Turkish
+and English. At the end of this year I had managed to save enough
+money to by an i386 PC (or maybe it was i486, I am not sure). So, when
+I went back home for the summer holidays, I had a PC with me, which I
+could use as much as I wanted, day and night, without any limits or
+constraints.
+
+I hadn't written any serious programs yet, just small things and I was
+not sure how useful my knowledge was. So, I decided to do something
+challenging, just to test out myself and to learn new things. I
+decided to write a game and further more I would try to make the
+computer play the game. I had never seen a computer before going to
+university, I didn't know exactly what it was like, but my opinion
+about it was that it is an electronic machine that does intelligent
+things. This is why I loved computer science and this is why I wished
+to study it. So, I wanted to do something intelligent, something
+clever. Later I got a bit disappointed from the "intelligence" of the
+computers and from the artificial intelligence, but the computer
+science was still beautiful.
+
+I had an old textbook of algorithms and data structures, which
+included also the minimax algorithm and its modifications for alpha
+and beta pruning. The quality of the book was poor, it had typing
+mistakes, the algorithm was iterative (not recursive) and difficult to
+understand. However I worked hard and managed to understand and to
+implement it correctly.
+
+I spent lots of time for this program but I didn't mind sitting many
+hours in front of the computer. From my two first years at the
+university of Tirana I had developed a feeling of never having enough
+time to practice, so now that I had my own computer I was trying to
+take advantage of it as much as possible.
+
+I don't know whether it can run on Windows, but it can run on Linux
+with the help of *dosbox*:
+#+BEGIN_EXAMPLE
+sudo apt-get install dosbox
+dosbox LP.EXE
+#+END_EXAMPLE
+
+It can also be possible to compile it with Free Pascal, but I haven't
+tried it yet. Maybe one day I will try to rewrite this game in
+JavaScript or Ruby or some other modern language. Or maybe somebody
+else might help me for it.
