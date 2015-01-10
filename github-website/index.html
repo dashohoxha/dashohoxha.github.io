@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Building Our Website on GitHub With Jekyll</title>
+<meta name="author" content="(Dashamir Hoxha)"/>
+
+<link rel="stylesheet" href="http://cdn.jsdelivr.net/reveal.js/2.5.0/css/reveal.min.css"/>
+<link rel="stylesheet" href="http://cdn.jsdelivr.net/reveal.js/2.5.0/css/theme/sky.css" id="theme"/>
+
+<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+<script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = 'http://cdn.jsdelivr.net/reveal.js/2.5.0/css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+</script>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<section>
+<h1>Building Our Website on GitHub With Jekyll</h1>
+<h2>Dashamir Hoxha</h2>
+<h2><a href="mailto:dashohoxha@gmail.com">dashohoxha@gmail.com</a></h2>
+<h2>2015-01-28</h2></section>
+
+<section>
+<section id="sec-1" >
+
+<h2>Git and GitHub</h2>
+<ul class="org-ul">
+<li>Install git: `sudo apt-get install git`
+</li>
+
+<li>Create an account on GitHub: <a href="https://github.com">https://github.com</a>
+</li>
+
+<li>Create a repository named: <b>username.github.io</b>
+</li>
+</ul>
+</section>
+
+
+</section>
+<section>
+<section id="sec-2" >
+
+<h2>GitHub Pages</h2>
+<ul class="org-ul">
+<li>See: <a href="https://pages.github.com/">https://pages.github.com/</a>
+<pre class="example">
+git clone https://github.com/username/username.github.io
+cd username.github.io
+echo "Hello World" &gt; index.html
+git add --all
+git commit -m "Initial commit"
+git push
+</pre>
+</li>
+
+<li>Use the "Automatic page generator" of GitHub 
+</li>
+</ul>
+</section>
+
+
+</section>
+<section>
+<section id="sec-3" >
+
+<h2>How it works</h2>
+<ul class="org-ul">
+<li>Github uses Jekyll for the pages: <a href="http://jekyllrb.com/">http://jekyllrb.com/</a>
+</li>
+
+<li>Jekyll can convert to HTML Markdown or Textile content.
+</li>
+
+<li>We can use a Jekyll theme from the ones avaiable at:
+<a href="http://jekyllthemes.org/">http://jekyllthemes.org/</a>
+</li>
+
+<li>In this training we will use the theme named SinglePaged:
+<ul class="org-ul">
+<li><a href="http://t413.com/SinglePaged">http://t413.com/SinglePaged</a>
+</li>
+<li><a href="https://github.com/t413/SinglePaged">https://github.com/t413/SinglePaged</a>
+</li>
+</ul>
+</li>
+</ul>
+</section>
+
+
+</section>
+<section>
+<section id="sec-4" >
+
+<h2>Setup the SinglePaged theme</h2>
+<ul class="org-ul">
+<li>Delete the github project that we created previously.
+</li>
+
+<li>Fork this project: <a href="https://github.com/t413/SinglePaged">https://github.com/t413/SinglePaged</a>
+</li>
+
+<li>Rename it to <b>username.github.io</b>
+</li>
+
+<li>Clone your repository:
+<pre class="example">
+git clone https://github.com/username/username.github.io
+cd username.github.io
+</pre>
+</li>
+</ul>
+</section>
+
+
+</section>
+<section>
+<section id="sec-5" >
+
+<h2>Setup the right git branch</h2>
+<ul class="org-ul">
+<li>Fix the publish branch:
+<pre class="example">
+git checkout publish
+git branch -m master
+git push -u origin master 
+git branch -D gh-pages
+</pre>
+</li>
+
+<li>On the github project page go to settings and change the default
+branch to <b>master</b>.
+</li>
+
+<li>Delete the branch <b>gh-pages</b>:
+<pre class="example">
+git push origin --delete gh-pages
+git branch -d gh-pages
+</pre>
+</li>
+</ul>
+</section>
+
+
+</section>
+<section>
+<section id="sec-6" >
+
+<h2>Customize your website</h2>
+<ul class="org-ul">
+<li>Edit <code>_config.yml</code> to change your title, keywords, and description.
+</li>
+
+<li>Create a new file in <code>_posts/</code> called <code>2014-01-01-intro.md</code>
+    Edit it, and add:
+<pre class="example">
+---
+title: "home"
+bg: white     #defined in _config.yml, can use html color like '#010101'
+color: black  #text color
+style: center
+---
+
+# Example headline!
+and so on..
+</pre>
+</li>
+</ul>
+</section>
+
+
+</section>
+<section>
+<section id="sec-7" >
+
+<h2>Create another section on the page</h2>
+<ul class="org-ul">
+<li>Create a second post called <code>2014-01-02-art.md</code> with an divider
+image this time:
+<pre class="example">
+---
+title: "Art"
+bg: turquoise  #defined in _config.yml, can use html color like '#0fbfcf'
+color: white   #text color
+fa-icon: paint-brush
+---
+
+#### A new section- oh the humanity!
+</pre>
+</li>
+
+<li><b>Note:</b> That part fa-icon: paint-brush will use a font-awesome
+icon of paint-brush. You can use any icon from this font-awesome
+icon directory: <a href="http://fortawesome.github.io/Font-Awesome/icons/">http://fortawesome.github.io/Font-Awesome/icons/</a>
+</li>
+</ul>
+</section>
+
+
+</section>
+<section>
+<section id="sec-8" >
+
+<h2>Test the website locally</h2>
+<ul class="org-ul">
+<li>Pull your changes on GitHub: <code>git pull</code>
+</li>
+
+<li>Install Jekyll:
+<pre class="example">
+sudo apt-get install ruby ruby-dev build-essential nodejs
+sudo gem install github-pages
+</pre>
+</li>
+
+<li>Start a server with: <code>jekyll serve -w</code>
+</li>
+
+<li>Visit <a href="http://localhost:4000">http://localhost:4000</a> to see a live locally served preview.
+</li>
+
+<li>Make changes and test them, and finally push them to GitHub:
+<pre class="example">
+git push -u origin master
+</pre>
+</li>
+</ul>
+</section>
+
+
+</section>
+<section>
+<section id="sec-9" >
+
+<h2>Markdown basics</h2>
+<ul class="org-ul">
+<li>Headings (#, ##, ###, etc.)
+</li>
+
+<li>Paragraphs, quotes, code samples, etc.
+</li>
+
+<li>Lists (unordered and ordered)
+</li>
+
+<li>Bold, italic, hyperlinks, images, etc.
+</li>
+
+<li>HTML tags.
+</li>
+</ul>
+
+<p>
+See also: <a href="https://stackedit.io/editor">https://stackedit.io/editor</a>
+</p>
+</section>
+
+
+</section>
+<section>
+<section id="sec-10" >
+
+<h2>Setting your own domain name (optional)</h2>
+<ul class="org-ul">
+<li>Configure a custom subdomain with your DNS provider,
+for example: www.yourname.info
+</li>
+
+<li>Create the file <b>CNAME</b> with the domain in it:
+<pre class="example">
+www.yourname.info
+</pre>
+</li>
+</ul>
+</section>
+</section>
+</div>
+</div>
+
+<script src="http://cdn.jsdelivr.net/reveal.js/2.5.0/lib/js/head.min.js"></script>
+<script src="http://cdn.jsdelivr.net/reveal.js/2.5.0/js/reveal.min.js"></script>
+
+<script>
+// Full list of configuration options available here:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+
+controls: true,
+progress: true,
+history: false,
+center: true,
+slideNumber: true,
+rollingLinks: false,
+keyboard: true,
+overview: true,
+
+theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+transition: Reveal.getQueryHash().transition || 'cube', // default/cube/page/concave/zoom/linear/fade/none
+transitionSpeed: 'default',
+
+// Optional libraries used to extend on reveal.js
+dependencies: [
+ { src: 'http://cdn.jsdelivr.net/reveal.js/2.5.0/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+ { src: 'http://cdn.jsdelivr.net/reveal.js/2.5.0/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'http://cdn.jsdelivr.net/reveal.js/2.5.0/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'http://cdn.jsdelivr.net/reveal.js/2.5.0/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+ { src: 'http://cdn.jsdelivr.net/reveal.js/2.5.0/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+ { src: 'http://cdn.jsdelivr.net/reveal.js/2.5.0/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+]
+});
+</script>
+</body>
+</html>

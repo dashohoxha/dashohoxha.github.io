@@ -1,0 +1,171 @@
+#+TITLE:     Building Our Website on GitHub With Jekyll
+#+AUTHOR:    Dashamir Hoxha
+#+EMAIL:     dashohoxha@gmail.com
+#+DATE:      2015-01-28
+# #+REVEAL_ROOT: file:///home/dasho/reveal.js
+#+REVEAL_ROOT: http://cdn.jsdelivr.net/reveal.js/2.5.0/
+#+REVEAL-SLIDE-NUMBER: t
+#+REVEAL_THEME: sky
+#+REVEAL_TRANS: cube
+#+OPTIONS: toc:nil num:nil
+#+STARTUP: beamer
+#+LaTeX_CLASS: beamer
+#+BEAMER_FRAME_LEVEL: 2
+# #+LATEX_HEADER: \setbeamersize{text margin left=10pt}
+
+* Git and GitHub
+
+  - Install git: `sudo apt-get install git`
+
+  - Create an account on GitHub: https://github.com
+
+  - Create a repository named: *username.github.io*
+
+
+* GitHub Pages
+ 
+  - See: https://pages.github.com/
+    #+BEGIN_EXAMPLE
+    git clone https://github.com/username/username.github.io
+    cd username.github.io
+    echo "Hello World" > index.html
+    git add --all
+    git commit -m "Initial commit"
+    git push
+    #+END_EXAMPLE
+
+  - Use the "Automatic page generator" of GitHub 
+
+
+* How it works
+
+  - Github uses Jekyll for the pages: http://jekyllrb.com/
+
+  - Jekyll can convert to HTML Markdown or Textile content.
+
+  - We can use a Jekyll theme from the ones avaiable at:
+    http://jekyllthemes.org/
+
+  - In this training we will use the theme named SinglePaged:
+    - http://t413.com/SinglePaged
+    - https://github.com/t413/SinglePaged
+
+
+* Setup the SinglePaged theme
+
+  - Delete the github project that we created previously.
+
+  - Fork this project: https://github.com/t413/SinglePaged
+
+  - Rename it to *username.github.io*
+
+  - Clone your repository:
+    #+BEGIN_EXAMPLE
+    git clone https://github.com/username/username.github.io
+    cd username.github.io
+    #+END_EXAMPLE
+
+
+* Setup the right git branch
+
+  - Fix the publish branch:
+    #+BEGIN_EXAMPLE
+    git checkout publish
+    git branch -m master
+    git push -u origin master 
+    git branch -D gh-pages
+    #+END_EXAMPLE
+
+  - On the github project page go to settings and change the default
+    branch to *master*.
+
+  - Delete the branch *gh-pages*:
+    #+BEGIN_EXAMPLE
+    git push origin --delete gh-pages
+    git branch -d gh-pages
+    #+END_EXAMPLE
+
+
+* Customize your website
+
+  - Edit ~_config.yml~ to change your title, keywords, and description.
+
+  - Create a new file in ~_posts/~ called ~2014-01-01-intro.md~
+    Edit it, and add:
+    #+BEGIN_EXAMPLE
+    ---
+    title: "home"
+    bg: white     #defined in _config.yml, can use html color like '#010101'
+    color: black  #text color
+    style: center
+    ---
+
+    # Example headline!
+    and so on..
+    #+END_EXAMPLE
+
+
+* Create another section on the page
+
+  - Create a second post called ~2014-01-02-art.md~ with an divider
+    image this time:
+    #+BEGIN_EXAMPLE
+    ---
+    title: "Art"
+    bg: turquoise  #defined in _config.yml, can use html color like '#0fbfcf'
+    color: white   #text color
+    fa-icon: paint-brush
+    ---
+
+    #### A new section- oh the humanity!
+    #+END_EXAMPLE
+
+  - *Note:* That part fa-icon: paint-brush will use a font-awesome
+    icon of paint-brush. You can use any icon from this font-awesome
+    icon directory: http://fortawesome.github.io/Font-Awesome/icons/
+
+
+* Test the website locally
+
+  - Pull your changes on GitHub: =git pull=
+
+  - Install Jekyll:
+    #+BEGIN_EXAMPLE
+    sudo apt-get install ruby ruby-dev build-essential nodejs
+    sudo gem install github-pages
+    #+END_EXAMPLE
+
+  - Start a server with: =jekyll serve -w=
+
+  - Visit http://localhost:4000 to see a live locally served preview.
+
+  - Make changes and test them, and finally push them to GitHub:
+    #+BEGIN_EXAMPLE
+    git push -u origin master
+    #+END_EXAMPLE
+
+
+* Markdown basics
+
+  - Headings (#, ##, ###, etc.)
+
+  - Paragraphs, quotes, code samples, etc.
+
+  - Lists (unordered and ordered)
+
+  - Bold, italic, hyperlinks, images, etc.
+
+  - HTML tags.
+
+  See also: https://stackedit.io/editor
+
+
+* Setting your own domain name (optional)
+
+  - Configure a custom subdomain with your DNS provider,
+    for example: www.yourname.info
+
+  - Create the file *CNAME* with the domain in it:
+    #+BEGIN_EXAMPLE
+    www.yourname.info
+    #+END_EXAMPLE
