@@ -1,0 +1,61 @@
+#+TITLE:     Easy Presentation With Emacs And Reveal.js
+#+AUTHOR:    Dashamir Hoxha
+#+EMAIL:     dashohoxha@gmail.com
+#+DATE:      2014-01-27
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+# #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
+#+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
+#+begin_html
+---
+layout:     post
+title:      Easy Presentation With Emacs And Reveal.js
+date:       2015-01-27
+summary:    Making a presentation with org-mode of Emacs and Reveal.js
+    is very easy.
+tags: [Emacs, org-mode, presentation, Reveal.js]
+---
+#+end_html
+
+Recently I had to prepare a presentation for a workshop. I knew that
+org-mode of Emacs could be used for presentations as well, but I
+hadn't tried it yet. After some research, I decided to go with
+[[https://github.com/yjwen/org-reveal][org-reveal]], which can generate very nice online presentations.
+
+I already had Emacs and org-mode installed. If you don't have
+org-mode version 8.0 or later (check it with =M-x org-version=), you
+should update it. You can do it like this:
+ 1. Go to the list of packages: =M-x package-list-packages=
+ 2. Find the package org: =C-s org=
+ 3. Go to it and press =<Enter>=
+ 4. Install it by clicking on =[Install]=
+
+To install org-reval, we first get it from GitHub:
+#+begin_example
+git clone https://github.com/yjwen/org-reveal.git
+#+end_example
+Then we need to copy ~ox-reveal.el~ to the org-mode installation
+directory. In my case, I did it like this:
+#+begin_example
+cp org-reveal/ox-reveal.el ~/.emacs.d/elpa/org-20141124/
+#+end_example
+
+At the begining of the org file I set some REVEAL options like these:
+#+begin_example
+#+TITLE:     Building Our Website on GitHub With Jekyll
+#+AUTHOR:    Dashamir Hoxha
+#+EMAIL:     dashohoxha@gmail.com
+#+DATE:      2015-01-28
+#+REVEAL_ROOT: http://cdn.jsdelivr.net/reveal.js/2.5.0/
+#+REVEAL-SLIDE-NUMBER: t
+#+REVEAL_THEME: sky
+#+REVEAL_TRANS: linear
+#+end_example
+You can also see how the whole org file looks like: [[https://raw.githubusercontent.com/dashohoxha/dashohoxha.github.io/master/github-website/github-website.org][github-website.org]]
+
+To wake-up org-reveal, type =M-x load-library=, then type =ox-reveal=.
+To export the org file into Reveal.js presentation, type =C-c C-e R R=.
+The resulting HTML file looks like this: http://dashohoxha.fs.al/github-website/
+
+For more details about configuration options of org-reveal see:
+ - https://github.com/yjwen/org-reveal

@@ -1,0 +1,76 @@
+---
+layout:     post
+title:      Easy Presentation With Emacs And Reveal.js
+date:       2015-01-27
+summary:    Making a presentation with org-mode of Emacs and Reveal.js
+    is very easy.
+tags: [Emacs, org-mode, presentation, Reveal.js]
+---
+
+<p>
+Recently I had to prepare a presentation for a workshop. I knew that
+org-mode of Emacs could be used for presentations as well, but I
+hadn't tried it yet. After some research, I decided to go with
+<a href="https://github.com/yjwen/org-reveal">org-reveal</a>, which can generate very nice online presentations.
+</p>
+
+<p>
+I already had Emacs and org-mode installed. If you don't have
+org-mode version 8.0 or later (check it with <code>M-x org-version</code>), you
+should update it. You can do it like this:
+</p>
+<ol class="org-ol">
+<li>Go to the list of packages: <code>M-x package-list-packages</code>
+</li>
+<li>Find the package org: <code>C-s org</code>
+</li>
+<li>Go to it and press <code>&lt;Enter&gt;</code>
+</li>
+<li>Install it by clicking on <code>[Install]</code>
+</li>
+</ol>
+
+<p>
+To install org-reval, we first get it from GitHub:
+</p>
+<pre class="example">
+git clone https://github.com/yjwen/org-reveal.git
+</pre>
+<p>
+Then we need to copy <code>ox-reveal.el</code> to the org-mode installation
+directory. In my case, I did it like this:
+</p>
+<pre class="example">
+cp org-reveal/ox-reveal.el ~/.emacs.d/elpa/org-20141124/
+</pre>
+
+<p>
+At the begining of the org file I set some REVEAL options like these:
+</p>
+<pre class="example">
+#+TITLE:     Building Our Website on GitHub With Jekyll
+#+AUTHOR:    Dashamir Hoxha
+#+EMAIL:     dashohoxha@gmail.com
+#+DATE:      2015-01-28
+#+REVEAL_ROOT: http://cdn.jsdelivr.net/reveal.js/2.5.0/
+#+REVEAL-SLIDE-NUMBER: t
+#+REVEAL_THEME: sky
+#+REVEAL_TRANS: linear
+</pre>
+<p>
+You can also see how the whole org file looks like: <a href="https://raw.githubusercontent.com/dashohoxha/dashohoxha.github.io/master/github-website/github-website.org">github-website.org</a>
+</p>
+
+<p>
+To wake-up org-reveal, type <code>M-x load-library</code>, then type <code>ox-reveal</code>.
+To export the org file into Reveal.js presentation, type <code>C-c C-e R R</code>.
+The resulting HTML file looks like this: <a href="http://dashohoxha.fs.al/github-website/">http://dashohoxha.fs.al/github-website/</a>
+</p>
+
+<p>
+For more details about configuration options of org-reveal see:
+</p>
+<ul class="org-ul">
+<li><a href="https://github.com/yjwen/org-reveal">https://github.com/yjwen/org-reveal</a>
+</li>
+</ul>
