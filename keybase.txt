@@ -1,0 +1,83 @@
+==================================================================
+https://keybase.io/dashohoxha
+--------------------------------------------------------------------
+
+I hereby claim:
+
+  * I am an admin of http://dashohoxha.fs.al
+  * I am dashohoxha (https://keybase.io/dashohoxha) on keybase.
+  * I have a public key with fingerprint 847F C5C4 337D 9CDB D473  B7A6 0967 FD25 8D64 14F9
+
+To do so, I am signing this object:
+
+{
+    "body": {
+        "client": {
+            "name": "keybase.io node.js client",
+            "version": "0.7.8"
+        },
+        "key": {
+            "fingerprint": "847fc5c4337d9cdbd473b7a60967fd258d6414f9",
+            "host": "keybase.io",
+            "key_id": "0967FD258D6414F9",
+            "uid": "99da4c0f04a5b2c609af8971ccfb2d19",
+            "username": "dashohoxha"
+        },
+        "merkle_root": {
+            "ctime": 1432710177,
+            "hash": "5ec5c5cd384ef0dec9b469868e07e263d582c8d6e16dda78cea04daa2344819e7dace4083845b9f94ad77088b1d2364947be87986a2dd32066b67193d65d9a20",
+            "seqno": 229057
+        },
+        "service": {
+            "hostname": "dashohoxha.fs.al",
+            "protocol": "http:"
+        },
+        "type": "web_service_binding",
+        "version": 1
+    },
+    "ctime": 1432710219,
+    "expire_in": 157680000,
+    "prev": "94ee9846875f6c25309ed432088c14e71f743fd8243ccad2ac017cfbf409185d",
+    "seqno": 3,
+    "tag": "signature"
+}
+
+which yields the signature:
+
+-----BEGIN PGP MESSAGE-----
+Version: GnuPG v1
+
+owFlkn9MVWUYxy8/FcmFShKigUcYsNHl/HjPec+5igIDGuYP3JLSiss5533PvRcu
+99zuvfxKcCCiYAnBzY0EYSM1ayQiNGyQUzSUkGwjQFzGH+IaBYs1i8XKOofRynX+
+es/ez/f7PN/ned9b7Wfw9Qmy/BlzEoX+7jM8Ixn2Y/uuQ4SkolLCdIiQ7Tbs8Ogn
+h1iACRORj0sl0Y2NNjXKoSJszHNHLTMJRBF2uW2qQ6NIIzTyRHmCjutixeawYJfT
+ZdO9CB5ARWZlwDAQCTKSEICMBEWOFDioIJrlEQcooAiapVV1e56qSix5mm1Ir6Lx
+GWkan6bzGTpfuHQhCEgEMqmQQGQlWtaMRYUXICXLikQjagl0Y9dyJCS6rapVLbGK
+escF2JVvx2aXqi7Flj02HaIAQ0OKpCDUetJ4TcZiLQMrI4YHWCERlgUJcALP8ZiE
+mOYYxPK0rEXBFIeQCHkZiyRAokgzAPCUgCESZQxIXtOzkqAIQEQQkjwvUYhmOCAA
+KGEeaoYijRBDkxwncZASGMSxSBBpUgvhxm85VMJE0wLJwnL931Vkk7Hetz64/+Uz
+Km6jaNeETpfqUWXVrt1aPR6nSQ/uKXViottEFGPJvGxklmwOpK3uv7ulNPTpodCU
+kEDgEqfNhc02nWAhx5Pap9fBRfo+AMYCDzgesgon0yxDChhpYi2tTAEMKQUCRkE8
+DRhZFhEtytqktV0pgBQonkX/RmW0PkWLZum2WRyip9CFifJa343+Bh9fQ2CAr/54
+DauCQv550URriKG7o076hSNv13gbo6nqm+serA0fCqVj/VdYrWd3h+/OSq6PHp0r
+WQzujCR8BvBob7fBr9/0KCL1eMam1ND2S2PfrsqO//Dryt6iydc3e2FVUtv1uLE9
+Xwz8cOFI4dSd5x/eOnq9pKDjSpbvvbtNzdO3O9dZrVXVc23Ndz+yZrZf7QuJTuuv
+DvE23JmpOG93TERbAqZbjqVc2hunlKzYdc6fPjcS+yj8tc4f90fWN5zfum9gNreH
+u99c1TRY37J9Lics5RX/mIVny156c6hx59iFZLN3bU5q5Ja5mpaIbVEzaYPSxT1W
+88Tx0w/C3u0a2NTPJo207hh6XPgkfWvs5F+pAVt6LYMb48Jmt+/sKvZPOZD1+eF7
+3/uIJa1299n1ac0Hk/i4T7zf1Z2ISDy1+Uvm0+mcoD7B5w2mMc50udIU9HNG4OT4
+TMPI+rzRniOBx1LmwpLmn/FvzBu5ujINXG7rsQTdbH8yBn+aDfh1TRMV8/bw/Vpn
+39TBW0VxO4LHi1PeiUwc8MPOxcfXSpOKv0lPvLgt84+VAZ/NJmRFD1MPQ+J/e3E6
+J3h18MKZhPD6NVOBme+/HPhcV8V88nye94Oi9KP51aev9HW9cO0oGH8VN0wuBh2o
+zZ6Jj/R1nsrZl1ix17AhezJ17rA4kRpwssxVOX+jw5t4o668ocybu8FTEzlhLVsY
+rznzlfHj9Ny/AQ==
+=EtgC
+-----END PGP MESSAGE-----
+
+And finally, I am proving ownership of this host by posting or
+appending to this document.
+
+View my publicly-auditable identity here: https://keybase.io/dashohoxha
+
+==================================================================
+
