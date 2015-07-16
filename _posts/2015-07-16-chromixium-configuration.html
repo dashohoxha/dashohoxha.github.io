@@ -1,0 +1,171 @@
+---
+layout:     post
+title:      Chromixium Configuration
+date:       2015-07-16
+summary: Chromixium is a light, nice, minimalist system based on
+    Ubuntu, thus a perfect choice for me. However I still need to make
+    a few customizations on it.
+tags: [linux]
+---
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. Enable autologin</a></li>
+<li><a href="#sec-2">2. Disable automatic screen lock</a></li>
+<li><a href="#sec-3">3. Shortcut keys</a></li>
+<li><a href="#sec-4">4. Add another keyboard layout</a></li>
+<li><a href="#sec-5">5. Increase the number of desktops</a></li>
+<li><a href="#sec-6">6. Put dock on the left</a></li>
+<li><a href="#sec-7">7. Customize the panel</a></li>
+</ul>
+</div>
+</div>
+
+
+<p>
+Chromixium is a light, nice, minimalist system based on Ubuntu, thus a
+perfect choice for me. However I still need to make a few
+customizations on it. This is a bit challenging for the time being
+because chromixium is a bit new, not many people are using it out
+there, and searching for a particular problem often returns no answer.
+However it seems that Chromixium is mainly based on Lubuntu, so this
+makes the search for solutions easier.
+</p>
+
+<p>
+Here I will document some of the customizations that I usually need to
+do when I install a chromixium system.
+</p>
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Enable autologin</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+This is about loging in to a specific users' account on boot,
+without stopping and asking for a password.
+</p>
+
+<p>
+To enable this, create the configuration file <code>/etc/lightdm/lightdm.conf</code> (do this as root) with a content like this:
+</p>
+
+<pre class="example">
+[SeatDefaults]
+autologin-user=&lt;YOUR USER&gt;
+autologin-user-timeout=0
+user-session=Lubuntu
+greeter-session=lightdm-gtk-greeter
+</pre>
+
+<p>
+Reference:
+</p>
+<ul class="org-ul">
+<li><a href="http://askubuntu.com/questions/564442/autologin-on-lubuntu-14-10">http://askubuntu.com/questions/564442/autologin-on-lubuntu-14-10</a>
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Disable automatic screen lock</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+When the system is idle for some time, the screen is automatically locked.
+When you enable autologin, it does not make much sense to lock the screen
+automatically.
+</p>
+
+<p>
+To disable it, open <b>Control Panel</b>, then <b>Screensave Settings</b>,
+then switch OFF <b>Enable light-locker</b>.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> Shortcut keys</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+Usually it should be possible to configure them from the <i>Control
+Panel</i>, but for Chromixium it does not work (at least for the amd64
+version that I have installed).
+</p>
+
+<p>
+Fortunately it is easy to fix this (however itwas not so easy to
+find the right solution). I simply installed the
+packages <b>xbindkeys</b> and <b>xbindkeys-config</b> and then started
+`xbindkeys-config`:
+</p>
+<pre class="example">
+aptitude install xbindkeys xbindkeys-config
+xbindkeys-config
+</pre>
+
+<p>
+To run automatically on login, add <code>xbindkeys</code> to <code>.xprofile</code>.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> Add another keyboard layout</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+In the 32bit chromixium this worked from the Control Pannel, but in
+the 64bit version that I have installed (which is unstable yet) it
+didn't work.
+</p>
+
+<p>
+I solved this problem by adding the applet <i>Keyboard Layout Handler</i>
+on the Panel. Then, in the settings of this applet it is possible to
+add other Keyboard Layouts.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5"><span class="section-number-2">5</span> Increase the number of desktops</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+The default configuration has only one desktop, and I am used with
+four desktops. This can be easily fixed from <code>Control Panel / Window
+  Manager Settings / Desktops</code>
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-6" class="outline-2">
+<h2 id="sec-6"><span class="section-number-2">6</span> Put dock on the left</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+I prefer the dock on the left side of the screen. So, from the
+<i>Control Panel</i> I open <i>Dock Settings</i> and set <code>Screen edge = Left</code>.
+I also set <code>Aligment = Centered</code> and <code>Hide mode = Intelli-hide</code>
+(which means that it will be hidden when some window overlaps with
+it, otherwise it will be shown).
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-7" class="outline-2">
+<h2 id="sec-7"><span class="section-number-2">7</span> Customize the panel</h2>
+<div class="outline-text-2" id="text-7">
+<p>
+You can right click on the right-bottom panel and open the <i>Panel
+Settings</i>. There I make <code>Width: 100%</code> (on the tab <i>Geometry</i>). I
+also check <i>Minimize panel when not in use</i> (on the tab
+<i>Advanced</i>). Then I add more applets, change their order etc. and
+try to make it look like a classic panel.
+</p>
+</div>
+</div>

@@ -1,0 +1,114 @@
+#+TITLE:     Chromixium Configuration
+#+AUTHOR:    Dashamir Hoxha
+#+EMAIL:     dashohoxha@gmail.com
+#+DATE:      2015-07-16
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+# #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
+#+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
+#+begin_html
+---
+layout:     post
+title:      Chromixium Configuration
+date:       2015-07-16
+summary: Chromixium is a light, nice, minimalist system based on
+    Ubuntu, thus a perfect choice for me. However I still need to make
+    a few customizations on it.
+tags: [linux]
+---
+#+end_html
+
+
+Chromixium is a light, nice, minimalist system based on Ubuntu, thus a
+perfect choice for me. However I still need to make a few
+customizations on it. This is a bit challenging for the time being
+because chromixium is a bit new, not many people are using it out
+there, and searching for a particular problem often returns no answer.
+However it seems that Chromixium is mainly based on Lubuntu, so this
+makes the search for solutions easier.
+
+Here I will document some of the customizations that I usually need to
+do when I install a chromixium system.
+
+* Enable autologin
+
+  This is about loging in to a specific users' account on boot,
+  without stopping and asking for a password.
+
+  To enable this, create the configuration file ~/etc/lightdm/lightdm.conf~ (do this as root) with a content like this:
+
+  #+begin_example
+  [SeatDefaults]
+  autologin-user=<YOUR USER>
+  autologin-user-timeout=0
+  user-session=Lubuntu
+  greeter-session=lightdm-gtk-greeter
+  #+end_example
+
+  Reference:
+   - http://askubuntu.com/questions/564442/autologin-on-lubuntu-14-10
+
+
+* Disable automatic screen lock
+
+  When the system is idle for some time, the screen is automatically locked.
+  When you enable autologin, it does not make much sense to lock the screen
+  automatically.
+
+  To disable it, open *Control Panel*, then *Screensave Settings*,
+  then switch OFF *Enable light-locker*.
+
+
+* Shortcut keys
+
+  Usually it should be possible to configure them from the /Control
+  Panel/, but for Chromixium it does not work (at least for the amd64
+  version that I have installed).
+
+  Fortunately it is easy to fix this (however itwas not so easy to
+  find the right solution). I simply installed the
+  packages *xbindkeys* and *xbindkeys-config* and then started
+  `xbindkeys-config`:
+  #+begin_example
+  aptitude install xbindkeys xbindkeys-config
+  xbindkeys-config
+  #+end_example
+
+  To run automatically on login, add =xbindkeys= to ~.xprofile~.
+
+
+* Add another keyboard layout
+
+  In the 32bit chromixium this worked from the Control Pannel, but in
+  the 64bit version that I have installed (which is unstable yet) it
+  didn't work.
+
+  I solved this problem by adding the applet /Keyboard Layout Handler/
+  on the Panel. Then, in the settings of this applet it is possible to
+  add other Keyboard Layouts.
+
+
+* Increase the number of desktops
+
+  The default configuration has only one desktop, and I am used with
+  four desktops. This can be easily fixed from =Control Panel / Window
+  Manager Settings / Desktops=
+
+
+* Put dock on the left
+
+  I prefer the dock on the left side of the screen. So, from the
+  /Control Panel/ I open /Dock Settings/ and set =Screen edge = Left=.
+  I also set =Aligment = Centered= and =Hide mode = Intelli-hide=
+  (which means that it will be hidden when some window overlaps with
+  it, otherwise it will be shown).
+
+
+* Customize the panel
+
+  You can right click on the right-bottom panel and open the /Panel
+  Settings/. There I make =Width: 100%= (on the tab /Geometry/). I
+  also check /Minimize panel when not in use/ (on the tab
+  /Advanced/). Then I add more applets, change their order etc. and
+  try to make it look like a classic panel.
+   
