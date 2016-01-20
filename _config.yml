@@ -4,7 +4,7 @@ description:      When I do something that is not trivial and needs some
     I will need later to do the same thing again. It may also be useful
     for other people that could be trying to do something similar.
 disqus_shortname: dashohoxha
-reading_time:     false
+reading_time:     true
 words_per_minute: 200
 # Your site's domain goes here (eg: //mmistakes.github.io, http://mademistakes.com, etc)
 # When testing locally leave blank or use http://localhost:4000
