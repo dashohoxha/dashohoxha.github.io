@@ -4,7 +4,8 @@ pre.highlight {
 
 .highlight, .example {
 	margin-bottom: 1.5em;
-	@include font(14);
+	@include font-rem(14);
+	line-height: 1.5;
 	color: #d0d0d0;
 	border: 1px solid darken($body-color, 5);
 	background-color: #272822;
