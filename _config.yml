@@ -41,7 +41,7 @@ bing_verify:
 
 # http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 timezone:    Europe/Tirane
-future:      true
+future:      false  # publish future dated posts --  true, false (default) 
 highlighter: rouge
 markdown:    kramdown
 gems:
