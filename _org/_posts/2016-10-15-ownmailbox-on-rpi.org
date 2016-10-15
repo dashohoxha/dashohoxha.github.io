@@ -1,0 +1,164 @@
+#+TITLE:     Install your Own-Mailbox on your RaspberryPi
+#+AUTHOR:    Dashamir Hoxha
+#+EMAIL:     dashohoxha@gmail.com
+#+DATE:      2016-10-15
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+# #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
+#+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
+#+begin_html
+---
+layout:     post
+title:      Install your Own-Mailbox on your RaspberryPi
+date:       2016-10-15
+summary: Own-Mailbox is a personal email server you can run in your own home,
+  with strong privacy protection measures integrated at its core. It
+  provides self-hosted email addresses, and allows you to protect the
+  content of your emails, and the meta-data, from mass surveillance.
+  I will describe here how I installed it on RPi3 with Docker.
+tags: [linux RPi]
+---
+#+end_html
+
+[[https://www.own-mailbox.com/][Own-Mailbox]] is a personal email server you can run in your own home,
+with strong privacy protection measures integrated at its core. It
+provides self-hosted email addresses, and allows you to protect the
+content of your emails, and the meta-data, from mass surveillance.
+I will describe here how I installed it on RPi3 with Docker.
+
+* Install Linux on RPi3
+
+First of all we need to install some version of Linux on our RPi.
+I tried Ubuntu MATE and it was great. Instructions for downloading
+and writing it on microSDHC are here: https://ubuntu-mate.org/raspberry-pi/
+I preferred the terminal way:
+#+begin_example
+sudo apt-get install gddrescue xz-utils
+unxz ubuntu-mate-16.04-desktop-armhf-raspberry-pi.img.xz
+sudo ddrescue -D --force ubuntu-mate-16.04-desktop-armhf-raspberry-pi.img /dev/sdx
+#+end_example
+
+Once the microSDHC is ready, we can put it on RPi3 and power it on. Of
+course, we also need to attach a keyboard, mouse and TV display to it.
+Once it is booted, it will start the configuration of the system
+(asking for a username and password, etc.).  When this is done, we
+should also resize the partition in order to make full use of the
+microSHDC card capacity, as described on the page above. I did it
+from the terminal:
+#+begin_example
+sudo su
+echo 'd,2,n,p,2,,,w' | tr ',' '\n' | fdisk /dev/mmcblk0
+reboot
+#+end_example
+
+The next thing to do is to update/upgrade the system, since there may be
+any security patches:
+#+begin_example
+sudo su
+apt-get update
+apt-get upgrade
+#+end_example
+
+I also install =vim= and =aptitude= on every new system:
+#+begin_example
+apt-get install vim aptitude
+#+end_example
+
+
+* Make the box headless
+
+A headless computer is one that does not have a monitor and is
+accessed and managed from the network. For this to work, it needs to
+have a fixed IP address (instead of a random one given by a DHCP
+server), so that we know where to access it. Besides this it also
+needs a *SSH* server and a *VNC* server, which allow us to access it remotely.
+
+This article shows how to edit the network connections in order to set
+a fixed IP: https://funnyvale.com/how-to-set-up-wifi-on-raspberry-pi-3/
+On the tab =IPv4 Settings= you should also set a manual fixed IP, like
+=192.168.0.200=, instead of the dynamic configuration.
+
+From the GUI you can also set a fixed IP for the wired connection.
+But I prefer to do it from the terminal. I edit the file
+~/etc/network/interfaces~ and append lines like these:
+#+begin_example
+auto enxb827eb3c62f4
+iface enxb827eb3c62f4 inet static
+    address 192.168.1.200
+    netmask 255.255.255.0
+iface enxb827eb3c62f4 inet static
+    address 192.168.100.200
+    netmask 255.255.255.0
+#+end_example
+Here =enxb827eb3c62f4= is the name of the network interface, which has
+changed on ubuntu 16.04 (it was something like =eth0= previously).
+
+Let's install also =openssh-server= and =tightvncserver=.
+#+begin_example
+apt-get install openssh-server
+apt-get install tightvncserver
+#+end_example
+
+After rebooting, we can access the box through wifi or a cable like
+this: =ssh user@192.168.0.200= (wifi), or =ssh user@192.168.1.200= or
+=ssh user@192.168.100.200=.
+
+For a headless box (as RPi usually is) we should also disable the GUI:
+=graphical disable= and =reboot=. Dispite this, we can still access
+its GUI desktop remotely through VNC. This can be done by starting
+first a vnc server (and setting a password) with the command:
+=vncserver=.  We can access the vnc desktop with a command like this:
+=vncviewer 192.168.0.200:1=. (We may need to install it with =aptitude
+install vncviewer=, in case it is not installed.)
+
+
+* Install Docker
+
+I installed Docker following the instructions from this article:
+http://blog.hypriot.com/post/run-docker-rpi3-with-wifi/
+
+#+begin_example
+echo "overlay" | sudo tee -a /etc/modules
+sudo apt-get install -y apt-transport-https
+wget -q https://packagecloud.io/gpg.key -O - | sudo apt-key add -
+echo 'deb https://packagecloud.io/Hypriot/Schatzkiste/debian/ wheezy main' | sudo tee /etc/apt/sources.list.d/hypriot.list
+sudo apt-get update
+sudo apt-get install -y docker-hypriot
+sudo systemctl enable docker
+#+end_example
+
+Checking the version of docker:
+#+begin_example
+# docker version
+Client:
+ Version:      1.11.1
+ API version:  1.23
+ Go version:   go1.4.3
+ Git commit:   5604cbe
+ Built:        Mon May  9 00:50:14 2016
+ OS/Arch:      linux/arm
+
+Server:
+ Version:      1.11.1
+ API version:  1.23
+ Go version:   go1.4.3
+ Git commit:   5604cbe
+ Built:        Mon May  9 00:50:14 2016
+ OS/Arch:      linux/arm
+#+end_example
+
+
+* Install Own-Mailbox
+
+#+begin_example
+git clone https://github.com/Own-Mailbox/debstrap OMB
+cd OMB/
+./docker.sh build
+./docker.sh create
+./docker.sh install
+#+end_example
+
+Then you can access the web interface at the address http://192.168.0.250
+
+* Setup Own-Mailbox
+
