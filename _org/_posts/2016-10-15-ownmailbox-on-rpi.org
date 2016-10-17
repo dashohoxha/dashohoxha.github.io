@@ -151,8 +151,8 @@ Server:
 * Install Own-Mailbox
 
 #+begin_example
-git clone https://github.com/Own-Mailbox/debstrap OMB
-cd OMB/
+git clone https://github.com/Own-Mailbox/debstrap omb
+cd omb/
 ./docker.sh build
 ./docker.sh create
 ./docker.sh install
@@ -160,5 +160,9 @@ cd OMB/
 
 Then you can access the web interface at the address http://192.168.0.250
 
-* Setup Own-Mailbox
+* Setup and test Own-Mailbox
+
+See:
+ - https://www.own-mailbox.com/alpha-manual.pdf
+ - https://www.own-mailbox.com/video/Alpha-demo.webm
 
