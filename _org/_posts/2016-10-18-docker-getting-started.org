@@ -1,0 +1,163 @@
+#+TITLE:     Getting Started with Docker
+#+AUTHOR:    Dashamir Hoxha
+#+EMAIL:     dashohoxha@gmail.com
+#+DATE:      2016-10-18
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+# #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
+#+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
+#+begin_html
+---
+layout:     post
+title:      Getting Started with Docker
+date:       2016-10-18
+summary: Docker is an open platform for developing, shipping, and running applications.
+tags: [docker]
+---
+#+end_html
+
+* What is Docker
+
+  Docker is an open platform for developing, shipping, and running
+  applications.
+  https://docker.github.io/engine/understanding-docker/
+
+  + What it can be used for
+    - Fast, consistent delivery of applications
+    - Responsive deployment and scaling
+    - Running more workloads on the same hardware
+
+  + Its architecture
+    - Daemon
+    - CLI and API
+    - Images
+    - Containers
+    - Registries (Docker Hub)
+
+
+* Install and test
+
+  - Install:
+    From https://docker.github.io/engine/getstarted/linux_install_help/
+    #+begin_example
+    curl -fsSL https://get.docker.com/ | sh
+    #+end_example
+
+  - Verify installation:
+    #+begin_example
+    docker version
+    docker run hello-world
+    #+end_example
+
+  - Check containers and images:
+    #+begin_example
+    docker ps -a
+    docker images
+    #+end_example
+
+
+* Run a command in a docker container
+
+  - Hello world:
+    #+begin_example
+    docker run ubuntu:14.04 /bin/echo 'Hello world'
+    #+end_example
+
+  - An interactive container:
+    #+begin_example
+    docker run -t -i ubuntu:14.04 /bin/bash
+    pwd
+    ls
+    exit
+    #+end_example
+
+  - A daemonized hello world:
+    #+begin_example
+    docker run -d ubuntu:14.04 \
+        /bin/sh -c "while true; do echo hello world; sleep 1; done"
+    docker ps
+    docker logs -f <name-of-container>
+    docker stop <name-of-container>
+    docker ps -a
+    docker rm <name-of-container>
+    #+end_example
+
+
+* Create a web application container
+
+  - Create a new container from *ubuntu-upstart*:
+    #+begin_example
+    docker run -d --name=webapp --hostname=example.org \
+               -p 80:80 ubuntu-upstart:14.04
+    #+end_example
+
+  - Update system packages of the container:
+    #+begin_example
+    alias docker-webapp-exec='docker exec -it webapp env TERM=xterm'
+    docker-webapp-exec bash
+    apt-get update
+    apt-get -y upgrade
+    #+end_example
+
+  - Install apache2 and mysql:
+    #+begin_example
+    apt-get install apache2 mysql-server php5 php5-mysql
+    #+end_example
+
+  - Create a test app:
+    #+begin_example
+    cd /var/www/html/
+    apt-get install vim
+    vim index.php
+    exit
+    #+end_example
+
+  - Add this line on ~/etc/hosts~.
+    #+begin_example
+    127.0.0.1 example.org
+    #+end_example
+
+  - Try it in browser: http://example.org
+
+
+* Other docker commands
+
+  #+begin_example
+  docker
+  docker inspect
+  docker inspect --help
+  docker inspect ubuntu-upstart:14.04
+  docker inspect webapp
+  docker inspect -f '{{ .NetworkSettings.IPAddress }}' webapp
+  docker top webapp
+  #+end_example
+
+
+* A real world example
+
+  Let's see how Docker is used by installing a B-Translator Client:
+  http://info.btranslator.org/install.html
+
+  - Get the image:
+    #+begin_example
+    docker search btranslator
+    docker pull btranslator/btr_client:v3.0
+    docker images
+    #+end_example
+
+  - Create and start a container:
+    #+begin_example
+    docker create --name=btr_client --hostname=example.org \
+        -p 443:443 --restart=always \
+        btranslator/btr_client:v3.0
+    docker ps
+    docker ps -a
+    docker start btr_client
+    #+end_example
+
+  - Add this line on ~/etc/hosts~.
+    #+begin_example
+    127.0.0.1 fr.example.org
+    #+end_example
+
+  - Open in browser: https://fr.example.org
