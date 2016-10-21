@@ -151,7 +151,7 @@ Server:
 * Install Own-Mailbox
 
 #+begin_example
-git clone https://github.com/Own-Mailbox/debstrap omb
+git clone https://github.com/Own-Mailbox/docker omb
 cd omb/
 ./docker.sh build
 ./docker.sh create
