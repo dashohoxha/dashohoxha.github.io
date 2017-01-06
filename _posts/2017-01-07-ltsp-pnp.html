@@ -14,7 +14,7 @@ tags:       [ltsp]
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2017-01-07 Sat 00:40 -->
+<!-- 2017-01-07 Sat 00:57 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="viewport" content="width=device-width, initial-scale=1" />
 <title>LTSP Server with Ubuntu 16.04</title>
@@ -182,7 +182,7 @@ for the JavaScript code in this tag.
 LTSP allows computers of a LAN to boot through network from a single
 server.  One of the benefits of this is for example to cut down the
 administration and maintenance time of a classroom of computers
-(instead of installing, configuring and updating each of them we do
+(instead of installing, configuring and updating each of them, we do
 it only once).
 </p>
 
@@ -230,7 +230,6 @@ like:
 <pre class="example">
 apt-get update
 apt-get upgrade
-apt-get install vim aptitude
 apt-get install edubuntu-desktop
 etc.
 </pre>
@@ -254,6 +253,8 @@ auto enp0s8
 iface enp0s8 inet static
     address 192.168.1.10
     netmask 255.255.255.0
+    gateway 192.168.1.1
+    dns-nameservers 8.8.8.8 8.8.4.4
 </pre>
 </div>
 </div>
@@ -326,8 +327,8 @@ I had to fix a few things in it:
 <ul class="org-ul">
 <li>I don't want this server to give IP configuration (DHCP),
 so I commented out this line:
-<code># dhcp-range = 192.168.67.20,192.168.67.250,8h</code></li>
-<li>The line <code># port = 0</code> breaks the name resolution (DNS) in Ubuntu-16.04,
+<b><b>dhcp-range=192.168.67.20,192.168.67.250,8h</b></b></li>
+<li>The line <b><b>port=0</b></b> breaks the name resolution (DNS) in Ubuntu-16.04,
 so I commented it out as well.</li>
 </ul>
 
@@ -349,10 +350,13 @@ The command:
 ltsp-update-image --cleanup /
 </pre>
 <p>
-generates the client image.  It may take some time. Whenever new
-packages are installed or packages are updated on the server, the
-image has to be updated as well, in order to make these changes
-available to the clients.
+generates the client image.  It may take some time.
+</p>
+
+<p>
+<b><b>Note:</b></b> Whenever new packages are installed or packages are
+updated on the server, the image has to be updated as well, in order
+to make these changes available to the clients.
 </p>
 </div>
 </div>
@@ -374,7 +378,7 @@ available to the clients.
 <div id="postamble" class="status">
 <p class="date">Date: 2017-01-07</p>
 <p class="author">Author: Dashamir Hoxha</p>
-<p class="date">Created: 2017-01-07 Sat 00:40</p>
+<p class="date">Created: 2017-01-07 Sat 00:57</p>
 <p class="validation"></p>
 </div>
 </body>

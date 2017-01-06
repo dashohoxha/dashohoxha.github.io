@@ -25,7 +25,7 @@ tags:       [ltsp]
   LTSP allows computers of a LAN to boot through network from a single
   server.  One of the benefits of this is for example to cut down the
   administration and maintenance time of a classroom of computers
-  (instead of installing, configuring and updating each of them we do
+  (instead of installing, configuring and updating each of them, we do
   it only once).
 
   Some details about how it works are described in this article (in
@@ -59,7 +59,6 @@ tags:       [ltsp]
   #+begin_example
   apt-get update
   apt-get upgrade
-  apt-get install vim aptitude
   apt-get install edubuntu-desktop
   etc.
   #+end_example
@@ -79,6 +78,8 @@ tags:       [ltsp]
   iface enp0s8 inet static
       address 192.168.1.10
       netmask 255.255.255.0
+      gateway 192.168.1.1
+      dns-nameservers 8.8.8.8 8.8.4.4
   #+end_example
 
 
@@ -125,8 +126,8 @@ tags:       [ltsp]
     I had to fix a few things in it:
      - I don't want this server to give IP configuration (DHCP),
        so I commented out this line:
-       =# dhcp-range = 192.168.67.20,192.168.67.250,8h=
-     - The line =# port = 0= breaks the name resolution (DNS) in Ubuntu-16.04,
+       **dhcp-range=192.168.67.20,192.168.67.250,8h**
+     - The line **port=0** breaks the name resolution (DNS) in Ubuntu-16.04,
        so I commented it out as well.
 
     Then =service dnsmasq restart=
@@ -138,10 +139,11 @@ tags:       [ltsp]
   #+begin_example
   ltsp-update-image --cleanup /
   #+end_example
-  generates the client image.  It may take some time. Whenever new
-  packages are installed or packages are updated on the server, the
-  image has to be updated as well, in order to make these changes
-  available to the clients.
+  generates the client image.  It may take some time.
+
+  **Note:** Whenever new packages are installed or packages are
+  updated on the server, the image has to be updated as well, in order
+  to make these changes available to the clients.
 
 
 * Referencies
