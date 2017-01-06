@@ -1,0 +1,153 @@
+#+TITLE:     LTSP Server with Ubuntu 16.04
+#+AUTHOR:    Dashamir Hoxha
+#+EMAIL:     dashohoxha@gmail.com
+#+DATE:      2017-01-07
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+# #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
+#+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
+#+begin_html
+---
+layout:     post
+title:      LTSP Server with Ubuntu 16.04
+date:       2017-01-07
+summary:    LTSP allows computers of a LAN to boot through network from a single server.
+    One of the benefits of this is for example to cut down the
+    administration and maintenance time of a classroom of computers
+    (instead of installing, configuring and updating each of them we do it
+    only once).
+tags:       [ltsp]
+---
+#+end_html
+
+* Introduction
+
+  LTSP allows computers of a LAN to boot through network from a single
+  server.  One of the benefits of this is for example to cut down the
+  administration and maintenance time of a classroom of computers
+  (instead of installing, configuring and updating each of them we do
+  it only once).
+
+  Some details about how it works are described in this article (in
+  case that you are curious):
+  https://ubuntuforums.org/showthread.php?t=2173749
+
+  The [[https://www.edubuntu.org/documentation/ltsp-live][Edubuntu LTSP Live]] is the most easy way to run a classroom with
+  Edubuntu LTSP.  But it is a bit outdated (based on ubuntu-14.04).
+  However it is not so difficult to build a LTSP server with the
+  latest Ubuntu desktop.
+
+  In my case, all the clients are decent machines with 2GB RAM, and
+  the server is just like them, so I decided to follow the [[https://help.ubuntu.com/community/UbuntuLTSP/ltsp-pnp][ltsp-pnp]]
+  approach for fat clients, which is also the most easy to
+  implement. In this method the server is used as a template for the
+  clients, so that almost all the programs, configurations, users,
+  etc. that are installed on the server will be made available to the
+  clients as well (through the network).
+
+  Also, the gateway/router of the LAN provides automatic network
+  configuration (DHCP) as well, so I don't have to and I don't want to
+  introduce another DHCP server on the LAN (which may potentially be a
+  source of network problems).
+
+
+* Preparing the server
+
+  I started by making a standard installation of Ubuntu 16.04 desktop
+  on the server PC, followed by some standard updates/customizations,
+  like:
+  #+begin_example
+  apt-get update
+  apt-get upgrade
+  apt-get install vim aptitude
+  apt-get install edubuntu-desktop
+  etc.
+  #+end_example
+
+  I tried to install all the programs/tools that should be available
+  on the clients. In particular, one of them is =epoptes=, which
+  allows remote desktop control for the clients:
+  #+begin_example
+  apt-get install epoptes
+  gpasswd -a ${SUDO_USER:-$USER} epoptes
+  #+end_example
+
+  Then, I set a fixed IP address to the server by adding these lines
+  to ~/etc/network/interfaces~:
+  #+begin_example
+  auto enp0s8
+  iface enp0s8 inet static
+      address 192.168.1.10
+      netmask 255.255.255.0
+  #+end_example
+
+
+* Installing LTSP
+
+** Install packages
+
+   I installed the package =ltsp-server= (not
+   =ltsp-server-standalone=) and the other related packages:
+   #+begin_example
+   add-apt-repository --yes ppa:ts.sch.gr
+   apt-get update
+   apt-get --yes --install-recommends install dnsmasq ltsp-server ltsp-client ldm-ubuntu-theme
+   #+end_example
+
+** Update kernels
+
+   #+begin_example
+   echo 'IPAPPEND=3' >> /etc/ltsp/update-kernels.conf
+   /usr/share/ltsp/update-kernels
+   #+end_example
+
+
+** Create lts.conf
+
+   The command:
+   #+begin_example
+   ltsp-config lts.conf
+   #+end_example
+   creates the file ~/var/lib/tftpboot/ltsp/i386/lts.conf~ or
+   ~/var/lib/tftpboot/ltsp/amd64/lts.conf~ (depending on the
+   architecture of the server). I did not customize it.
+
+
+** Configure dnsmasq
+
+    The command:
+    #+begin_example
+    ltsp-config dnsmasq
+    #+end_example
+    creates the configuration file
+    ~/etc/dnsmasq.d/ltsp-server-dnsmasq.conf~.
+
+    I had to fix a few things in it:
+     - I don't want this server to give IP configuration (DHCP),
+       so I commented out this line:
+       =# dhcp-range = 192.168.67.20,192.168.67.250,8h=
+     - The line =# port = 0= breaks the name resolution (DNS) in Ubuntu-16.04,
+       so I commented it out as well.
+
+    Then =service dnsmasq restart=
+
+
+* Creating the client image
+
+  The command:
+  #+begin_example
+  ltsp-update-image --cleanup /
+  #+end_example
+  generates the client image.  It may take some time. Whenever new
+  packages are installed or packages are updated on the server, the
+  image has to be updated as well, in order to make these changes
+  available to the clients.
+
+
+* Referencies
+
+ + https://ubuntuforums.org/showthread.php?t=2173749
+ + https://help.ubuntu.com/community/UbuntuLTSP/ltsp-pnp
+ + https://help.ubuntu.com/community/UbuntuLTSP/FatClients
+ + https://jonathancarter.org/2010/11/24/how-do-ltsp-fat-clients-work/
+ + http://www.m-opensolutions.com/?p=537
