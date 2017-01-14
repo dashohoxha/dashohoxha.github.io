@@ -46,7 +46,6 @@ figure.highlight {
 
 .highlight pre { width: 100%; }
 .highlight, .example {
-/*
 	margin-bottom: 1.5em;
 	@include font-rem(14);
 	line-height: 1.5;
@@ -55,8 +54,6 @@ figure.highlight {
 	background-color: #272822;
 	border-radius: 5px;
 
-.highlight {	
-*/
 	.lineno { padding-right: 24px; color: #8f908a;}
 	.hll { background-color: #49483e }
 	.c { color: #75715e } /* Comment */
