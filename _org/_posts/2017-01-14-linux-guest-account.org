@@ -1,0 +1,127 @@
+#+TITLE:     Linux Guest Account
+#+AUTHOR:    Dashamir Hoxha
+#+EMAIL:     dashohoxha@gmail.com
+#+DATE:      2017-01-14
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+# #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
+#+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
+#+begin_html
+---
+layout:     post
+title:      Linux Guest Account
+date:       2017-01-14
+summary:    In public computers (e.g. in schools, libraries, universities, etc.)
+    it is useful to have a frozen guest account. This means that the
+    content of the account is temporary and is erased immediately after
+    logout or reboot.  This is important because it reverts automatically
+    all the default settings, no matter how much the users mess with them,
+    therefore minimising the need for maintenance. It is also important
+    for the safety of the users, because it ensures that no open accounts
+    or passwords are left behind.
+tags:       [linux]
+---
+#+end_html
+
+In public computers (e.g. in schools, libraries, universities, etc.)
+it is useful to have a frozen guest account. This means that the
+content of the account is temporary and is erased immediately after
+logout or reboot.  This is important because it reverts automatically
+all the default settings, no matter how much the users mess with them,
+therefore minimising the need for maintenance. It is also important
+for the safety of the users, because it ensures that no open accounts
+or passwords are left behind.
+
+For example a user may login to his gmail account and forget to logout
+(or maybe the electricity goes out). Then the next user will be able
+to read his emails because the session is open in the browser.  Or
+maybe a user writes a personal document (e.g. a homework) and forgets
+to delete it when he is done. Then the next user will be able to copy
+it.  Or maybe a user changes the settings of the desktop and makes it
+difficult for the other users to use it. Then the administartor has to
+fix it back again. The guest account is a good solution for all these
+kind of problems.
+
+Ubuntu already has a guest account, but we will see how to improve it
+and customize it.
+
+
+* Automatic login of the guest account
+
+Since the guest account is the one that will be mostly used in a
+public computer, it may be nice to enable automatic login for it.
+It can be done by editing the file ~/etc/lightdm/lightdm.conf~
+and making sure that it has a config line like this:
+#+begin_example
+[SeatDefaults]
+autologin-guest=true
+#+end_example
+
+Another option that may be usefull is:
+#+begin_example
+autologin-user-timeout=10
+#+end_example
+
+
+* Customize the guest account
+
+In case that we want to modify the default settings of the guest
+acount, we can use a trick like this: create a /skeleton/ account with
+the right settings and then configure the guest session to copy those
+settings from the /skeleton/ account.
+
+This is how you can do it:
+
+- Create a new user account, called "Hospitality". You can do that by
+  launching "Users and Groups" from the menu. This should be a normal
+  user account with no special priviliges.
+
+  *Note:* the "Full Name" of this new user should begin with a *capital
+  letter*! Not the "Username", because user names have to be all
+  lowercase. But in "Users and Groups" the new "Full Name" should
+  begin with a capital letter, because otherwise a malfunction might
+  occur.
+
+  Ensure that a *password* is required for logging into this new user
+  account. It's best to set the same password as the one for the
+  account of the system administrator (your personal account), because
+  only the system administrator should be able to log into it.
+
+- Log out and then log into the new user account /Hospitality/, and
+  configure it the way you want the Guest session to become. For
+  example with different settings for Firefox and Libre Office.
+
+  In the next step you'll ensure that the Guest session will copy all
+  of it's settings from the new account Hospitality. You can change
+  those settings later on as well: later changes will also land
+  automatically in the Guest session.
+
+- Log out from the Hospitality account and log into the account of the
+  system administrator (your personal account).
+
+- Launch a terminal window and copy/paste the following command line into it:
+  #+begin_example
+  sudo mkdir /etc/guest-session
+  #+end_example
+  Press Enter. When prompted, type your password. Your password will
+  remain entirely invisible, not even dots will show, this is normal.
+  Press Enter again.
+
+  Then copy/paste this command line into the terminal:
+  #+begin_example
+  sudo ln -s /home/hospitality /etc/guest-session/skel
+  #+end_example
+  Press Enter. (Note that /hospitality/ doesn't begin with a capital
+  letter in the command.)
+
+- Log out from your account and log into the Guest session. Now it
+  should have the same settings as the new user account Hospitality.
+
+The only disadvantage is, that you now have an extra "useless" user
+account in the login window.
+
+
+* Referencies
+
+  - http://askubuntu.com/questions/95405/how-to-enable-guest-account-automatic-login
+  - https://sites.google.com/site/easylinuxtipsproject/2#TOC-Customize-the-frozen-Guest-session-guest-account-to-your-liking

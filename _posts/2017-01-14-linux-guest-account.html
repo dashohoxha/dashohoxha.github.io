@@ -1,0 +1,329 @@
+---
+layout:     post
+title:      Linux Guest Account
+date:       2017-01-14
+summary:    In public computers (e.g. in schools, libraries, universities, etc.)
+    it is useful to have a frozen guest account. This means that the
+    content of the account is temporary and is erased immediately after
+    logout or reboot.  This is important because it reverts automatically
+    all the default settings, no matter how much the users mess with them,
+    therefore minimising the need for maintenance. It is also important
+    for the safety of the users, because it ensures that no open accounts
+    or passwords are left behind.
+tags:       [linux]
+---
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2017-01-14 Sat 06:59 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="viewport" content="width=device-width, initial-scale=1" />
+<title>Linux Guest Account</title>
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Dashamir Hoxha" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Linux Guest Account</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgheadline1">1. Automatic login of the guest account</a></li>
+<li><a href="#orgheadline2">2. Customize the guest account</a></li>
+<li><a href="#orgheadline3">3. Referencies</a></li>
+</ul>
+</div>
+</div>
+
+<p>
+In public computers (e.g. in schools, libraries, universities, etc.)
+it is useful to have a frozen guest account. This means that the
+content of the account is temporary and is erased immediately after
+logout or reboot.  This is important because it reverts automatically
+all the default settings, no matter how much the users mess with them,
+therefore minimising the need for maintenance. It is also important
+for the safety of the users, because it ensures that no open accounts
+or passwords are left behind.
+</p>
+
+<p>
+For example a user may login to his gmail account and forget to logout
+(or maybe the electricity goes out). Then the next user will be able
+to read his emails because the session is open in the browser.  Or
+maybe a user writes a personal document (e.g. a homework) and forgets
+to delete it when he is done. Then the next user will be able to copy
+it.  Or maybe a user changes the settings of the desktop and makes it
+difficult for the other users to use it. Then the administartor has to
+fix it back again. The guest account is a good solution for all these
+kind of problems.
+</p>
+
+<p>
+Ubuntu already has a guest account, but we will see how to improve it
+and customize it.
+</p>
+
+
+<div id="outline-container-orgheadline1" class="outline-2">
+<h2 id="orgheadline1"><span class="section-number-2">1</span> Automatic login of the guest account</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Since the guest account is the one that will be mostly used in a
+public computer, it may be nice to enable automatic login for it.
+It can be done by editing the file <code>/etc/lightdm/lightdm.conf</code>
+and making sure that it has a config line like this:
+</p>
+<pre class="example">
+[SeatDefaults]
+autologin-guest=true
+</pre>
+
+<p>
+Another option that may be usefull is:
+</p>
+<pre class="example">
+autologin-user-timeout=10
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline2" class="outline-2">
+<h2 id="orgheadline2"><span class="section-number-2">2</span> Customize the guest account</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+In case that we want to modify the default settings of the guest
+acount, we can use a trick like this: create a <i>skeleton</i> account with
+the right settings and then configure the guest session to copy those
+settings from the <i>skeleton</i> account.
+</p>
+
+<p>
+This is how you can do it:
+</p>
+
+<ul class="org-ul">
+<li><p>
+Create a new user account, called "Hospitality". You can do that by
+launching "Users and Groups" from the menu. This should be a normal
+user account with no special priviliges.
+</p>
+
+<p>
+<b>Note:</b> the "Full Name" of this new user should begin with a <b>capital
+letter</b>! Not the "Username", because user names have to be all
+lowercase. But in "Users and Groups" the new "Full Name" should
+begin with a capital letter, because otherwise a malfunction might
+occur.
+</p>
+
+<p>
+Ensure that a <b>password</b> is required for logging into this new user
+account. It's best to set the same password as the one for the
+account of the system administrator (your personal account), because
+only the system administrator should be able to log into it.
+</p></li>
+
+<li><p>
+Log out and then log into the new user account <i>Hospitality</i>, and
+configure it the way you want the Guest session to become. For
+example with different settings for Firefox and Libre Office.
+</p>
+
+<p>
+In the next step you'll ensure that the Guest session will copy all
+of it's settings from the new account Hospitality. You can change
+those settings later on as well: later changes will also land
+automatically in the Guest session.
+</p></li>
+
+<li>Log out from the Hospitality account and log into the account of the
+system administrator (your personal account).</li>
+
+<li><p>
+Launch a terminal window and copy/paste the following command line into it:
+</p>
+<pre class="example">
+sudo mkdir /etc/guest-session
+</pre>
+<p>
+Press Enter. When prompted, type your password. Your password will
+remain entirely invisible, not even dots will show, this is normal.
+Press Enter again.
+</p>
+
+<p>
+Then copy/paste this command line into the terminal:
+</p>
+<pre class="example">
+sudo ln -s /home/hospitality /etc/guest-session/skel
+</pre>
+<p>
+Press Enter. (Note that <i>hospitality</i> doesn't begin with a capital
+letter in the command.)
+</p></li>
+
+<li>Log out from your account and log into the Guest session. Now it
+should have the same settings as the new user account Hospitality.</li>
+</ul>
+
+<p>
+The only disadvantage is, that you now have an extra "useless" user
+account in the login window.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline3" class="outline-2">
+<h2 id="orgheadline3"><span class="section-number-2">3</span> Referencies</h2>
+<div class="outline-text-2" id="text-3">
+<ul class="org-ul">
+<li><a href="http://askubuntu.com/questions/95405/how-to-enable-guest-account-automatic-login">http://askubuntu.com/questions/95405/how-to-enable-guest-account-automatic-login</a></li>
+<li><a href="https://sites.google.com/site/easylinuxtipsproject/2#TOC-Customize-the-frozen-Guest-session-guest-account-to-your-liking">https://sites.google.com/site/easylinuxtipsproject/2#TOC-Customize-the-frozen-Guest-session-guest-account-to-your-liking</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Date: 2017-01-14</p>
+<p class="author">Author: Dashamir Hoxha</p>
+<p class="date">Created: 2017-01-14 Sat 06:59</p>
+<p class="validation"></p>
+</div>
+</body>
+</html>
