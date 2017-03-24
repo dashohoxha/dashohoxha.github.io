@@ -1,0 +1,169 @@
+#+TITLE:     How to Build a Twitter-Bot
+#+AUTHOR:    Dashamir Hoxha
+#+EMAIL:     dashohoxha@gmail.com
+#+DATE:      2017-03-25
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+# #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
+#+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
+#+begin_html
+---
+layout:     post
+title:      How to Build a Twitter-Bot
+date:       2017-03-25
+summary:    There is a command-line twitter client that can be used to send tweets
+    to a certain account from terminal. Combining it with cron and other linux tools
+    I have built a twitter-bot that sends proverbs periodically to twitter
+    (https://twitter.com/l10n_sq). I will describe here how I did it.
+tags:       [linux twitter]
+---
+#+end_html
+
+There is a command-line twitter client that can be used to send tweets
+to a certain account from terminal. Combining it with cron and other
+linux tools I have built a twitter-bot that sends proverbs
+periodically to twitter (https://twitter.com/l10n_sq). I will describe
+here how I did it.
+
+* Accessing twitter from the terminal
+
+There is a [[https://github.com/sferik/t][single-letter tool called "t"]], which is a command-line
+Twitter client written in Ruby. I installed and configured it as
+described in this tutorial:
+http://xmodulo.com/access-twitter-command-line-linux.html.
+
+The installation is simple:
+#+begin_example
+apt-get install ruby-dev
+gem install t
+#+end_example
+
+Then create a new app on twitter: https://apps.twitter.com/app/new
+Follow the detailed instructions and the screenshots on the tutorial
+above.
+
+The next step is to authorize your app to access the Twitter account:
+#+begin_example
+useradd --system --create-home twitter
+su - twitter
+t authorize
+#+end_example
+The account access info will be stored in ~/.trc as a plain text.
+
+Now we can use it like this
+#+begin_example
+$ t account
+l10n_sq
+
+$ t whois @dashohoxha
+ID           50053789
+Since        Jun 23  2009 (8 years ago)
+Last update  20+ Free eBooks To Learn Linux For Free https://t.co/PoOMspWYJr (a month ago)
+Screen name  @dashohoxha
+Name         Dashamir Hoxha
+Tweets       1,403
+Favorites    21
+Listed       5
+Following    50
+Followers    141
+
+$ t stream timeline
+
+$ t update "Hello there"
+
+$ t follow @dashohoxha @linuxfoundation
+
+$ t mentions -n 10
+
+$ t search timeline "linux"
+#+end_example
+
+For more complex usage examples, refer to the [[https://github.com/sferik/t/blob/master/README.md][official documentation]].
+
+
+* Getting random proverbs with 'fortune'
+
+There is a nice little command, called =fortune=, which can get and
+print a random citation from a file of citations.
+
+#+begin_example
+apt-get install fortune
+fortune
+#+end_example
+
+The data files from which it gets the random citations are on
+~/usr/share/games/fortunes/~. The ones with the extension =.dat= are
+binary files (which are used by the command), and those without this
+extension are text files. The format of these text files is very
+simple: Quotations are separated from each-other by a line that
+contains a =%= sign. It is very easy to create a file that contains
+your own list of preferred proverbs or citations. Then convert it to
+the binary format with the command:
+#+begin_example
+strfile -c % yourlist yourlist.dat
+#+end_example
+
+Now, to get a random item from your list you can run:
+#+begin_example
+fortune yourlist
+#+end_example
+
+
+* Twitting random items from your lists
+
+I use a small script in order to tweet random sayings from my preferred lists:
+#+begin_example
+#!/bin/bash
+fortune='/usr/games/fortune'
+t='/usr/local/bin/t'
+tweet=$($fortune -s -n 140 25% english 75% shqip)
+$t update "$tweet"
+#+end_example
+
+The main command here is =fortune -s -n 140 25% english 75% shqip=.
+The options =-s -n 140= makes sure that only short proverbs of up to
+140 chars are returned, which are suitable for being twitted. The
+arguments =25% english 75% shqip= ask the command to return something
+from the files in the directory ~/usr/share/games/fortunes/english/~
+with a probability of 25%, and something from the files in the
+directory ~/usr/share/games/fortunes/shqip/~ with a probability of 75%
+(in the first directory I have collected some English proverbs, and on
+the second one some Albanian proverbs). The last step of the script is
+to send this random proverb to twitter, with the command =t update
+"tweet"=.
+
+
+* Making it automatic
+
+The last thing is to run the script above periodically and
+automatically.  This is a job for the good old =cron=. I have created
+the file ~/etc/cron.d/fortune~ which has these lines:
+#+begin_example
+### first create a user with `adduser twitter`
+0 */5 * * *  twitter  /home/twitter/fortune.sh > /dev/null 2>&1
+
+### uncomment this line only for debugging
+#*/5 * * * *  twitter  /home/twitter/fortune.sh
+#+end_example
+
+It runs the script each 5 hours, sending posts to twitter automatically.
+
+
+* Twitting translations from l10n.org.al
+
+Another script very similar to the previous one is this:
+#+begin_example
+#!/bin/bash
+t='/usr/local/bin/t'
+base_url=https://l10n.org.al
+tweet=$(curl -k $base_url/btr/tweet)
+mention=$( ( $t followings ; $t followers ) | uniq | sort -R | tail -1)
+$t update "$tweet @$mention"
+#+end_example
+
+This one gets a random translation from l10n.org.al, with the command:
+#+begin_example
+curl -k https://l10n.org.al/btr/tweet
+#+end_example
+Then it appends to it the name of a random friend and sends it to
+twitter.
