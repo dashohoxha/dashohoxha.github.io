@@ -1,0 +1,494 @@
+---
+layout:     post
+title:      Building SSH Tunnels
+date:       2017-03-25
+summary: The Secure SHell (ssh) is normally used for remote login to
+    another system.  However it is a flexible and powerful tool that
+    can be used for many other interesting things as well. One of them
+    is port forwarding (also known as ssh tunneling) between the
+    client and the server machine. Althought there are lots of
+    tutorials out there, I always find it a bit confusing how to use
+    it properly. So, I am writting yet another article, based on use
+    cases and examples, hoping to make its usage clear to myself and
+    to the others.
+tags:       [linux terminal ssh tunnel]
+---
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2017-04-02 Sun 22:09 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="viewport" content="width=device-width, initial-scale=1" />
+<title>Building SSH Tunnels</title>
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Dashamir Hoxha" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Building SSH Tunnels</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgheadline1">1. Bypass a firewall blocking</a></li>
+<li><a href="#orgheadline2">2. Connect to a database behind a firewall</a></li>
+<li><a href="#orgheadline3">3. Access a local machine from internet</a></li>
+<li><a href="#orgheadline4">4. Connect two computers with private IPs</a></li>
+<li><a href="#orgheadline5">5. Accessing a local computer on a remote LAN</a></li>
+<li><a href="#orgheadline6">6. Make connections more convenient and secure with public-private keys</a></li>
+<li><a href="#orgheadline7">7. Automate things with Docker and shell scripts</a></li>
+<li><a href="#orgheadline8">8. Referencies</a></li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline1" class="outline-2">
+<h2 id="orgheadline1"><span class="section-number-2">1</span> Bypass a firewall blocking</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Suppose that a certain website (for example twitter.com, or in our
+example <code>remote.com</code>) is blocked by a firewall, which does not allow
+us to open it in browser. Let's also say that we have <b>ssh</b> access to
+a server (that I will call <code>proxy.com</code>) somewhere on the internet, on
+the other side of the firewall. This means that we can login to this
+server with a command like <code>ssh user@proxy.com</code> (and with the user's
+password). In such a situation we can bypass the firewall with a
+command like this:
+</p>
+<pre class="example">
+ssh user@proxy.com -L 8000:remote.com:80
+</pre>
+
+<p>
+This situation is presented in the following diagram:
+</p>
+
+
+<div id="orgparagraph1" class="figure">
+<p><a href="/images/sshtunnels/sshtunnel1.png"><img src="/images/sshtunnels/sshtunnel1.png" alt="sshtunnel1.png" /></a>
+</p>
+<p><span class="figure-number">Figure 1:</span> Bypassing a firewall block.</p>
+</div>
+
+<p>
+In this case we are forwarding the port <code>8000</code> on our local machine to
+the port <code>80</code> on the server <code>remote.com</code>, through the server
+<code>proxy.com</code>.  This means that if we open <code>127.0.0.1:8000</code> in browser,
+this request will be sent to <code>remote.com:80</code> through <code>proxy.com</code> and
+we will get the reply in the browser.
+</p>
+
+<p>
+As far as <code>remote.com</code> is concerned, the request seems to come from
+<code>proxy.com</code>. The firewall (which blocks the website <code>remote.com</code>) sees
+only <b>ssh</b> traffic between our machine and <code>proxy.com</code>. It has no clue
+about the HTTP traffic because it is encapsulated inside the SSH
+traffic, and the SSH communication is encrypted.
+</p>
+
+<p>
+You can see why it is called a <b>tunnel</b>: because the traffic is hidden
+inside the SSH traffic, and because it can be used to bypass the
+network gatekeepers and checkpoints.
+</p>
+
+<p>
+<b>Note:</b> The situation when a webside is blocked can be solved by other
+means as well, for example using a <a href="https://www.torproject.org/projects/torbrowser.html.en">Tor browser</a>. However it serves as a
+good example for explaining ssh tunneling and how it works.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline2" class="outline-2">
+<h2 id="orgheadline2"><span class="section-number-2">2</span> Connect to a database behind a firewall</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+Suppose that we have a webserver and a database server on the remote
+server <code>example.com</code>. Usually a database is configured to be accessed
+only from the localhost, but we would like to access it remotely from
+our local machine (in order to use a GUI management tool, for
+example). We can solve this situation by making a SSH port forwarding
+with a command like this:
+</p>
+<pre class="example">
+ssh user@example.com -L 9000:localhost:3306
+</pre>
+
+<p>
+This situation is presented in the following diagram:
+</p>
+
+
+<div id="orgparagraph2" class="figure">
+<p><a href="/images/sshtunnels/sshtunnel1.png"><img src="/images/sshtunnels/sshtunnel2.png" alt="sshtunnel2.png" /></a>
+</p>
+<p><span class="figure-number">Figure 2:</span> Connect to a DB behind a firewall</p>
+</div>
+
+<p>
+Now we can use the pot <code>9000</code> on our local machine to connect to the
+database server.  Behind the scene it will be actually forwarded to
+the port <code>3306</code> on the server <code>example.com</code>. As an added benefit, the
+communication be encrypted and secure, even if the database server
+itself does not support secure communication, because all the traffic
+is encapsulated inside the SSH protocol.
+</p>
+
+<p>
+About the option <code>-L 9000:localhost:3306</code>, here <code>localhost</code> means the
+local host <i>after we have logged in</i> to the server <code>example.com</code>.  So,
+it actually referes to the server <code>example.com</code>, not to our local
+machine.  Since we are using the option <code>-L</code>, then the port <code>9000</code> in
+our local machine is forwarded to the port <code>3306</code> on the remote
+machine (in this case <code>example.com</code> itself).
+</p>
+
+<p>
+One way of thinking about it is that with the option <code>-L</code> the port
+forwarding is in the same direction as the ssh connection itself: from
+our local machine to the remote server. In the next section we will
+see the option <code>-R</code> which makes the port forwarding in the reverse
+direction compared to the ssh connection.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline3" class="outline-2">
+<h2 id="orgheadline3"><span class="section-number-2">3</span> Access a local machine from internet</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+Suppose that we are developing a Ruby-on-Rails application in our
+local machine and we want to show it to someone else on the internet.
+Normally this is not possible because our machine does not have a
+public IP that can be accessed remotely. However we can fix this if we
+have ssh access to a server with public IP, somewhere on the cloud.
+We can use a ssh command like this:
+</p>
+<pre class="example">
+ssh user@example.com -R 9000:localhost:3000
+</pre>
+
+<p>
+This situation is presented in the following diagram:
+</p>
+
+
+<div id="orgparagraph3" class="figure">
+<p><a href="/images/sshtunnels/sshtunnel1.png"><img src="/images/sshtunnels/sshtunnel3.png" alt="sshtunnel3.png" /></a>
+</p>
+<p><span class="figure-number">Figure 3:</span> Accessing a local machine from internet.</p>
+</div>
+
+<p>
+Since the option <code>-R</code> is used, port forwarding is in the reverse
+direction of the ssh connection, which means from the remote server to
+the local machine. Hence, <code>9000</code> is the port on <code>example.com</code> and
+<code>3000</code> is the port on our local machine. The result of this port
+forwarding is that whenever somebody tries to connect to
+<code>example.com:9000</code> they will actually be connected to <code>127.0.0.1:3000</code>
+on our local machine.
+</p>
+
+<p>
+<b>Note:</b> In order for the reverse port forwarding to work, it has to be
+enabled on the <b>sshd</b> configuration of <code>example.com</code>. It is not
+enabled by default because it may become a security problem. To enable
+it we have to add the line <code>GatewayPorts yes</code> on
+<code>/etc/ssh/sshd_config</code>, and then we have to restart the sshd service:
+<code>service sshd restart</code>.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline4" class="outline-2">
+<h2 id="orgheadline4"><span class="section-number-2">4</span> Connect two computers with private IPs</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+The following diagram shows the connection between two computers with
+private IPs, with the help of a proxy server that has a public IP:
+</p>
+
+
+<div id="orgparagraph4" class="figure">
+<p><a href="/images/sshtunnels/sshtunnel1.png"><img src="/images/sshtunnels/sshtunnel4.png" alt="sshtunnel4.png" /></a>
+</p>
+<p><span class="figure-number">Figure 4:</span> Connecting two computers with private IPs</p>
+</div>
+
+<p>
+Since none of the local computers has a public IP (and usually each of
+them is behind a firewall) they cannot contact each-other
+directly. However, with the help of a proxy server which is accessible
+from both of them, they can establish a port forwarding between them
+and communicate securely.
+</p>
+
+<p>
+The first local computer can forward its local port <code>5901</code> to the port
+<code>5933</code> on <code>proxy.com</code>, like this:
+</p>
+<pre class="example">
+ssh user@proxy.com -L 5901:localhost:5933
+</pre>
+<p>
+Then the second local computer can forward the port <code>5933</code> on <code>proxy.com</code>
+to its local port <code>5901</code>, like this:
+</p>
+<pre class="example">
+ssh user@proxy.com -R 5933:localhost:5901
+</pre>
+<p>
+The net effect of of these two connections is that the port <code>5901</code> of
+the first local host is forwarded to the port <code>5901</code> of the second
+host, and when an application tries to connect to port <code>5901</code> on the
+first machine it will actually be connected to the port <code>5901</code> of the
+second machine.
+</p>
+
+<p>
+By the way, the port <code>5901</code> is usually use by VNC, and this connection
+enables a vnc client on the first machine to access a vnc server on
+the second machine. It has the added benefit of a secure connection,
+because the VNC protocol is a bit old and does not support encryption,
+but the traffic is done inside a ssh tunnel, and this makes it secure.
+</p>
+
+<p>
+Any other protocol can be tunneled, instead of the VNC protocol. It
+is perfectly possible to tunnel the SSH protocol as well, inside a ssh tunnel.
+For example, if we run these commands:
+</p>
+<pre class="example">
+(1)  ssh user@proxy.com -L 22:localhost:5327
+(2)  ssh user@proxy.com -R 5327:localhost:22
+</pre>
+<p>
+Then by running the command <code>ssh abc@127.0.0.1</code> on the first machine,
+we will be able to access the account <code>abc</code> on the second
+machine. This assumes that we don't have a <code>sshd</code> server running on
+port <code>22</code> on the first machine, otherwise we would have a port
+conflict. But in such a case we could forward the port <code>2201</code> (for
+example) to port <code>22</code> and then access it like this: <code>ssh -p 2201
+abc@127.0.0.1</code>.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline5" class="outline-2">
+<h2 id="orgheadline5"><span class="section-number-2">5</span> Accessing a local computer on a remote LAN</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+It is also possible to use the second machine as a gateway for accessing
+another local computer on its LAN, as shown in this diagram:
+</p>
+
+
+<div id="orgparagraph5" class="figure">
+<p><a href="/images/sshtunnels/sshtunnel1.png"><img src="/images/sshtunnels/sshtunnel5.png" alt="sshtunnel5.png" /></a>
+</p>
+<p><span class="figure-number">Figure 5:</span> Accessing a local computer on a remote LAN.</p>
+</div>
+
+<p>
+The commands in this case are like this:
+</p>
+<pre class="example">
+(1)  ssh user@proxy.com -L 2201:localhost:5327
+(2)  ssh user@proxy.com -R 5327:local3:22
+</pre>
+
+<p>
+On the second command we can give the name or the IP of the internal
+machine that we want to expose. Then we can connect to it from the first
+machine with a command like this: <code>ssh -p 2201 abc@127.0.0.1</code>.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline6" class="outline-2">
+<h2 id="orgheadline6"><span class="section-number-2">6</span> Make connections more convenient and secure with public-private keys</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+Whenever we create a tunnel, we also get a ssh shell on the proxy
+server. Usually this is not needed because all that we want is to
+forward a port and to create a tunnel.  To avoid this, we can rush the
+ssh command with the flags <code>-nNT</code> wich will tell ssh to not allocate a
+tty. The command will look like this:
+</p>
+<pre class="example">
+ssh -nNT user@proxy.com -L 2201:localhost:5327
+</pre>
+
+<p>
+Besides this, it is more convenient and secure to establish the ssh
+connection with public-private keys, instead of using passwords.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline7" class="outline-2">
+<h2 id="orgheadline7"><span class="section-number-2">7</span> Automate things with Docker and shell scripts</h2>
+</div>
+
+<div id="outline-container-orgheadline8" class="outline-2">
+<h2 id="orgheadline8"><span class="section-number-2">8</span> Referencies</h2>
+<div class="outline-text-2" id="text-8">
+<ul class="org-ul">
+<li><a href="https://chamibuddhika.wordpress.com/2012/03/21/ssh-tunnelling-explained/">https://chamibuddhika.wordpress.com/2012/03/21/ssh-tunnelling-explained/</a></li>
+<li><a href="https://www.ssh.com/ssh/tunneling/example">https://www.ssh.com/ssh/tunneling/example</a></li>
+<li><a href="http://blog.trackets.com/2014/05/17/ssh-tunnel-local-and-remote-port-forwarding-explained-with-examples.html">http://blog.trackets.com/2014/05/17/ssh-tunnel-local-and-remote-port-forwarding-explained-with-examples.html</a></li>
+<li><a href="http://dashohoxha.fs.al/remote-desktop-support-with-vnc/">http://dashohoxha.fs.al/remote-desktop-support-with-vnc/</a></li>
+<li><a href="https://github.com/docker-build/p2p">https://github.com/docker-build/p2p</a></li>
+<li><a href="https://github.com/docker-build/sshtunnels">https://github.com/docker-build/sshtunnels</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Date: 2017-03-25</p>
+<p class="author">Author: Dashamir Hoxha</p>
+<p class="date">Created: 2017-04-02 Sun 22:09</p>
+<p class="validation"></p>
+</div>
+</body>
+</html>
