@@ -16,7 +16,7 @@ summary:    LTSP allows computers of a LAN to boot through network from a single
     administration and maintenance time of a classroom of computers
     (instead of installing, configuring and updating each of them we do it
     only once).
-tags:       [ltsp]
+tags:       [ltsp ubuntu]
 ---
 #+end_html
 
@@ -59,7 +59,7 @@ tags:       [ltsp]
   #+begin_example
   apt-get update
   apt-get upgrade
-  apt-get install edubuntu-desktop
+  apt-get install chromium-browser
   etc.
   #+end_example
 
@@ -67,7 +67,7 @@ tags:       [ltsp]
   on the clients. In particular, one of them is =epoptes=, which
   allows remote desktop control for the clients:
   #+begin_example
-  apt-get install epoptes
+  apt-get install epoptes epoptes-client
   gpasswd -a ${SUDO_USER:-$USER} epoptes
   #+end_example
 
@@ -130,7 +130,17 @@ tags:       [ltsp]
      - The line **port=0** breaks the name resolution (DNS) in Ubuntu-16.04,
        so I commented it out as well.
 
-    Then =service dnsmasq restart=
+    Then restart =dnsmasq=:
+    #+begin_example
+    update-rc.d dnsmasq enable
+    service dnsmasq restart
+    #+end_example
+
+    *Note:* If you don't have a DHCP server on your network, then
+    don't comment the *dhcp-range* above. But make sure that the fixed
+    IP (set in the previous section) and the DHCP range are in the
+    same network (for example =address 192.168.11.1= and
+    =dhcp-range=192.168.11.50,192.168.11.100=).
 
 
 * Creating the client image
@@ -141,12 +151,65 @@ tags:       [ltsp]
   #+end_example
   generates the client image.  It may take some time.
 
-  **Note:** Whenever new packages are installed or packages are
-  updated on the server, the image has to be updated as well, in order
-  to make these changes available to the clients.
+  When it is finished, then you can start booting clients from the
+  network.  This is usually done by pressing F12 when the computer is
+  just powered on, but it may be different on different
+  computers. Sometimes you may need to enable booting from network on
+  the BIOS (it is usually called PXE booting).
 
 
-* Referencies
+* Installing Edubuntu programs
+
+  Edubuntu programs can be installed like this:
+  #+begin_example
+  apt-get install edubuntu-desktop
+  #+end_example
+
+  Or like this:
+  #+begin_example
+  apt-get install ubuntu-edu-preschool ubuntu-edu-primary ubuntu-edu-secondary ubuntu-edu-tertiary
+  #+end_example
+
+  The first one installs everything about Edubuntu, including the
+  desktop, how it looks etc. The second method installs only the
+  additional educational software that usually comes with Edubuntu,
+  without changing the existing desktop etc. I prefer the second way
+  because it is more flexible (for example I would like to skip the
+  preschool tools, which are mainly games for small children).
+
+  Now that we have installed new packages, we have to update the image
+  as well, in order to make these changes available to the clients. It
+  is the same command as before:
+  #+begin_example
+  ltsp-update-image --cleanup /
+  #+end_example
+
+
+* Installing additional desktops
+
+  In Linux we can install several desktops and let the user choose
+  which one he prefers.  For example [[https://www.tecmint.com/install-mate-desktop-in-ubuntu-fedora/][this article]] shows how to install
+  the MATE desktop, [[https://www.tecmint.com/install-xfce-desktop-in-ubuntu-fedora/][this one]] how to install XFCE, etc. They can also
+  be installed by installing the packages *xubuntu-desktop*,
+  *lubuntu-desktop*, *kubuntu-desktop* etc. Then you need to update
+  the client image again.
+
+  *Attention:* When you install another desktop, it is possible that
+  it may replace the Display Manager (the login window) with another
+  one. Make sure that you always keep *lightdm* as display manager,
+  not something else (for example *mdm*), because the tools that
+  automate the configuration of LTSP work well only with *lightdm*.
+
+
+* Adding more users
+
+  All the users of the server can also login from each of the clients.
+  So, to add more users we just add them on the server. No need to
+  update the client image on this case. Also, everything that the
+  users change is saved on the home directories on the server.
+
+
+* References
 
  + https://ubuntuforums.org/showthread.php?t=2173749
  + https://help.ubuntu.com/community/UbuntuLTSP/ltsp-pnp

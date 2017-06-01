@@ -7,14 +7,14 @@ summary:    LTSP allows computers of a LAN to boot through network from a single
     administration and maintenance time of a classroom of computers
     (instead of installing, configuring and updating each of them we do it
     only once).
-tags:       [ltsp]
+tags:       [ltsp ubuntu edubuntu]
 ---
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2017-01-07 Sat 00:57 -->
+<!-- 2017-06-01 Thu 08:29 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="viewport" content="width=device-width, initial-scale=1" />
 <title>LTSP Server with Ubuntu 16.04</title>
@@ -170,7 +170,10 @@ for the JavaScript code in this tag.
 </ul>
 </li>
 <li><a href="#orgheadline8">4. Creating the client image</a></li>
-<li><a href="#orgheadline9">5. Referencies</a></li>
+<li><a href="#orgheadline9">5. Installing Edubuntu programs</a></li>
+<li><a href="#orgheadline10">6. Installing additional desktops</a></li>
+<li><a href="#orgheadline11">7. Adding more users</a></li>
+<li><a href="#orgheadline12">8. References</a></li>
 </ul>
 </div>
 </div>
@@ -230,7 +233,7 @@ like:
 <pre class="example">
 apt-get update
 apt-get upgrade
-apt-get install edubuntu-desktop
+apt-get install chromium-browser
 etc.
 </pre>
 
@@ -240,7 +243,7 @@ on the clients. In particular, one of them is <code>epoptes</code>, which
 allows remote desktop control for the clients:
 </p>
 <pre class="example">
-apt-get install epoptes
+apt-get install epoptes epoptes-client
 gpasswd -a ${SUDO_USER:-$USER} epoptes
 </pre>
 
@@ -333,7 +336,19 @@ so I commented it out as well.</li>
 </ul>
 
 <p>
-Then <code>service dnsmasq restart</code>
+Then restart <code>dnsmasq</code>:
+</p>
+<pre class="example">
+update-rc.d dnsmasq enable
+service dnsmasq restart
+</pre>
+
+<p>
+<b>Note:</b> If you don't have a DHCP server on your network, then
+don't comment the <b>dhcp-range</b> above. But make sure that the fixed
+IP (set in the previous section) and the DHCP range are in the
+same network (for example <code>address 192.168.11.1</code> and
+<code>dhcp-range=192.168.11.50,192.168.11.100</code>).
 </p>
 </div>
 </div>
@@ -354,17 +369,93 @@ generates the client image.  It may take some time.
 </p>
 
 <p>
-<b><b>Note:</b></b> Whenever new packages are installed or packages are
-updated on the server, the image has to be updated as well, in order
-to make these changes available to the clients.
+When it is finished, then you can start booting clients from the
+network.  This is usually done by pressing F12 when the computer is
+just powered on, but it may be different on different
+computers. Sometimes you may need to enable booting from network on
+the BIOS (it is usually called PXE booting).
 </p>
 </div>
 </div>
 
 
 <div id="outline-container-orgheadline9" class="outline-2">
-<h2 id="orgheadline9"><span class="section-number-2">5</span> Referencies</h2>
+<h2 id="orgheadline9"><span class="section-number-2">5</span> Installing Edubuntu programs</h2>
 <div class="outline-text-2" id="text-5">
+<p>
+Edubuntu programs can be installed like this:
+</p>
+<pre class="example">
+apt-get install edubuntu-desktop
+</pre>
+
+<p>
+Or like this:
+</p>
+<pre class="example">
+apt-get install ubuntu-edu-preschool ubuntu-edu-primary ubuntu-edu-secondary ubuntu-edu-tertiary
+</pre>
+
+<p>
+The first one installs everything about Edubuntu, including the
+desktop, how it looks etc. The second method installs only the
+additional educational software that usually comes with Edubuntu,
+without changing the existing desktop etc. I prefer the second way
+because it is more flexible (for example I would like to skip the
+preschool tools, which are mainly games for small children).
+</p>
+
+<p>
+Now that we have installed new packages, we have to update the image
+as well, in order to make these changes available to the clients. It
+is the same command as before:
+</p>
+<pre class="example">
+ltsp-update-image --cleanup /
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline10" class="outline-2">
+<h2 id="orgheadline10"><span class="section-number-2">6</span> Installing additional desktops</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+In Linux we can install several desktops and let the user choose
+which one he prefers.  For example <a href="https://www.tecmint.com/install-mate-desktop-in-ubuntu-fedora/">this article</a> shows how to install
+the MATE desktop, <a href="https://www.tecmint.com/install-xfce-desktop-in-ubuntu-fedora/">this one</a> how to install XFCE, etc. They can also
+be installed by installing the packages <b>xubuntu-desktop</b>,
+<b>lubuntu-desktop</b>, <b>kubuntu-desktop</b> etc. Then you need to update
+the client image again.
+</p>
+
+<p>
+<b>Attention:</b> When you install another desktop, it is possible that
+it may replace the Display Manager (the login window) with another
+one. Make sure that you always keep <b>lightdm</b> as display manager,
+not something else (for example <b>mdm</b>), because the tools that
+automate the configuration of LTSP work well only with <b>lightdm</b>.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline11" class="outline-2">
+<h2 id="orgheadline11"><span class="section-number-2">7</span> Adding more users</h2>
+<div class="outline-text-2" id="text-7">
+<p>
+All the users of the server can also login from each of the clients.
+So, to add more users we just add them on the server. No need to
+update the client image on this case. Also, everything that the
+users change is saved on the home directories on the server.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline12" class="outline-2">
+<h2 id="orgheadline12"><span class="section-number-2">8</span> References</h2>
+<div class="outline-text-2" id="text-8">
 <ul class="org-ul">
 <li><a href="https://ubuntuforums.org/showthread.php?t=2173749">https://ubuntuforums.org/showthread.php?t=2173749</a></li>
 <li><a href="https://help.ubuntu.com/community/UbuntuLTSP/ltsp-pnp">https://help.ubuntu.com/community/UbuntuLTSP/ltsp-pnp</a></li>
@@ -378,7 +469,7 @@ to make these changes available to the clients.
 <div id="postamble" class="status">
 <p class="date">Date: 2017-01-07</p>
 <p class="author">Author: Dashamir Hoxha</p>
-<p class="date">Created: 2017-01-07 Sat 00:57</p>
+<p class="date">Created: 2017-06-01 Thu 08:29</p>
 <p class="validation"></p>
 </div>
 </body>
