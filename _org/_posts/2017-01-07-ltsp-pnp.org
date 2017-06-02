@@ -16,7 +16,7 @@ summary:    LTSP allows computers of a LAN to boot through network from a single
     administration and maintenance time of a classroom of computers
     (instead of installing, configuring and updating each of them we do it
     only once).
-tags:       [ltsp ubuntu]
+tags:       [ltsp ubuntu edubuntu]
 ---
 #+end_html
 
@@ -80,6 +80,7 @@ tags:       [ltsp ubuntu]
       netmask 255.255.255.0
       gateway 192.168.1.1
       dns-nameservers 8.8.8.8 8.8.4.4
+
   #+end_example
 
 

@@ -17,12 +17,23 @@ summary: The Secure SHell (ssh) is normally used for remote login to
     is port forwarding (also known as ssh tunneling) between the
     client and the server machine. Althought there are lots of
     tutorials out there, I always find it a bit confusing how to use
-    it properly. So, I am writting yet another article, based on use
-    cases and examples, hoping to make its usage clear to myself and
-    to the others.
+    it properly. So, I am writting yet another tutorial about ssh tunneling,
+    based on use cases and examples, hoping to make its usage clear
+    to myself and to the others.
 tags:       [linux terminal ssh tunnel]
 ---
 #+end_html
+
+
+The Secure SHell (ssh) is normally used for remote login to another
+system.  However it is a flexible and powerful tool that can be used
+for many other interesting things as well. One of them is port
+forwarding (also known as ssh tunneling) between the client and the
+server machine. Althought there are lots of tutorials out there, I
+always find it a bit confusing how to use it properly. So, I am
+writting yet another tutorial about ssh tunneling, based on use cases
+and examples, hoping to make its usage clear to myself and to the
+others.
 
 
 * Bypass a firewall blocking
