@@ -562,31 +562,32 @@ the IPs of the slave DNS servers also on
 
 Now create a file like ~config/var/cache/bind/db.example.org~ with a
 content like this:
+
 #+begin_example
-; example.org
-$TTL    24h
-$ORIGIN example.org.
-@       1D      IN      SOA     ns1.example.org.    admin.example.org. (
-                                        2017063001 ; serial
-                                        3H ; refresh
-                                        15m ; retry
-                                        1w ; expire
-                                        2h ; minimum
-                                )
-                IN      NS              b.ns.buddyns.com.
-                IN      NS              c.ns.buddyns.com.
-                IN      NS              puck.nether.net.
+ ; example.org
+ $TTL    24h
+ $ORIGIN example.org.
+ @       1D      IN      SOA     ns1.example.org.    admin.example.org. (
+                                         2017063001 ; serial
+                                         3H ; refresh
+                                         15m ; retry
+                                         1w ; expire
+                                         2h ; minimum
+                                 )
+                 IN      NS              b.ns.buddyns.com.
+                 IN      NS              c.ns.buddyns.com.
+                 IN      NS              puck.nether.net.
 
-                IN      MX      10      aspmx.l.google.com.
+                 IN      MX      10      aspmx.l.google.com.
 
-; server host definitions
-ns1.example.org.  IN  A                 12.345.67.89
-@               IN      A               12.345.67.89
+ ; server host definitions
+ ns1.example.org.  IN  A                 12.345.67.89
+ @               IN      A               12.345.67.89
 
-; point to the server any subdomain
-*               IN      A               12.345.67.89
+ ; point to the server any subdomain
+ *               IN      A               12.345.67.89
 
-mail            IN      CNAME           ghs.google.com.
+ mail            IN      CNAME           ghs.google.com.
 #+end_example
 
 You can see that only the secondary servers are listed as nameservers

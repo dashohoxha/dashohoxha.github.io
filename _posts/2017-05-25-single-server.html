@@ -17,7 +17,7 @@ tags:       [linux docker server]
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2017-06-02 Fri 14:06 -->
+<!-- 2017-06-02 Fri 14:29 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="viewport" content="width=device-width, initial-scale=1" />
 <title>Using Docker to Run Everything From a Single Server</title>
@@ -174,10 +174,9 @@ for the JavaScript code in this tag.
 <li><a href="#orgheadline10">10. Case Study 2: Installing ShellInBox</a></li>
 <li><a href="#orgheadline11">11. Case Study 3: Installing SchoolTool</a></li>
 <li><a href="#orgheadline12">12. Managing Your Own Domain Name Server</a></li>
-<li><a href="#orgheadline13">13. IN      A               12.345.67.89</a></li>
-<li><a href="#orgheadline14">14. Conclusion</a></li>
-<li><a href="#orgheadline15">15. Future Work</a></li>
-<li><a href="#orgheadline16">16. References</a></li>
+<li><a href="#orgheadline13">13. Conclusion</a></li>
+<li><a href="#orgheadline14">14. Future Work</a></li>
+<li><a href="#orgheadline15">15. References</a></li>
 </ul>
 </div>
 </div>
@@ -860,7 +859,9 @@ the IPs of the slave DNS servers also on
 <p>
 Now create a file like <code>config/var/cache/bind/db.example.org</code> with a
 content like this:
-#+begin_example
+</p>
+
+<pre class="example">
 ; example.org
 $TTL    24h
 $ORIGIN example.org.
@@ -874,30 +875,18 @@ $ORIGIN example.org.
                 IN      NS              b.ns.buddyns.com.
                 IN      NS              c.ns.buddyns.com.
                 IN      NS              puck.nether.net.
-</p>
 
-<p>
-IN      MX      10      aspmx.l.google.com.
-</p>
+                IN      MX      10      aspmx.l.google.com.
 
-<p>
 ; server host definitions
 ns1.example.org.  IN  A                 12.345.67.89
 @               IN      A               12.345.67.89
-</p>
 
-<p>
 ; point to the server any subdomain
-</p>
-</div>
-</div>
-<div id="outline-container-orgheadline13" class="outline-2">
-<h2 id="orgheadline13"><span class="section-number-2">13</span> IN      A               12.345.67.89</h2>
-<div class="outline-text-2" id="text-13">
-<p>
+*               IN      A               12.345.67.89
+
 mail            IN      CNAME           ghs.google.com.
-#+end_example
-</p>
+</pre>
 
 <p>
 You can see that only the secondary servers are listed as nameservers
@@ -924,9 +913,9 @@ the container by running: <code>./rm.sh &amp;&amp; ./build.sh &amp;&amp; ./run.s
 </div>
 
 
-<div id="outline-container-orgheadline14" class="outline-2">
-<h2 id="orgheadline14"><span class="section-number-2">14</span> Conclusion</h2>
-<div class="outline-text-2" id="text-14">
+<div id="outline-container-orgheadline13" class="outline-2">
+<h2 id="orgheadline13"><span class="section-number-2">13</span> Conclusion</h2>
+<div class="outline-text-2" id="text-13">
 <p>
 We have seen that it is quite possible to install several websites,
 webapps etc. in the same server. Using Docker makes it more efficient,
@@ -941,9 +930,9 @@ server very easy.
 </div>
 
 
-<div id="outline-container-orgheadline15" class="outline-2">
-<h2 id="orgheadline15"><span class="section-number-2">15</span> Future Work</h2>
-<div class="outline-text-2" id="text-15">
+<div id="outline-container-orgheadline14" class="outline-2">
+<h2 id="orgheadline14"><span class="section-number-2">14</span> Future Work</h2>
+<div class="outline-text-2" id="text-14">
 <ul class="org-ul">
 <li>Improving the docker scripts that are used to install and manage web
 applications mentioned in this article (Moodle, SchoolTool,
@@ -956,9 +945,9 @@ businesses, etc.</li>
 </div>
 
 
-<div id="outline-container-orgheadline16" class="outline-2">
-<h2 id="orgheadline16"><span class="section-number-2">16</span> References</h2>
-<div class="outline-text-2" id="text-16">
+<div id="outline-container-orgheadline15" class="outline-2">
+<h2 id="orgheadline15"><span class="section-number-2">15</span> References</h2>
+<div class="outline-text-2" id="text-15">
 <ul class="org-ul">
 <li><a href="https://docs.docker.com/">https://docs.docker.com/</a></li>
 <li><a href="https://github.com/docker-build/wsproxy">https://github.com/docker-build/wsproxy</a></li>
@@ -977,7 +966,7 @@ businesses, etc.</li>
 <div id="postamble" class="status">
 <p class="date">Date: 2017-05-25</p>
 <p class="author">Author: Dashamir Hoxha</p>
-<p class="date">Created: 2017-06-02 Fri 14:06</p>
+<p class="date">Created: 2017-06-02 Fri 14:29</p>
 <p class="validation"></p>
 </div>
 </body>
