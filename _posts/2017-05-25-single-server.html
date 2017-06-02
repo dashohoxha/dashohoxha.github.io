@@ -1,0 +1,984 @@
+---
+layout:     post
+title:      Using Docker to Run Everything From a Single Server
+date:       2017-05-25
+
+summary: Often it is desirable to install several web pages or web applications
+    in the same server, in order to minimize costs. However this is not so
+    easy and presents some challenges.  We will discuss several ways of
+    trying to accomplish it, and argue that using Docker is the most
+    efficient and the most easy one. We will also see some use cases of
+    applications that can be installed with Docker, which actually make
+    use of some custom shell scripts that I have developed.
+tags:       [linux docker server]
+---
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2017-06-02 Fri 14:06 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="viewport" content="width=device-width, initial-scale=1" />
+<title>Using Docker to Run Everything From a Single Server</title>
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Dashamir Hoxha" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Using Docker to Run Everything From a Single Server</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgheadline1">1. Abstract</a></li>
+<li><a href="#orgheadline2">2. The Problem</a></li>
+<li><a href="#orgheadline3">3. Using an HTTP Reverse Proxy</a></li>
+<li><a href="#orgheadline4">4. Using Virtual Machines</a></li>
+<li><a href="#orgheadline5">5. Using Docker</a></li>
+<li><a href="#orgheadline6">6. Implementing the Docker solution: WSProxy</a></li>
+<li><a href="#orgheadline7">7. WSProxy: Serving a Remote Domain Through an SSH-Tunnel</a></li>
+<li><a href="#orgheadline8">8. WSProxy: Managing the HTTPS Certificates</a></li>
+<li><a href="#orgheadline9">9. Case Study 1: Installing Moodle</a></li>
+<li><a href="#orgheadline10">10. Case Study 2: Installing ShellInBox</a></li>
+<li><a href="#orgheadline11">11. Case Study 3: Installing SchoolTool</a></li>
+<li><a href="#orgheadline12">12. Managing Your Own Domain Name Server</a></li>
+<li><a href="#orgheadline13">13. IN      A               12.345.67.89</a></li>
+<li><a href="#orgheadline14">14. Conclusion</a></li>
+<li><a href="#orgheadline15">15. Future Work</a></li>
+<li><a href="#orgheadline16">16. References</a></li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline1" class="outline-2">
+<h2 id="orgheadline1"><span class="section-number-2">1</span> Abstract</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Often it is desirable to install several web pages or web applications
+in the same server, in order to minimize costs. However this is not so
+easy and presents some challenges.  We will discuss several ways of
+trying to accomplish it, and argue that using Docker is the most
+efficient and the most easy one. We will also see some use cases of
+applications that can be installed with Docker, which actually make
+use of some custom shell scripts that I have developed.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline2" class="outline-2">
+<h2 id="orgheadline2"><span class="section-number-2">2</span> The Problem</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+Usually a small organization or institution has limited resources and
+it makes sense to use them as efficiently as possible. For example
+let's say they have a single server with public IP and would like to
+install in it their website, several web applications,
+etc. Traditionally this is done by installing all the applications and
+their dependencies in the same place, and trying to fix their
+configurations so that they coexist peacefully with each-other. We can
+use the name-based virtual hosting of apache2 to host several
+domains/subdomains on the same webserver.
+</p>
+
+<p>
+However the issue is a little bit more complicated than this, because
+sometimes it is not possible (or suitable, or convenient) to host two
+different websites on the same server. For example, let's say that a
+website is built on Joomla, and it has some modules that do not work
+well with the latest version of PHP, so it depends on the previous
+version of PHP. Now we have to install manually the previous version
+of PHP and this makes the whole thing more difficult. Moreover, this
+previous version of PHP is not suitable or may break the other
+websites or applications, which require the latest version of PHP. So,
+we will have to keep 2 parallel installations of PHP, each one for a
+different version, and to configure each website or application for
+using the right version.
+</p>
+
+<p>
+This makes very high the complexity of installation, configuration and
+maintenance. Sometimes it may even be impossible due to conflicting
+dependencies. The only solution in this case would be to separate
+these websites/applications into two different servers, one that has
+the previous version of PHP and another with the latest one. But now
+it is more expensive (because requires two or more servers, instead of
+one). It also requires more than one public IP, one for each server,
+which sometimes is more expensive, and sometimes is simply not
+possible.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline3" class="outline-2">
+<h2 id="orgheadline3"><span class="section-number-2">3</span> Using an HTTP Reverse Proxy</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+In this case, the Reverse Proxy module of apache2 comes to rescue. The
+idea is that the main webserver can forward the http requests to the
+other webservers, behaving like a kind of http gateway or hub. So, we
+need a public IP only for the proxy server and all the requests for
+each of the hosted domains/subdomains go to it. Then it will use the
+name-based virtual hosting feature of apache2 to distinguish between
+them, and forward each of them to the appropriate internal server,
+acting as a proxy between the webclient and the webserver.
+</p>
+
+<p>
+The apache2 configuration on the proxy server looks like this:
+</p>
+<pre class="example">
+&lt;VirtualHost *:80&gt;
+        ServerName site1.example.org
+        ProxyPass / http://site1.example.org/
+        ProxyPassReverse / http://site1.example.org/
+        ProxyRequests off
+&lt;/VirtualHost&gt;
+</pre>
+<p>
+There is a section like this for each domain/subdomain that is hosted.
+</p>
+
+<p>
+Now, the tricky part is to modify <code>/etc/hosts</code> and to add lines like
+this for each supported domain/subdomain:
+</p>
+<pre class="example">
+192.168.1.115  site1.example.org
+</pre>
+<p>
+Here <code>192.168.1.115</code> is the internal IP of the webserver that hosts
+the domain <code>site1.example.org</code>. Without this configuration apache2
+would not know where to forward the request, the request would be sent
+again to the proxy server itself, and this would create an endless
+loop.
+</p>
+
+<p>
+For handling HTTPS requests, the configuration of apache2 would look
+like this:
+</p>
+<pre class="example">
+&lt;VirtualHost _default_:443&gt;
+        ServerName site1.example.org
+        ProxyPass / https://site1.example.org/
+        ProxyPassReverse / https://site1.example.org/
+
+        ProxyRequests off
+
+        SSLEngine on
+        SSLCertificateFile      /etc/ssl/certs/ssl-cert-snakeoil.pem
+        SSLCertificateKeyFile   /etc/ssl/private/ssl-cert-snakeoil.key
+        #SSLCertificateChainFile /etc/ssl/certs/ssl-cert-snakeoil.pem
+
+        SSLProxyEngine on
+        SSLProxyVerify none
+        SSLProxyCheckPeerCN off
+        SSLProxyCheckPeerName off
+        SSLProxyCheckPeerExpire off
+&lt;/VirtualHost&gt;
+</pre>
+
+<p>
+Also these apache2 modules have to be enabled:
+</p>
+<pre class="example">
+a2enmod ssl proxy proxy_http proxy_connect proxy_balancer cache headers rewrite
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline4" class="outline-2">
+<h2 id="orgheadline4"><span class="section-number-2">4</span> Using Virtual Machines</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+Instead of using a separate physical machine for the proxy server and
+for each of the webservers, we can use virtual machines inside a
+single physical machine. This brings some benefits in terms of
+management and maintenance because it is easier to manage a virtual
+machine than a physical one. For example you can make a snapshot of
+the virtual machine (which is like a full backup of everything), you
+can make a clone of it and use the clone for testing new
+installations/configurations, you have more flexibility in increasing
+or decreasing the resources of the virtual machine (for example
+increasing the amount of RAM if needed), etc.
+</p>
+
+<p>
+However, the machine that hosts the virtual servers has to be more
+powerful than a normal server. It needs to have more RAM, more
+processing power, faster storage, etc. because these resources are
+divided among the virtual servers. For example, suppose that we need
+to have 3 webservers, one for each website or webapp. We also need a
+webproxy server, as discussed in the previous section, to handle the
+http requests for all the domains.  If we assume that each webserver
+needs at least 512MB of RAM to run properly, then for these 4 virtual
+machines we need at least 2GB or RAM. The host system as well needs at
+least 512MB of RAM to run properly, so in total we would need a
+machine with at least 2-3 GB of RAM.
+</p>
+
+<p>
+On the other hand, if we were able run all the websites and webapps on
+the same server, without separating them into different machines, 1GB
+of RAM would be more than enough for running everything properly.
+This happens because each virtual machine has to spend resources for
+running its own system, its own apache2 server etc. so in total they
+need more resources than a single server.
+</p>
+
+<p>
+Besides this, another problem is that once some resources are
+allocated to a virtual machine they cannot be shared with the other
+virtual machines, even if they are idle (unused). For example, suppose
+that we allocate 512MB of RAM to virt-ws-1 and 512MB or RAM to
+virt-ws-2. Let's also say that when virt-ws-1 is very busy virt-ws-2
+is idle, and when virt-ws-1 is idle virt-ws-2 is very busy. Even
+though one of them is idle, it cannot share its free resources (RAM)
+with the busy one because the virtual machines and their allocated
+resources are totally isolated from each-other. If both applications
+were installed on the same server though, they would have been able to
+use the whole 1GB available, while they are busy and the other one is
+idle.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline5" class="outline-2">
+<h2 id="orgheadline5"><span class="section-number-2">5</span> Using Docker</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+Docker is a tool that allows us to create and manage virtual machines.
+However the virtual machines created by Docker are lightweight, they
+use much less resources than the traditional virtual machines. This
+comes from the fact that the virtual machines created by Docker can
+share resources with the hosting system and between each-other. For
+example, all the Docker virtual machines use the same kernel as the
+hosting system, no need to use extra resources for running a separate
+kernel for each virtual machine. Also, there are no limitations on the
+amount of RAM that each Docker VM can use. If the hosting system has
+2GB of RAM, this amount of RAM is available to all of the VMs and they
+share it as needed. If one of the VMs is busy at a certain time and
+the other ones are idle, then the one that is busy can go on and use
+all the available free RAM, up to 2GB. Also, Docker VMs can easily
+share the disk space, if needed, and there are no limits on the amount
+of disk space that each one of them can use.
+</p>
+
+<p>
+This ability of Docker for sharing resources among the virtual
+machines provides a better and more efficient resource utilization.
+So, Docker virtual machines can provide both isolation between
+different applications, so that they are not affected by the
+dependencies of each-other, and efficient utilization of the available
+resources. As such, they are a perfect solution in many situations.
+One of these situations is also our case of running several webservers
+separated from each-other.
+</p>
+
+<p>
+Besides all these, Docker VMs are also very easy to install and manage
+and have full support for scripting and automation, making the life
+easy for sysadmins. They are also highly configurable and resource
+sharing among virtual machines can be made as restrictive or as
+flexible as needed.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline6" class="outline-2">
+<h2 id="orgheadline6"><span class="section-number-2">6</span> Implementing the Docker solution: WSProxy</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+I have developed some scripts that automate the process of building
+and maintaining a web server proxy with Docker. It is quite simple and
+easy to install and to build a Docker container that does the job of a
+web server proxy:
+</p>
+<pre class="example">
+mkdir -p /opt/src
+cd /opt/src/
+git clone https://github.com/docker-build/wsproxy
+
+mkdir -p /opt/workdir/wsproxy1
+cd /opt/workdir/wsproxy1
+ln -s /opt/src/wsproxy .
+
+cp wsproxy/utils/config.sh .
+vim config.sh
+
+wsproxy/docker/build.sh
+wsproxy/docker/create.sh
+
+wsproxy/docker/start.sh
+</pre>
+
+<p>
+So, we first get the code of the scripts from GitHub and save it on
+<code>/opt/src/wsproxy</code>. Then we create a new directory for managing the
+container, called <code>/opt/workdir/wsproxy1</code> and link the source
+directory inside it. Then we copy and tweak the configuration file,
+build the docker image, create the docker container, and then start
+it.
+</p>
+
+<p>
+Now let's say that we have two webservers, <i>webserver-1</i> and
+<i>webserver-2</i>, each one running in a docker container. Later we will
+see in more details how to create and start such webservers, but for
+the time being let's say that they are created like this:
+</p>
+<pre class="example">
+docker run -d --name=ws1 --hostname=site1.example.org webserver-1
+docker run -d --name=ws2 --hostname=site2.example.org webserver-2
+</pre>
+
+<p>
+Note that no HTTP ports are exposed to the host (for example using
+options <code>-p 80:80 -p 443:443</code>), and this is important because the HTTP
+ports are already being used by the <i>wsproxy</i> container.
+</p>
+
+<p>
+Now we can fix the configuration of <i>wsproxy</i> so that it can serve
+as a proxy for these domains, and we can do it like this:
+</p>
+<pre class="example">
+wsproxy/domains-add.sh ws1 site1.example.org
+wsproxy/domains-add.sh ws2 site2.example.org site3.example.org
+</pre>
+
+<p>
+So, all the needed configurations are done by the script
+<code>domains-add.sh</code> and we pass it as parameters the name of the
+container that actually serves the domain and the name of the
+domain. A container can also serve more than one domain, like <i>ws2</i>
+which is serving the domains <code>site2.example.org</code> and
+<code>site3.example.org</code> (it can do it using the name-based virtual hosting
+of apache2, for example).
+</p>
+
+<p>
+Now all the websites are served from the same server, but they are
+isolated from each-other using docker containers, which make an
+efficient usage of the server resources and are easy to maintain.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline7" class="outline-2">
+<h2 id="orgheadline7"><span class="section-number-2">7</span> WSProxy: Serving a Remote Domain Through an SSH-Tunnel</h2>
+<div class="outline-text-2" id="text-7">
+<p>
+The web server proxy can also serve a domain that is installed on an
+other machine. For example, let's say that the domain
+<i>site4.example.org</i> is installed on another hosting server, which does
+not have a public IP. Then we can use this command to tell <i>wsproxy</i>
+to serve this domain as well:
+</p>
+<pre class="example">
+wsproxy/sshtunnel-add.sh site4.example.org
+</pre>
+
+<p>
+This command will adjust the configuration of <i>wsproxy</i> to serve this
+domain and it will also create the script
+<code>sshtunnel-keys/site4.example.org.sh</code>.  The script
+<code>site4.example.org.sh</code> should be transferred to the server where this
+domain is hosted and executed there. Once it is executed for the first
+time, it will set up the remote server to connect to <i>wsproxy</i> and
+establish a ssh tunnel.  The web server proxy can use this tunnel to
+forward http(s) requests to the webserver. The scripts that are
+installed on the webserver try also to test periodically the
+established ssh tunnel and to re-establish it if broken.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline8" class="outline-2">
+<h2 id="orgheadline8"><span class="section-number-2">8</span> WSProxy: Managing the HTTPS Certificates</h2>
+<div class="outline-text-2" id="text-8">
+<p>
+The scripts of <i>wsproxy</i> can also obtain free SSL certificates from letsencrypt
+for the managed domains. It is as simple as this:
+</p>
+<pre class="example">
+wsproxy/get-ssl-cert.sh user@gmail.com site1.example.org --test
+wsproxy/get-ssl-cert.sh user@gmail.com site1.example.org
+wsproxy/get-ssl-cert.sh user@gmail.com site2.example.org site3.example.org -t
+wsproxy/get-ssl-cert.sh user@gmail.com site2.example.org site3.example.org
+</pre>
+
+<p>
+In the first command we run the script in testing mode, to make sure
+that everything works as expected. Then we remove the testing option
+and get the certificate for the domain <i>site1.example.org</i>. The last
+two commands are the same, but it shows that we can actually use the
+same certificate for several domains. The email provided is that of
+the maintainer of <i>wsproxy</i>. When the certificates are about to
+expire, letsencrypt will send a warning to this email address so that
+the certificates are renewed in time. However the script
+<code>get-ssl-cert.sh</code> takes care to set up automatic renewal of the
+certificates, so normally no manual intervention is needed in order to
+renew them, unless something is wrong.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline9" class="outline-2">
+<h2 id="orgheadline9"><span class="section-number-2">9</span> Case Study 1: Installing Moodle</h2>
+<div class="outline-text-2" id="text-9">
+<p>
+Moodle is a powerful learning platform that can be useful for
+universities and schools. It is not difficult to install it on a web
+server, however I have built some scripts for installing it in a
+Docker container, which make its installation and configuration even
+easier. They can be used like this:
+</p>
+<pre class="example">
+mkdir -p /opt/src/
+cd /opt/src/
+git clone https://github.com/docker-build/moodle
+
+mkdir -p /opt/workdir/moodle1.example.org
+cd /opt/workdir/moodle1.example.org/
+
+ln -s /opt/src/moodle .
+cp moodle/utils/settings.sh .
+vim settings.sh
+
+moodle/docker/build.sh
+moodle/docker/create.sh
+moodle/docker/start.sh
+moodle/config.sh
+</pre>
+
+<p>
+First we get the code of the scripts from GitHub and save it on
+<code>/opt/src/moodle</code>. Then we create a new directory for managing the
+container, called <code>/opt/workdir/moodle1.example.org</code> and link the
+source directory inside it. Then we copy and tweek the file
+<code>settings.sh</code>.  Then we build the docker image, create the docker
+container and start and configure it.
+</p>
+
+<p>
+The file <code>settings.sh</code> should look like this:
+</p>
+<pre class="example">
+### Docker settings.
+IMAGE=moodle
+CONTAINER=moodle1-example-org
+#PORT_HTTP=80
+#PORT_HTTPS=443
+#PORT_SSH=2222
+
+DOMAIN="moodle1.example.org"
+[ . . . . . ]
+</pre>
+
+<p>
+Notice that the http ports are commented out, so that the container
+does not expose them. If this was a standalone installation then
+normally we would expose these ports. However we are running
+<i>moodle1-example-org</i> behind the <i>wsproxy</i>, so the http requests
+should come from <i>wsproxy</i>. To tell <i>wsproxy</i> to forward the http
+requests for this domain to the right container, we use these
+commands:
+</p>
+<pre class="example">
+cd /opt/workdir/wsproxy1/
+wsproxy/domains-add.sh moodle1-example-org moodle1.example.org
+</pre>
+
+<p>
+And while we are here, we also tell <i>wsproxy</i> to get and manage
+a free "letsencrypt" SSL certificate for this domain:
+</p>
+<pre class="example">
+wsproxy/get-ssl-cert.sh user@gmail.com moodle1.example.org -t
+wsproxy/get-ssl-cert.sh user@gmail.com moodle1.example.org
+</pre>
+
+<p>
+The installation/configuration is as easy as that, and now we can open
+in browser <a href="https://moodle1.example.org/">https://moodle1.example.org/</a>
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline10" class="outline-2">
+<h2 id="orgheadline10"><span class="section-number-2">10</span> Case Study 2: Installing ShellInBox</h2>
+<div class="outline-text-2" id="text-10">
+<p>
+This is a tool that allows shell access to a server using a browser as
+a terminal.  I use it to provide a shell access to my Linux students,
+so that they can try the commands, do the homeworks, etc. Installing
+it in a docker container is very easy and similar to the installation
+of Moodle:
+</p>
+<pre class="example">
+mkdir -p /opt/src/
+cd /opt/src/
+git clone https://github.com/docker-build/shellinabox
+
+mkdir -p /opt/workdir/shell1.example.org
+cd /opt/workdir/shell1.example.org
+ln -s /opt/src/shellinabox .
+
+cp shellinabox/utils/settings.sh .
+vim settings.sh
+cp shellinabox/utils/accounts.txt .
+vim accounts.txt
+
+shellinabox/docker/build.sh
+shellinabox/docker/create.sh
+shellinabox/docker/start.sh
+shellinabox/config.sh
+</pre>
+
+<p>
+The file <code>settings.sh</code> should look like this:
+</p>
+<pre class="example">
+### Docker settings.
+IMAGE=shellinabox
+CONTAINER=shell1-example-org
+PORT=
+</pre>
+<p>
+Again, we leave the port empty because we don't any ports to be
+exposed by the container, since it is running behind the <i>wsproxy</i>.
+To let <i>wsproxy</i> know about handling this domain we use these
+commands:
+</p>
+<pre class="example">
+cd /opt/workdir/wsproxy1/
+wsproxy/domains-add.sh shell1-example-org shell1.example.org
+
+wsproxy/get-ssl-cert.sh user@gmail.com shell1.example.org -t
+wsproxy/get-ssl-cert.sh user@gmail.com shell1.example.org
+</pre>
+
+<p>
+And now we can open in browser: <a href="https://shell1.example.org/">https://shell1.example.org/</a>
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline11" class="outline-2">
+<h2 id="orgheadline11"><span class="section-number-2">11</span> Case Study 3: Installing SchoolTool</h2>
+<div class="outline-text-2" id="text-11">
+<p>
+SchoolTool is a web based student information system. Installing it is
+quite easy and similar to the applications that we have seen above:
+</p>
+<pre class="example">
+mkdir -p /opt/src/
+cd /opt/src/
+git clone https://github.com/docker-build/SchoolTool
+
+mkdir -p /opt/workdir/school1.example.org
+cd /opt/workdir/school1.example.org/
+ln -s /opt/src/SchoolTool .
+
+cp SchoolTool/utils/settings.sh .
+vim settings.sh
+
+SchoolTool/docker/build.sh
+SchoolTool/docker/create.sh
+SchoolTool/docker/start.sh
+SchoolTool/config.sh
+</pre>
+
+<p>
+The configuration file <code>settings.sh</code> looks like this:
+</p>
+<pre class="example">
+### docker image and container
+IMAGE=schooltool
+CONTAINER=school1-example-org
+PORTS=
+
+### domain of the site
+DOMAIN="school1.example.org"
+[ . . . . . ]
+</pre>
+<p>
+Here again we leave the PORTS empty because we don't want the
+container to expose the http ports. To let <i>wsproxy</i> know about
+handling this domain we use these commands:
+</p>
+<pre class="example">
+cd /opt/workdir/wsproxy1/
+wsproxy/domains-add.sh school1-example-org school1.example.org
+
+wsproxy/get-ssl-cert.sh user@gmail.com school1.example.org -t
+wsproxy/get-ssl-cert.sh user@gmail.com school1.example.org
+</pre>
+
+<p>
+The latest stable version of SchoolTool depends on <i>ubuntu-14.04</i>,
+while the rest of the applications that we have seen depend on
+<i>ubuntu-16.04</i>.  This makes it impossible to install it on the same
+server with the others, unless virtual machines or Docker are
+used. This illustrates again the advantage of using <i>wsproxy</i> and
+docker containers for installing all the applications on the same
+server.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline12" class="outline-2">
+<h2 id="orgheadline12"><span class="section-number-2">12</span> Managing Your Own Domain Name Server</h2>
+<div class="outline-text-2" id="text-12">
+<p>
+The sites or webapps that we have installed on our server each one has
+its own domain or subdomain. Nowadays domains and subdomains are
+managed by service providers and everything is done from a nice web
+interface. However we will see in this section that it is not
+difficult to manage our domains with our server. But of course you
+need to know first some basic concepts about how DNS works.
+</p>
+
+<p>
+I have also built some scripts that make it even easier. These scripts
+install <b>bind9</b> inside a docker container and configure it as a
+<b>hidden</b>, <b>master</b>, <b>authoritative-only</b> DNS server.
+</p>
+
+<p>
+<b>Hidden</b> means that it stays behind a firewall, not accessible from
+the outside world. <b>Master</b> or <b>primary</b> means that it is a primary
+source of information for the domains that it provides. There are also
+<b>slave/secondary</b> DNS servers, which get the information of the
+domains that they cover from other (master/primary) servers. If we
+update the domain on a master server, the slaves will synchronize with
+it automatically after a certain time.
+</p>
+
+<p>
+<b>Authoritative-only</b> means that the server will just give answers for
+the domains that it masters, and nothing else. DNS servers can
+possibly do several things, for example give answers to DNS requests
+from clients, both for the domains that they are responsible for and
+for other domains. If they don’t know the answer, they get it from the
+Internet, fetch it to the client and then cache it for future
+requests. However this server does not do any of these things. It just
+answers for its own domains.
+</p>
+
+<p>
+But there is a catch here: if the server stays behind the firewall,
+hidden from the world and does not accept any requests from clients,
+where should the clients send queries about our domain? The answer is
+that they will query some slave/secondary DNS servers which are
+synchronized with our server. Fortunately there are lots of free
+secondary DNS services out there:
+<a href="http://networking.ringofsaturn.com/Unix/freednsservers.php">http://networking.ringofsaturn.com/Unix/freednsservers.php</a>
+</p>
+
+<p>
+Before continuing with the rest of installation/configuration,
+register your domain(s) on two or more secondary servers.  For example
+I have used <i>puck.nether.net</i> and <i>buddyns.com</i>.
+</p>
+
+<p>
+Next get the scripts:
+</p>
+<pre class="example">
+cd /opt/workdir/
+git clone https://github.com/docker-build/bind9
+cd bind9/
+</pre>
+
+<p>
+Then modify <code>config/etc/bind/named.conf.local</code> to look like this:
+</p>
+<pre class="example">
+zone "example.org" {
+        type master;
+        also-notify {
+                173.244.206.26;     # a.transfer.buddyns.com
+                88.198.106.11;      # b.transfer.buddyns.com
+                204.42.254.5;       # puck.nether.net
+        };
+        file "/var/cache/bind/db.example.org";
+};
+</pre>
+<p>
+Of course, you can use some slave DNS servers different from
+<i>buddyns.com</i> and <i>puck.nether.net</i> (and the corresponding IPs). Fix
+the IPs of the slave DNS servers also on
+<code>config/etc/bind/named.conf.options</code> and on <code>ufw.sh</code>.
+</p>
+
+<p>
+Now create a file like <code>config/var/cache/bind/db.example.org</code> with a
+content like this:
+#+begin_example
+; example.org
+$TTL    24h
+$ORIGIN example.org.
+@       1D      IN      SOA     ns1.example.org.    admin.example.org. (
+                                        2017063001 ; serial
+                                        3H ; refresh
+                                        15m ; retry
+                                        1w ; expire
+                                        2h ; minimum
+                                )
+                IN      NS              b.ns.buddyns.com.
+                IN      NS              c.ns.buddyns.com.
+                IN      NS              puck.nether.net.
+</p>
+
+<p>
+IN      MX      10      aspmx.l.google.com.
+</p>
+
+<p>
+; server host definitions
+ns1.example.org.  IN  A                 12.345.67.89
+@               IN      A               12.345.67.89
+</p>
+
+<p>
+; point to the server any subdomain
+</p>
+</div>
+</div>
+<div id="outline-container-orgheadline13" class="outline-2">
+<h2 id="orgheadline13"><span class="section-number-2">13</span> IN      A               12.345.67.89</h2>
+<div class="outline-text-2" id="text-13">
+<p>
+mail            IN      CNAME           ghs.google.com.
+#+end_example
+</p>
+
+<p>
+You can see that only the secondary servers are listed as nameservers
+for our domain. So, when clients have any questions about our domain,
+they go and ask them, not our server (which is behind a firewall and
+cannot be reached). Also don’t forget to change the serial number whenever
+this file is modified, otherwise the changes may not be noticed and
+propagated on the Internet.
+</p>
+
+<p>
+For managing another domain, we should add another zone at
+<code>config/etc/bind/named.conf.local</code> and another db file at
+<code>config/var/cache/bind/</code>.
+</p>
+
+<p>
+Once we are done with the config files, we can give <code>./build.sh</code> and
+<code>./run.sh</code> and the <i>bind9</i> container will be up and running. In case
+that configuration files need to be changed, update them and rebuild
+the container by running: <code>./rm.sh &amp;&amp; ./build.sh &amp;&amp; ./run.sh</code>
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline14" class="outline-2">
+<h2 id="orgheadline14"><span class="section-number-2">14</span> Conclusion</h2>
+<div class="outline-text-2" id="text-14">
+<p>
+We have seen that it is quite possible to install several websites,
+webapps etc. in the same server. Using Docker makes it more efficient,
+more robust and easier to install and maintain them. This is due to
+the nice features of Docker, like having a small overhead, sharing
+resources, flexibility in configuration, being scriptable etc. We have
+also seen that using a bunch of small shell scripts with Docker goes a
+long way towards making the installation and maintenance of such a
+server very easy.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline15" class="outline-2">
+<h2 id="orgheadline15"><span class="section-number-2">15</span> Future Work</h2>
+<div class="outline-text-2" id="text-15">
+<ul class="org-ul">
+<li>Improving the docker scripts that are used to install and manage web
+applications mentioned in this article (Moodle, SchoolTool,
+Shellinabox, etc.)</li>
+<li>Developing docker scripts for more applications that can be useful
+for schools, universities, organizations, institutions, small
+businesses, etc.</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline16" class="outline-2">
+<h2 id="orgheadline16"><span class="section-number-2">16</span> References</h2>
+<div class="outline-text-2" id="text-16">
+<ul class="org-ul">
+<li><a href="https://docs.docker.com/">https://docs.docker.com/</a></li>
+<li><a href="https://github.com/docker-build/wsproxy">https://github.com/docker-build/wsproxy</a></li>
+<li><a href="https://letsencrypt.org/docs/">https://letsencrypt.org/docs/</a></li>
+<li><a href="https://docs.moodle.org/">https://docs.moodle.org/</a></li>
+<li><a href="http://schooltool.org/">http://schooltool.org/</a></li>
+<li><a href="https://www.tecmint.com/shell-in-a-box-a-web-based-ssh-terminal-to-access-remote-linux-servers/">https://www.tecmint.com/shell-in-a-box-a-web-based-ssh-terminal-to-access-remote-linux-servers/</a></li>
+<li><a href="https://blog.lundscape.com/2009/05/configure-a-reverse-proxy-with-apache/">https://blog.lundscape.com/2009/05/configure-a-reverse-proxy-with-apache/</a></li>
+<li><a href="http://blogs.adobe.com/cguerrero/2010/10/27/configuring-a-reverse-proxy-with-apache-that-handles-https-connections/">http://blogs.adobe.com/cguerrero/2010/10/27/configuring-a-reverse-proxy-with-apache-that-handles-https-connections/</a></li>
+<li><a href="https://help.ubuntu.com/lts/serverguide/dns-configuration.html">https://help.ubuntu.com/lts/serverguide/dns-configuration.html</a></li>
+<li><a href="http://wernerstrydom.com/2013/02/23/configuring-ubuntu-server-12-04-as-dns-server/">http://wernerstrydom.com/2013/02/23/configuring-ubuntu-server-12-04-as-dns-server/</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Date: 2017-05-25</p>
+<p class="author">Author: Dashamir Hoxha</p>
+<p class="date">Created: 2017-06-02 Fri 14:06</p>
+<p class="validation"></p>
+</div>
+</body>
+</html>
