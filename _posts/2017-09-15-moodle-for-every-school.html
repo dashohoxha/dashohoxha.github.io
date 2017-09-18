@@ -1,0 +1,517 @@
+---
+layout:     post
+title:      Moodle For Every School
+date:       2017-09-15
+
+summary: Moodle is a well known and mature LMS (Learning Management System)
+    that is used widely throughout the world. There are several ways for
+    installing and maintaining Moodle and we will see some of them.  Then
+    we will present some shell scripts that facilitate the installation
+    and maintenance of Moodle. We will see that they are simpler and
+    more cost effective than the other available solutions.
+
+tags:       moodle docker server bash scripting
+---
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2017-09-18 Mon 07:58 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="viewport" content="width=device-width, initial-scale=1" />
+<title>Moodle For Every School</title>
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Dashamir Hoxha" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Moodle For Every School</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgheadline1">1. Abstract</a></li>
+<li><a href="#orgheadline2">2. Introduction</a></li>
+<li><a href="#orgheadline3">3. Installing Moodle</a></li>
+<li><a href="#orgheadline4">4. Moodle as a Service</a></li>
+<li><a href="#orgheadline11">5. Installing Your Own Moodle in Cloud</a>
+<ul>
+<li><a href="#orgheadline5">5.1. Get a VPS in cloud</a></li>
+<li><a href="#orgheadline6">5.2. Install Docker</a></li>
+<li><a href="#orgheadline7">5.3. Install DockerScripts</a></li>
+<li><a href="#orgheadline8">5.4. Install WSProxy</a></li>
+<li><a href="#orgheadline9">5.5. Install Moodle</a></li>
+<li><a href="#orgheadline10">5.6. Moodle maintenance</a></li>
+</ul>
+</li>
+<li><a href="#orgheadline12">6. Summary</a></li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline1" class="outline-2">
+<h2 id="orgheadline1"><span class="section-number-2">1</span> Abstract</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Moodle is a well known and mature LMS (Learning Management System)
+that is used widely throughout the world. There are several ways for
+installing and maintaining Moodle and we will see some of them.  Then
+we will present some shell scripts that facilitate the installation
+and maintenance of Moodle. We will see that they are simpler and more
+cost effective than the other available solutions.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline2" class="outline-2">
+<h2 id="orgheadline2"><span class="section-number-2">2</span> Introduction</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+The benefits of using Moodle to support the educational process are
+obvious. The best of all, Moodle is free and open source. However this
+does not mean that using Moodle does not have any costs at all. These
+costs are mainly related to the server where Moodle is installed, but
+also to the IT expert that has to install and maintain it. Moodle is a
+fairly complex application and it needs an experienced administrator
+to install and manage it properly. Not all the schools (or even small
+universities) can afford to have their own server(s) and an
+experienced systems administrator in their staff.
+</p>
+
+<p>
+A solution to this problem is to purchase online Moodle services
+(Software As A Service). This takes away the need for having your own
+servers and your own system administrator. But this also has its own
+costs which sometimes may be even higher than maintaining your own
+Moodle server.
+</p>
+
+<p>
+In this article I will present a set of shell scripts that facilitate
+the installation and maintenance of Moodle, up to the point that even
+novice administrators can manage it easily. However making things easy
+is quite difficult, so these scripts depend on cutting edge
+technologies in current server administration, like Docker, cloud
+services, etc. The end result is that every school or university
+should be able to install and use its own Moodle server quite easily.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline3" class="outline-2">
+<h2 id="orgheadline3"><span class="section-number-2">3</span> Installing Moodle</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+Moodle can be installed in Windows and different Linux distributions
+(like Debian, Ubuntu, RedHat, FreeBSD). The server can be a physical
+one, a virtual machine (VirtualBox/VMWare), or a VPS in the cloud. A
+normal Moodle installation needs a server that has at least 1GB RAM
+and about 10GB HDD. The steps of installation include:
+</p>
+<ul class="org-ul">
+<li>Installing the server itself (the operating system).</li>
+<li>Installing Apache, PHP and MySQL (or an alternative webserver and DB).</li>
+<li>Downloading the code of Moodle and putting it in the right place.</li>
+<li>Creating a directory for the moodle data.</li>
+<li>Creating an empty database.</li>
+<li>Starting the installation from the browser and following the
+step-by-step instructions.</li>
+<li>Installing any additional modules or themes, configuration of the
+site, etc.</li>
+</ul>
+
+<p>
+These documents have more details about installing Moodle:
+</p>
+<ul class="org-ul">
+<li><a href="https://docs.moodle.org/33/en/Installing_Moodle">https://docs.moodle.org/33/en/Installing_Moodle</a></li>
+<li><a href="https://docs.moodle.org/33/en/Step-by-step_Installation_Guide_for_Ubuntu">https://docs.moodle.org/33/en/Step-by-step_Installation_Guide_for_Ubuntu</a></li>
+<li><a href="https://docs.moodle.org/33/en/Complete_install_packages_for_Windows">https://docs.moodle.org/33/en/Complete_install_packages_for_Windows</a></li>
+<li><a href="https://www.digitalocean.com/community/tutorials/how-to-install-moodle-on-ubuntu-16-04">https://www.digitalocean.com/community/tutorials/how-to-install-moodle-on-ubuntu-16-04</a></li>
+</ul>
+
+<p>
+Overall, it is a long and tedious process even for experienced
+sysadmins that are familiar with such installations. Then you also
+need to take care for keeping the operating system up to date,
+updating/upgrading the Moodle itself, making backups of the data,
+fixing any problems, etc.
+</p>
+
+<p>
+<b>Note:</b> You can also contact/contract any Moodle experts to do the job
+for you, especially if you need to customize Moodle. Here is a list of
+Moodle Partners: <a href="https://moodle.com/partners/">https://moodle.com/partners/</a>. But this also has its
+own costs, and it depends on what you need them to do for you.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline4" class="outline-2">
+<h2 id="orgheadline4"><span class="section-number-2">4</span> Moodle as a Service</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+Fortunately there are online services that take care of Moodle
+installation and hosting for you, so that you can focus on managing
+your courses. In this case you don't have to pay for a server and you
+don't have to pay for any IT experts to install and maintain it. You
+only have to pay for the service (for using Moodle). Usually this
+results in less expenses and improved quality.
+</p>
+
+<p>
+There are lots of online services that offer Moodle as a service:
+</p>
+<ul class="org-ul">
+<li><a href="https://moodlecloud.com/en/">https://moodlecloud.com/en/</a></li>
+<li><a href="https://www.lonex.com/content-management-system/moodle-hosting/">https://www.lonex.com/content-management-system/moodle-hosting/</a></li>
+<li><a href="https://www.squirrelhosting.co.uk/hosting/moodle-hosting-uk.php">https://www.squirrelhosting.co.uk/hosting/moodle-hosting-uk.php</a></li>
+<li><a href="https://www.fastcomet.com/moodle-cloud-hosting">https://www.fastcomet.com/moodle-cloud-hosting</a></li>
+<li><a href="https://www.lambdasolutions.net/services/managed-moodle-hosting/">https://www.lambdasolutions.net/services/managed-moodle-hosting/</a></li>
+<li><a href="https://www.mojomarketplace.com/install/moodle">https://www.mojomarketplace.com/install/moodle</a></li>
+<li><a href="http://installatron.com/moodle">http://installatron.com/moodle</a></li>
+<li><a href="https://hostpapasupport.com/how-to-install-moodle/">https://hostpapasupport.com/how-to-install-moodle/</a></li>
+<li><a href="https://www.siteground.com/lms-hosting.htm">https://www.siteground.com/lms-hosting.htm</a></li>
+<li><a href="http://www.inmotionhosting.com/support/edu/moodle/new-to-moodle/install-moodle-softaculous">http://www.inmotionhosting.com/support/edu/moodle/new-to-moodle/install-moodle-softaculous</a></li>
+<li><a href="https://www.servercake.blog/install-moodle-through-softaculous-on-cpanel/">https://www.servercake.blog/install-moodle-through-softaculous-on-cpanel/</a></li>
+<li><a href="https://bitnami.com/stack/moodle/cloud">https://bitnami.com/stack/moodle/cloud</a></li>
+<li>etc. etc.</li>
+</ul>
+
+<p>
+Usually the installation is done from a web interface (like cPanel,
+ISPmanager, DirectAdmin, Plesk), with the so called "1-click
+installation" process. In this process you enter a few settings in a
+web form, like the admin password, email address etc. and then
+installation, configuration and everything else is done automatically.
+This is made possible by software like Softaculous, Fantastico,
+Installatron, etc.
+</p>
+
+<p>
+However these Moodle services may also have some limitations in
+features, number of users, bandwidth, etc. For example it may allow
+up to 100 users. When you need to increase these limits the price also
+gets higher, and sometimes it may become quite expensive.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline11" class="outline-2">
+<h2 id="orgheadline11"><span class="section-number-2">5</span> Installing Your Own Moodle in Cloud</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+Another alternative is to install Moodle in a VPS in cloud, using
+Docker and shell scripts. Docker is a tool that allows us to create
+and manage virtual machines. However the virtual machines created by
+Docker are lightweight and they use much less resources than the
+traditional virtual machines.
+</p>
+</div>
+
+
+<div id="outline-container-orgheadline5" class="outline-3">
+<h3 id="orgheadline5"><span class="section-number-3">5.1</span> Get a VPS in cloud</h3>
+<div class="outline-text-3" id="text-5-1">
+<p>
+The first step is to get a VPS in cloud. There are lots of companies
+that offer cheap VPS in cloud, like GoogleCloud, AmazonCloud, Linode,
+DigitalOcean, AlibabaCloud etc. I have tried GoogleCloud with a VPS of
+1.7GB RAM and 10GB HDD, with Ubuntu Server 16.04 (LTS). It costs about
+15$/month.  For more details about the costs see:
+<a href="https://cloud.google.com/products/calculator/">https://cloud.google.com/products/calculator/</a>
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline6" class="outline-3">
+<h3 id="orgheadline6"><span class="section-number-3">5.2</span> Install Docker</h3>
+<div class="outline-text-3" id="text-5-2">
+<p>
+The steps for installing Docker are detailed here:
+<a href="https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/#install-using-the-repository">https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/#install-using-the-repository</a>
+</p>
+
+<pre class="example">
+apt-get update
+apt-get install \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
+apt-get update
+apt-get install docker-ce
+systemctl enable docker
+docker run hello-world
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgheadline7" class="outline-3">
+<h3 id="orgheadline7"><span class="section-number-3">5.3</span> Install DockerScripts</h3>
+<div class="outline-text-3" id="text-5-3">
+<p>
+DockerScripts is a shell script framework for Docker. It can be
+installed with the steps listed here:
+<a href="https://github.com/docker-scripts/ds#installation">https://github.com/docker-scripts/ds#installation</a>
+</p>
+
+<pre class="example">
+apt-get install git
+git clone https://github.com/docker-scripts/ds /opt/docker-scripts/ds
+cd /opt/docker-scripts/ds/
+make install
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgheadline8" class="outline-3">
+<h3 id="orgheadline8"><span class="section-number-3">5.4</span> Install WSProxy</h3>
+<div class="outline-text-3" id="text-5-4">
+<p>
+WebServer Proxy is a Docker container that allows name-based virtual
+hosting for other webserver containers. It also takes care of SSL
+certificates for the domains that it manages. The steps for installing
+it are listed here:
+<a href="https://github.com/docker-scripts/wsproxy#installation">https://github.com/docker-scripts/wsproxy#installation</a>
+</p>
+
+<pre class="example">
+ds pull wsproxy
+ds init wsproxy @wsproxy
+cd /var/ds/wsproxy/
+vim settings.sh
+ds make
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgheadline9" class="outline-3">
+<h3 id="orgheadline9"><span class="section-number-3">5.5</span> Install Moodle</h3>
+<div class="outline-text-3" id="text-5-5">
+<p>
+The steps to install and run Moodle in a container are listed here:
+<a href="https://github.com/docker-scripts/moodle#install">https://github.com/docker-scripts/moodle#install</a>
+</p>
+
+<pre class="example">
+ds pull moodle
+ds init moodle @moodle1-example-org
+cd /var/ds/moodle1-example-org/
+vim settings.sh
+ds make
+</pre>
+
+<p>
+If the domain is a real one, tell <b>wsproxy</b> to get a free
+letsencrypt.org SSL certificate for it:
+</p>
+<pre class="example">
+ds wsproxy ssl-cert --test
+ds wsproxy ssl-cert
+</pre>
+
+<p>
+Otherwise add to <code>/etc/hosts</code> the line:
+</p>
+<pre class="example">
+127.0.0.1 moodle1.example.org
+</pre>
+
+<p>
+Now you can access the website at: <a href="https://moodle1.example.org/">https://moodle1.example.org/</a>
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline10" class="outline-3">
+<h3 id="orgheadline10"><span class="section-number-3">5.6</span> Moodle maintenance</h3>
+<div class="outline-text-3" id="text-5-6">
+<p>
+There are also some scripts/commands for maintenance, like:
+</p>
+<pre class="example">
+ds backup
+ds restore
+ds upgrade
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-orgheadline12" class="outline-2">
+<h2 id="orgheadline12"><span class="section-number-2">6</span> Summary</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+Installing Moodle in your VPS, using the DockerScripts framework, is
+much easier than installing it manually. It makes it possible even for
+novice administrators to install and maintain a Moodle server.
+</p>
+
+<p>
+It is as well much cheaper than outsourcing this job to external
+Moodle experts, and also cheaper than purchasing Moodle hosting.
+</p>
+
+<p>
+Besides these, it is also a flexible and customizable solution that
+can be adopted to fit the needs of everyone.
+</p>
+
+<p>
+As a result, it helps to making Moodle available for every school.
+</p>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Date: 2017-09-15</p>
+<p class="author">Author: Dashamir Hoxha</p>
+<p class="date">Created: 2017-09-18 Mon 07:58</p>
+<p class="validation"></p>
+</div>
+</body>
+</html>

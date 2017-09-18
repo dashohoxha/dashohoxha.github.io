@@ -1,0 +1,256 @@
+#+TITLE:     Moodle For Every School
+#+AUTHOR:    Dashamir Hoxha
+#+EMAIL:     dashohoxha@gmail.com
+#+DATE:      2017-09-15
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+# #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
+#+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
+#+begin_html
+---
+layout:     post
+title:      Moodle For Every School
+date:       2017-09-15
+
+summary: Moodle is a well known and mature LMS (Learning Management System)
+    that is used widely throughout the world. There are several ways for
+    installing and maintaining Moodle and we will see some of them.  Then
+    we will present some shell scripts that facilitate the installation
+    and maintenance of Moodle. We will see that they are simpler and
+    more cost effective than the other available solutions.
+
+tags:       moodle docker server bash scripting
+---
+#+end_html
+
+
+* Abstract
+
+Moodle is a well known and mature LMS (Learning Management System)
+that is used widely throughout the world. There are several ways for
+installing and maintaining Moodle and we will see some of them.  Then
+we will present some shell scripts that facilitate the installation
+and maintenance of Moodle. We will see that they are simpler and more
+cost effective than the other available solutions.
+
+
+* Introduction
+
+The benefits of using Moodle to support the educational process are
+obvious. The best of all, Moodle is free and open source. However this
+does not mean that using Moodle does not have any costs at all. These
+costs are mainly related to the server where Moodle is installed, but
+also to the IT expert that has to install and maintain it. Moodle is a
+fairly complex application and it needs an experienced administrator
+to install and manage it properly. Not all the schools (or even small
+universities) can afford to have their own server(s) and an
+experienced systems administrator in their staff.
+
+A solution to this problem is to purchase online Moodle services
+(Software As A Service). This takes away the need for having your own
+servers and your own system administrator. But this also has its own
+costs which sometimes may be even higher than maintaining your own
+Moodle server.
+
+In this article I will present a set of shell scripts that facilitate
+the installation and maintenance of Moodle, up to the point that even
+novice administrators can manage it easily. However making things easy
+is quite difficult, so these scripts depend on cutting edge
+technologies in current server administration, like Docker, cloud
+services, etc. The end result is that every school or university
+should be able to install and use its own Moodle server quite easily.
+
+
+* Installing Moodle
+
+Moodle can be installed in Windows and different Linux distributions
+(like Debian, Ubuntu, RedHat, FreeBSD). The server can be a physical
+one, a virtual machine (VirtualBox/VMWare), or a VPS in the cloud. A
+normal Moodle installation needs a server that has at least 1GB RAM
+and about 10GB HDD. The steps of installation include:
+ - Installing the server itself (the operating system).
+ - Installing Apache, PHP and MySQL (or an alternative webserver and DB).
+ - Downloading the code of Moodle and putting it in the right place.
+ - Creating a directory for the moodle data.
+ - Creating an empty database.
+ - Starting the installation from the browser and following the
+   step-by-step instructions.
+ - Installing any additional modules or themes, configuration of the
+   site, etc.
+
+These documents have more details about installing Moodle:
+ - https://docs.moodle.org/33/en/Installing_Moodle
+ - https://docs.moodle.org/33/en/Step-by-step_Installation_Guide_for_Ubuntu
+ - https://docs.moodle.org/33/en/Complete_install_packages_for_Windows
+ - https://www.digitalocean.com/community/tutorials/how-to-install-moodle-on-ubuntu-16-04
+
+Overall, it is a long and tedious process even for experienced
+sysadmins that are familiar with such installations. Then you also
+need to take care for keeping the operating system up to date,
+updating/upgrading the Moodle itself, making backups of the data,
+fixing any problems, etc.
+
+*Note:* You can also contact/contract any Moodle experts to do the job
+for you, especially if you need to customize Moodle. Here is a list of
+Moodle Partners: https://moodle.com/partners/. But this also has its
+own costs, and it depends on what you need them to do for you.
+
+
+* Moodle as a Service
+
+Fortunately there are online services that take care of Moodle
+installation and hosting for you, so that you can focus on managing
+your courses. In this case you don't have to pay for a server and you
+don't have to pay for any IT experts to install and maintain it. You
+only have to pay for the service (for using Moodle). Usually this
+results in less expenses and improved quality.
+
+There are lots of online services that offer Moodle as a service:
+ - https://moodlecloud.com/en/
+ - https://www.lonex.com/content-management-system/moodle-hosting/
+ - https://www.squirrelhosting.co.uk/hosting/moodle-hosting-uk.php
+ - https://www.fastcomet.com/moodle-cloud-hosting
+ - https://www.lambdasolutions.net/services/managed-moodle-hosting/
+ - https://www.mojomarketplace.com/install/moodle
+ - http://installatron.com/moodle
+ - https://hostpapasupport.com/how-to-install-moodle/
+ - https://www.siteground.com/lms-hosting.htm
+ - http://www.inmotionhosting.com/support/edu/moodle/new-to-moodle/install-moodle-softaculous
+ - https://www.servercake.blog/install-moodle-through-softaculous-on-cpanel/
+ - https://bitnami.com/stack/moodle/cloud
+ - etc. etc.
+
+Usually the installation is done from a web interface (like cPanel,
+ISPmanager, DirectAdmin, Plesk), with the so called "1-click
+installation" process. In this process you enter a few settings in a
+web form, like the admin password, email address etc. and then
+installation, configuration and everything else is done automatically.
+This is made possible by software like Softaculous, Fantastico,
+Installatron, etc.
+
+However these Moodle services may also have some limitations in
+features, number of users, bandwidth, etc. For example it may allow
+up to 100 users. When you need to increase these limits the price also
+gets higher, and sometimes it may become quite expensive.
+
+
+* Installing Your Own Moodle in Cloud
+
+Another alternative is to install Moodle in a VPS in cloud, using
+Docker and shell scripts. Docker is a tool that allows us to create
+and manage virtual machines. However the virtual machines created by
+Docker are lightweight and they use much less resources than the
+traditional virtual machines.
+
+
+** Get a VPS in cloud
+
+The first step is to get a VPS in cloud. There are lots of companies
+that offer cheap VPS in cloud, like GoogleCloud, AmazonCloud, Linode,
+DigitalOcean, AlibabaCloud etc. I have tried GoogleCloud with a VPS of
+1.7GB RAM and 10GB HDD, with Ubuntu Server 16.04 (LTS). It costs about
+15$/month.  For more details about the costs see:
+https://cloud.google.com/products/calculator/
+
+** Install Docker
+
+The steps for installing Docker are detailed here:
+https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/#install-using-the-repository
+
+#+begin_example
+apt-get update
+apt-get install \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
+apt-get update
+apt-get install docker-ce
+systemctl enable docker
+docker run hello-world
+#+end_example
+
+** Install DockerScripts
+
+DockerScripts is a shell script framework for Docker. It can be
+installed with the steps listed here:
+https://github.com/docker-scripts/ds#installation
+
+#+begin_example
+apt-get install git
+git clone https://github.com/docker-scripts/ds /opt/docker-scripts/ds
+cd /opt/docker-scripts/ds/
+make install
+#+end_example
+
+** Install WSProxy
+
+WebServer Proxy is a Docker container that allows name-based virtual
+hosting for other webserver containers. It also takes care of SSL
+certificates for the domains that it manages. The steps for installing
+it are listed here:
+https://github.com/docker-scripts/wsproxy#installation
+
+#+begin_example
+ds pull wsproxy
+ds init wsproxy @wsproxy
+cd /var/ds/wsproxy/
+vim settings.sh
+ds make
+#+end_example
+
+** Install Moodle
+
+The steps to install and run Moodle in a container are listed here:
+https://github.com/docker-scripts/moodle#install
+
+#+begin_example
+ds pull moodle
+ds init moodle @moodle1-example-org
+cd /var/ds/moodle1-example-org/
+vim settings.sh
+ds make
+#+end_example
+
+If the domain is a real one, tell *wsproxy* to get a free
+letsencrypt.org SSL certificate for it:
+#+begin_example
+ds wsproxy ssl-cert --test
+ds wsproxy ssl-cert
+#+end_example
+
+Otherwise add to ~/etc/hosts~ the line:
+#+begin_example
+127.0.0.1 moodle1.example.org
+#+end_example
+
+Now you can access the website at: https://moodle1.example.org
+
+** Moodle maintenance
+
+There are also some scripts/commands for maintenance, like:
+#+begin_example
+ds backup
+ds restore
+ds upgrade
+#+end_example
+
+
+* Summary
+
+Installing Moodle in your VPS, using the DockerScripts framework, is
+much easier than installing it manually. It makes it possible even for
+novice administrators to install and maintain a Moodle server.
+
+It is as well much cheaper than outsourcing this job to external
+Moodle experts, and also cheaper than purchasing Moodle hosting.
+
+Besides these, it is also a flexible and customizable solution that
+can be adopted to fit the needs of everyone.
+
+As a result, it helps to making Moodle available for every school.
