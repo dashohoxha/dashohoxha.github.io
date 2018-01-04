@@ -14,30 +14,23 @@ tags:       [ltsp ubuntu edubuntu]
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2017-06-01 Thu 08:29 -->
-<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
-<meta  name="viewport" content="width=device-width, initial-scale=1" />
 <title>LTSP Server with Ubuntu 16.04</title>
+<!-- 2018-01-04 Thu 15:14 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Dashamir Hoxha" />
 <style type="text/css">
  <!--/*--><![CDATA[/*><!--*/
-  .title  { text-align: center;
-             margin-bottom: .2em; }
-  .subtitle { text-align: center;
-              font-size: medium;
-              font-weight: bold;
-              margin-top:0; }
+  .title  { text-align: center; }
   .todo   { font-family: monospace; color: red; }
-  .done   { font-family: monospace; color: green; }
-  .priority { font-family: monospace; color: orange; }
+  .done   { color: green; }
   .tag    { background-color: #eee; font-family: monospace;
             padding: 2px; font-size: 80%; font-weight: normal; }
   .timestamp { color: #bebebe; }
   .timestamp-kwd { color: #5f9ea0; }
-  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
-  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
-  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
   .underline { text-decoration: underline; }
   #postamble p, #preamble p { font-size: 90%; margin: .2em; }
   p.verse { margin-left: 3%; }
@@ -76,14 +69,15 @@ tags:       [ltsp ubuntu edubuntu]
   caption.t-above { caption-side: top; }
   caption.t-bottom { caption-side: bottom; }
   td, th { vertical-align:top;  }
-  th.org-right  { text-align: center;  }
-  th.org-left   { text-align: center;   }
-  th.org-center { text-align: center; }
-  td.org-right  { text-align: right;  }
-  td.org-left   { text-align: left;   }
-  td.org-center { text-align: center; }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
   dt { font-weight: bold; }
-  .footpara { display: inline; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
   .footdef  { margin-bottom: 1em; }
   .figure { padding: 1em; }
   .figure p { text-align: center; }
@@ -159,27 +153,27 @@ for the JavaScript code in this tag.
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orgheadline1">1. Introduction</a></li>
-<li><a href="#orgheadline2">2. Preparing the server</a></li>
-<li><a href="#orgheadline7">3. Installing LTSP</a>
+<li><a href="#sec-1">1. Introduction</a></li>
+<li><a href="#sec-2">2. Preparing the server</a></li>
+<li><a href="#sec-3">3. Installing LTSP</a>
 <ul>
-<li><a href="#orgheadline3">3.1. Install packages</a></li>
-<li><a href="#orgheadline4">3.2. Update kernels</a></li>
-<li><a href="#orgheadline5">3.3. Create lts.conf</a></li>
-<li><a href="#orgheadline6">3.4. Configure dnsmasq</a></li>
+<li><a href="#sec-3-1">3.1. Install packages</a></li>
+<li><a href="#sec-3-2">3.2. Update kernels</a></li>
+<li><a href="#sec-3-3">3.3. Create lts.conf</a></li>
+<li><a href="#sec-3-4">3.4. Configure dnsmasq</a></li>
 </ul>
 </li>
-<li><a href="#orgheadline8">4. Creating the client image</a></li>
-<li><a href="#orgheadline9">5. Installing Edubuntu programs</a></li>
-<li><a href="#orgheadline10">6. Installing additional desktops</a></li>
-<li><a href="#orgheadline11">7. Adding more users</a></li>
-<li><a href="#orgheadline12">8. References</a></li>
+<li><a href="#sec-4">4. Creating the client image</a></li>
+<li><a href="#sec-5">5. Installing Edubuntu programs</a></li>
+<li><a href="#sec-6">6. Installing additional desktops</a></li>
+<li><a href="#sec-7">7. Adding more users</a></li>
+<li><a href="#sec-8">8. References</a></li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-orgheadline1" class="outline-2">
-<h2 id="orgheadline1"><span class="section-number-2">1</span> Introduction</h2>
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 LTSP allows computers of a LAN to boot through network from a single
@@ -222,11 +216,11 @@ source of network problems).
 </div>
 
 
-<div id="outline-container-orgheadline2" class="outline-2">
-<h2 id="orgheadline2"><span class="section-number-2">2</span> Preparing the server</h2>
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Preparing the server</h2>
 <div class="outline-text-2" id="text-2">
 <p>
-I started by making a standard installation of Ubuntu 16.04 desktop
+I started by making a standard installation of <a href="https://linuxmint.com/download.php">LinuxMint 18.3 Xfce</a>
 on the server PC, followed by some standard updates/customizations,
 like:
 </p>
@@ -263,26 +257,25 @@ iface enp0s8 inet static
 </div>
 
 
-<div id="outline-container-orgheadline7" class="outline-2">
-<h2 id="orgheadline7"><span class="section-number-2">3</span> Installing LTSP</h2>
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> Installing LTSP</h2>
 <div class="outline-text-2" id="text-3">
-</div><div id="outline-container-orgheadline3" class="outline-3">
-<h3 id="orgheadline3"><span class="section-number-3">3.1</span> Install packages</h3>
+</div><div id="outline-container-sec-3-1" class="outline-3">
+<h3 id="sec-3-1"><span class="section-number-3">3.1</span> Install packages</h3>
 <div class="outline-text-3" id="text-3-1">
 <p>
 I installed the package <code>ltsp-server</code> (not
 <code>ltsp-server-standalone</code>) and the other related packages:
 </p>
 <pre class="example">
-add-apt-repository --yes ppa:ts.sch.gr
-apt-get update
-apt-get --yes --install-recommends install dnsmasq ltsp-server ltsp-client ldm-ubuntu-theme
+apt-get --yes --install-recommends install \
+    dnsmasq ltsp-server ltsp-client ldm-ubuntu-theme
 </pre>
 </div>
 </div>
 
-<div id="outline-container-orgheadline4" class="outline-3">
-<h3 id="orgheadline4"><span class="section-number-3">3.2</span> Update kernels</h3>
+<div id="outline-container-sec-3-2" class="outline-3">
+<h3 id="sec-3-2"><span class="section-number-3">3.2</span> Update kernels</h3>
 <div class="outline-text-3" id="text-3-2">
 <pre class="example">
 echo 'IPAPPEND=3' &gt;&gt; /etc/ltsp/update-kernels.conf
@@ -292,8 +285,8 @@ echo 'IPAPPEND=3' &gt;&gt; /etc/ltsp/update-kernels.conf
 </div>
 
 
-<div id="outline-container-orgheadline5" class="outline-3">
-<h3 id="orgheadline5"><span class="section-number-3">3.3</span> Create lts.conf</h3>
+<div id="outline-container-sec-3-3" class="outline-3">
+<h3 id="sec-3-3"><span class="section-number-3">3.3</span> Create lts.conf</h3>
 <div class="outline-text-3" id="text-3-3">
 <p>
 The command:
@@ -310,8 +303,8 @@ architecture of the server). I did not customize it.
 </div>
 
 
-<div id="outline-container-orgheadline6" class="outline-3">
-<h3 id="orgheadline6"><span class="section-number-3">3.4</span> Configure dnsmasq</h3>
+<div id="outline-container-sec-3-4" class="outline-3">
+<h3 id="sec-3-4"><span class="section-number-3">3.4</span> Configure dnsmasq</h3>
 <div class="outline-text-3" id="text-3-4">
 <p>
 The command:
@@ -330,9 +323,11 @@ I had to fix a few things in it:
 <ul class="org-ul">
 <li>I don't want this server to give IP configuration (DHCP),
 so I commented out this line:
-<b><b>dhcp-range=192.168.67.20,192.168.67.250,8h</b></b></li>
+<b><b>dhcp-range=192.168.67.20,192.168.67.250,8h</b></b>
+</li>
 <li>The line <b><b>port=0</b></b> breaks the name resolution (DNS) in Ubuntu-16.04,
-so I commented it out as well.</li>
+so I commented it out as well.
+</li>
 </ul>
 
 <p>
@@ -355,8 +350,8 @@ same network (for example <code>address 192.168.11.1</code> and
 </div>
 
 
-<div id="outline-container-orgheadline8" class="outline-2">
-<h2 id="orgheadline8"><span class="section-number-2">4</span> Creating the client image</h2>
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> Creating the client image</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 The command:
@@ -369,9 +364,9 @@ generates the client image.  It may take some time.
 </p>
 
 <p>
-When it is finished, then you can start booting clients from the
-network.  This is usually done by pressing F12 when the computer is
-just powered on, but it may be different on different
+When it is finished you can start booting clients from the network.
+This is usually done by pressing F12 when the computer is just
+powered on, but it may be different on different
 computers. Sometimes you may need to enable booting from network on
 the BIOS (it is usually called PXE booting).
 </p>
@@ -379,8 +374,8 @@ the BIOS (it is usually called PXE booting).
 </div>
 
 
-<div id="outline-container-orgheadline9" class="outline-2">
-<h2 id="orgheadline9"><span class="section-number-2">5</span> Installing Edubuntu programs</h2>
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5"><span class="section-number-2">5</span> Installing Edubuntu programs</h2>
 <div class="outline-text-2" id="text-5">
 <p>
 Edubuntu programs can be installed like this:
@@ -393,7 +388,11 @@ apt-get install edubuntu-desktop
 Or like this:
 </p>
 <pre class="example">
-apt-get install ubuntu-edu-preschool ubuntu-edu-primary ubuntu-edu-secondary ubuntu-edu-tertiary
+apt-get install \
+    ubuntu-edu-preschool \
+    ubuntu-edu-primary \
+    ubuntu-edu-secondary \
+    ubuntu-edu-tertiary
 </pre>
 
 <p>
@@ -417,31 +416,30 @@ ltsp-update-image --cleanup /
 </div>
 
 
-<div id="outline-container-orgheadline10" class="outline-2">
-<h2 id="orgheadline10"><span class="section-number-2">6</span> Installing additional desktops</h2>
+<div id="outline-container-sec-6" class="outline-2">
+<h2 id="sec-6"><span class="section-number-2">6</span> Installing additional desktops</h2>
 <div class="outline-text-2" id="text-6">
 <p>
 In Linux we can install several desktops and let the user choose
 which one he prefers.  For example <a href="https://www.tecmint.com/install-mate-desktop-in-ubuntu-fedora/">this article</a> shows how to install
-the MATE desktop, <a href="https://www.tecmint.com/install-xfce-desktop-in-ubuntu-fedora/">this one</a> how to install XFCE, etc. They can also
-be installed by installing the packages <b>xubuntu-desktop</b>,
-<b>lubuntu-desktop</b>, <b>kubuntu-desktop</b> etc. Then you need to update
-the client image again.
+the MATE desktop. They can also be installed by installing the
+packages <b>xubuntu-desktop</b>, <b>lubuntu-desktop</b>, <b>kubuntu-desktop</b> etc. Then
+you need to update the client image again.
 </p>
 
 <p>
-<b>Attention:</b> When you install another desktop, it is possible that
-it may replace the Display Manager (the login window) with another
-one. Make sure that you always keep <b>lightdm</b> as display manager,
-not something else (for example <b>mdm</b>), because the tools that
-automate the configuration of LTSP work well only with <b>lightdm</b>.
+<b>Attention:</b> When you install another desktop, it is possible that it
+may replace the Display Manager (the login window) with another
+one. Make sure that you always keep <b>lightdm</b> as display manager, not
+something else (for example <b>mdm</b>), because somehow it doesn't work
+with <b>mdm.</b>
 </p>
 </div>
 </div>
 
 
-<div id="outline-container-orgheadline11" class="outline-2">
-<h2 id="orgheadline11"><span class="section-number-2">7</span> Adding more users</h2>
+<div id="outline-container-sec-7" class="outline-2">
+<h2 id="sec-7"><span class="section-number-2">7</span> Adding more users</h2>
 <div class="outline-text-2" id="text-7">
 <p>
 All the users of the server can also login from each of the clients.
@@ -453,15 +451,20 @@ users change is saved on the home directories on the server.
 </div>
 
 
-<div id="outline-container-orgheadline12" class="outline-2">
-<h2 id="orgheadline12"><span class="section-number-2">8</span> References</h2>
+<div id="outline-container-sec-8" class="outline-2">
+<h2 id="sec-8"><span class="section-number-2">8</span> References</h2>
 <div class="outline-text-2" id="text-8">
 <ul class="org-ul">
-<li><a href="https://ubuntuforums.org/showthread.php?t=2173749">https://ubuntuforums.org/showthread.php?t=2173749</a></li>
-<li><a href="https://help.ubuntu.com/community/UbuntuLTSP/ltsp-pnp">https://help.ubuntu.com/community/UbuntuLTSP/ltsp-pnp</a></li>
-<li><a href="https://help.ubuntu.com/community/UbuntuLTSP/FatClients">https://help.ubuntu.com/community/UbuntuLTSP/FatClients</a></li>
-<li><a href="https://jonathancarter.org/2010/11/24/how-do-ltsp-fat-clients-work/">https://jonathancarter.org/2010/11/24/how-do-ltsp-fat-clients-work/</a></li>
-<li><a href="http://www.m-opensolutions.com/?p=537">http://www.m-opensolutions.com/?p=537</a></li>
+<li><a href="https://ubuntuforums.org/showthread.php?t=2173749">https://ubuntuforums.org/showthread.php?t=2173749</a>
+</li>
+<li><a href="https://help.ubuntu.com/community/UbuntuLTSP/ltsp-pnp">https://help.ubuntu.com/community/UbuntuLTSP/ltsp-pnp</a>
+</li>
+<li><a href="https://help.ubuntu.com/community/UbuntuLTSP/FatClients">https://help.ubuntu.com/community/UbuntuLTSP/FatClients</a>
+</li>
+<li><a href="https://jonathancarter.org/2010/11/24/how-do-ltsp-fat-clients-work/">https://jonathancarter.org/2010/11/24/how-do-ltsp-fat-clients-work/</a>
+</li>
+<li><a href="http://www.m-opensolutions.com/?p=537">http://www.m-opensolutions.com/?p=537</a>
+</li>
 </ul>
 </div>
 </div>
@@ -469,7 +472,8 @@ users change is saved on the home directories on the server.
 <div id="postamble" class="status">
 <p class="date">Date: 2017-01-07</p>
 <p class="author">Author: Dashamir Hoxha</p>
-<p class="date">Created: 2017-06-01 Thu 08:29</p>
+<p class="date">Created: 2018-01-04 Thu 15:14</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.3.2 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"></p>
 </div>
 </body>

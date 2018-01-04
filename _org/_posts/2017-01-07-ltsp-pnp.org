@@ -53,7 +53,7 @@ tags:       [ltsp ubuntu edubuntu]
 
 * Preparing the server
 
-  I started by making a standard installation of Ubuntu 16.04 desktop
+  I started by making a standard installation of [[https://linuxmint.com/download.php][LinuxMint 18.3 Xfce]]
   on the server PC, followed by some standard updates/customizations,
   like:
   #+begin_example
@@ -91,9 +91,8 @@ tags:       [ltsp ubuntu edubuntu]
    I installed the package =ltsp-server= (not
    =ltsp-server-standalone=) and the other related packages:
    #+begin_example
-   add-apt-repository --yes ppa:ts.sch.gr
-   apt-get update
-   apt-get --yes --install-recommends install dnsmasq ltsp-server ltsp-client ldm-ubuntu-theme
+   apt-get --yes --install-recommends install \
+       dnsmasq ltsp-server ltsp-client ldm-ubuntu-theme
    #+end_example
 
 ** Update kernels
@@ -152,9 +151,9 @@ tags:       [ltsp ubuntu edubuntu]
   #+end_example
   generates the client image.  It may take some time.
 
-  When it is finished, then you can start booting clients from the
-  network.  This is usually done by pressing F12 when the computer is
-  just powered on, but it may be different on different
+  When it is finished you can start booting clients from the network.
+  This is usually done by pressing F12 when the computer is just
+  powered on, but it may be different on different
   computers. Sometimes you may need to enable booting from network on
   the BIOS (it is usually called PXE booting).
 
@@ -168,7 +167,11 @@ tags:       [ltsp ubuntu edubuntu]
 
   Or like this:
   #+begin_example
-  apt-get install ubuntu-edu-preschool ubuntu-edu-primary ubuntu-edu-secondary ubuntu-edu-tertiary
+  apt-get install \
+      ubuntu-edu-preschool \
+      ubuntu-edu-primary \
+      ubuntu-edu-secondary \
+      ubuntu-edu-tertiary
   #+end_example
 
   The first one installs everything about Edubuntu, including the
@@ -190,16 +193,15 @@ tags:       [ltsp ubuntu edubuntu]
 
   In Linux we can install several desktops and let the user choose
   which one he prefers.  For example [[https://www.tecmint.com/install-mate-desktop-in-ubuntu-fedora/][this article]] shows how to install
-  the MATE desktop, [[https://www.tecmint.com/install-xfce-desktop-in-ubuntu-fedora/][this one]] how to install XFCE, etc. They can also
-  be installed by installing the packages *xubuntu-desktop*,
-  *lubuntu-desktop*, *kubuntu-desktop* etc. Then you need to update
-  the client image again.
+  the MATE desktop. They can also be installed by installing the
+  packages *xubuntu-desktop*, *lubuntu-desktop*, *kubuntu-desktop* etc. Then
+  you need to update the client image again.
 
-  *Attention:* When you install another desktop, it is possible that
-  it may replace the Display Manager (the login window) with another
-  one. Make sure that you always keep *lightdm* as display manager,
-  not something else (for example *mdm*), because the tools that
-  automate the configuration of LTSP work well only with *lightdm*.
+  *Attention:* When you install another desktop, it is possible that it
+  may replace the Display Manager (the login window) with another
+  one. Make sure that you always keep *lightdm* as display manager, not
+  something else (for example *mdm*), because somehow it doesn't work
+  with *mdm.*
 
 
 * Adding more users
