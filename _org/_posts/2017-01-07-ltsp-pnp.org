@@ -1,4 +1,4 @@
-#+TITLE:     LTSP Server with Ubuntu 16.04
+#+TITLE:     LTSP Server with LinuxMint 18.3 Xfce
 #+AUTHOR:    Dashamir Hoxha
 #+EMAIL:     dashohoxha@gmail.com
 #+DATE:      2017-01-07
@@ -9,14 +9,14 @@
 #+begin_html
 ---
 layout:     post
-title:      LTSP Server with Ubuntu 16.04
+title:      LTSP Server with LinuxMint 18.3 Xfce
 date:       2017-01-07
 summary:    LTSP allows computers of a LAN to boot through network from a single server.
     One of the benefits of this is for example to cut down the
     administration and maintenance time of a classroom of computers
     (instead of installing, configuring and updating each of them we do it
     only once).
-tags:       [ltsp ubuntu edubuntu]
+tags:       [ltsp linuxmint ubuntu edubuntu]
 ---
 #+end_html
 
@@ -80,8 +80,15 @@ tags:       [ltsp ubuntu edubuntu]
       netmask 255.255.255.0
       gateway 192.168.1.1
       dns-nameservers 8.8.8.8 8.8.4.4
-
   #+end_example
+
+  *Note:* Replace =enp0s8= with the name of your interface that is facing
+  the LAN. You can see the available interfaces and their names with
+  the command =ip addr=. In case that you get the internet connection
+  through another interface, then don't add the lines for =gateway= and
+  =dns-nameservers=.
+
+  *Note:* You need to reboot so that these changes are applied.
 
 
 * Installing LTSP
@@ -130,17 +137,15 @@ tags:       [ltsp ubuntu edubuntu]
      - The line **port=0** breaks the name resolution (DNS) in Ubuntu-16.04,
        so I commented it out as well.
 
-    Then restart =dnsmasq=:
-    #+begin_example
-    update-rc.d dnsmasq enable
-    service dnsmasq restart
-    #+end_example
+    *Note:* If you don't have a DHCP server on your network, then don't
+    comment the *dhcp-range* above. But make sure that the fixed IP (set
+    in the previous section) and the DHCP range are in the same
+    network (for example =address 192.168.11.1= and
+    =dhcp-range=192.168.11.50,192.168.11.100=). Instead, you should
+    comment the lines that end in =proxy=, for example:
+    =dhcp-range=192.168.11.0,proxy=
 
-    *Note:* If you don't have a DHCP server on your network, then
-    don't comment the *dhcp-range* above. But make sure that the fixed
-    IP (set in the previous section) and the DHCP range are in the
-    same network (for example =address 192.168.11.1= and
-    =dhcp-range=192.168.11.50,192.168.11.100=).
+    Then restart =dnsmasq=: =service dnsmasq restart=
 
 
 * Creating the client image

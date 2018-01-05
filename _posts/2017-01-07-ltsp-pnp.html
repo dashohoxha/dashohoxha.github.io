@@ -1,21 +1,21 @@
 ---
 layout:     post
-title:      LTSP Server with Ubuntu 16.04
+title:      LTSP Server with LinuxMint 18.3 Xfce
 date:       2017-01-07
 summary:    LTSP allows computers of a LAN to boot through network from a single server.
     One of the benefits of this is for example to cut down the
     administration and maintenance time of a classroom of computers
     (instead of installing, configuring and updating each of them we do it
     only once).
-tags:       [ltsp ubuntu edubuntu]
+tags:       [ltsp linuxmint ubuntu edubuntu]
 ---
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<title>LTSP Server with Ubuntu 16.04</title>
-<!-- 2018-01-05 Fri 15:41 -->
+<title>LTSP Server with LinuxMint 18.3 Xfce</title>
+<!-- 2018-01-05 Fri 21:58 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Dashamir Hoxha" />
@@ -148,7 +148,7 @@ for the JavaScript code in this tag.
 </head>
 <body>
 <div id="content">
-<h1 class="title">LTSP Server with Ubuntu 16.04</h1>
+<h1 class="title">LTSP Server with LinuxMint 18.3 Xfce</h1>
 <div id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
@@ -253,6 +253,18 @@ iface enp0s8 inet static
     gateway 192.168.1.1
     dns-nameservers 8.8.8.8 8.8.4.4
 </pre>
+
+<p>
+<b>Note:</b> Replace <code>enp0s8</code> with the name of your interface that is facing
+the LAN. You can see the available interfaces and their names with
+the command <code>ip addr</code>. In case that you get the internet connection
+through another interface, then don't add the lines for <code>gateway</code> and
+<code>dns-nameservers</code>.
+</p>
+
+<p>
+<b>Note:</b> You need to reboot so that these changes are applied.
+</p>
 </div>
 </div>
 
@@ -331,19 +343,17 @@ so I commented it out as well.
 </ul>
 
 <p>
-Then restart <code>dnsmasq</code>:
+<b>Note:</b> If you don't have a DHCP server on your network, then don't
+comment the <b>dhcp-range</b> above. But make sure that the fixed IP (set
+in the previous section) and the DHCP range are in the same
+network (for example <code>address 192.168.11.1</code> and
+<code>dhcp-range=192.168.11.50,192.168.11.100</code>). Instead, you should
+comment the lines that end in <code>proxy</code>, for example:
+<code>dhcp-range=192.168.11.0,proxy</code>
 </p>
-<pre class="example">
-update-rc.d dnsmasq enable
-service dnsmasq restart
-</pre>
 
 <p>
-<b>Note:</b> If you don't have a DHCP server on your network, then
-don't comment the <b>dhcp-range</b> above. But make sure that the fixed
-IP (set in the previous section) and the DHCP range are in the
-same network (for example <code>address 192.168.11.1</code> and
-<code>dhcp-range=192.168.11.50,192.168.11.100</code>).
+Then restart <code>dnsmasq</code>: <code>service dnsmasq restart</code>
 </p>
 </div>
 </div>
@@ -490,7 +500,7 @@ from the Help menu).
 <div id="postamble" class="status">
 <p class="date">Date: 2017-01-07</p>
 <p class="author">Author: Dashamir Hoxha</p>
-<p class="date">Created: 2018-01-05 Fri 15:41</p>
+<p class="date">Created: 2018-01-05 Fri 21:58</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.3.2 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"></p>
 </div>
