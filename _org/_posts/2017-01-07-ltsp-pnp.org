@@ -211,6 +211,20 @@ tags:       [ltsp ubuntu edubuntu]
   update the client image on this case. Also, everything that the
   users change is saved on the home directories on the server.
 
+  However, there is also a GUI tool that facilitates the management of
+  user accounts, as well as other LTSP related tasks. It is called
+  =ltsp-manager= and can be installed like this:
+  #+begin_example
+  add-apt-repository ppa:ts.sch.gr
+  apt update
+  apt install ltsp-manager
+  #+end_example
+
+  After installation, you can find LTSP Manager in the system menu, in
+  *System → Administration → LTSP Manager*.  For more details about
+  using it see: http://wiki.ltsp.org/wiki/Ltsp-manager (also available
+  from the Help menu).
+
 
 * References
 
