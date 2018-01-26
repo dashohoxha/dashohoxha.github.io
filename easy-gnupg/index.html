@@ -1,0 +1,740 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2018-01-26 Fri 06:51 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Easy GnuPG</title>
+<meta name="generator" content="Org mode" />
+<meta name="author" content="Dashamir Hoxha" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { width: 90%; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" type="text/css" href="org-info.css" />
+
+<script type="text/javascript" src="org-info.js">
+/**
+ *
+ * @source: org-info.js
+ *
+ * @licstart  The following is the entire license notice for the
+ *  JavaScript code in org-info.js.
+ *
+ * Copyright (C) 2012-2018 Free Software Foundation, Inc.
+ *
+ *
+ * The JavaScript code in this tag is free software: you can
+ * redistribute it and/or modify it under the terms of the GNU
+ * General Public License (GNU GPL) as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option)
+ * any later version.  The code is distributed WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+ *
+ * As additional permission under GNU GPL version 3 section 7, you
+ * may distribute non-source (e.g., minimized or compacted) forms of
+ * that code without the copy of the GNU GPL normally required by
+ * section 4, provided you include this license notice and a URL
+ * through which recipients can access the Corresponding Source.
+ *
+ * @licend  The above is the entire license notice
+ * for the JavaScript code in org-info.js.
+ *
+ */
+</script>
+
+<script type="text/javascript">
+
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2018 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+
+<!--/*--><![CDATA[/*><!--*/
+org_html_manager.set("TOC_DEPTH", "3");
+org_html_manager.set("LINK_HOME", "");
+org_html_manager.set("LINK_UP", "");
+org_html_manager.set("LOCAL_TOC", "1");
+org_html_manager.set("VIEW_BUTTONS", "0");
+org_html_manager.set("MOUSE_HINT", "#aadddd");
+org_html_manager.set("FIXED_TOC", "0");
+org_html_manager.set("TOC", "1");
+org_html_manager.set("VIEW", "info");
+org_html_manager.setup();  // activate after the parameters are set
+/*]]>*///-->
+</script>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2018 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Easy GnuPG</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org794427e">Introduction</a></li>
+<li><a href="#orgad4d822">EasyGnuPG is opinionated</a></li>
+<li><a href="#orge130c17">EGPG integrates seamlessly with GPG</a></li>
+<li><a href="#org61de7fd">Clear and Intuitive terminology</a></li>
+<li><a href="#org060cd01">EGPG is transparent and auditable</a></li>
+<li><a href="#org51b5c06">EGPG commands</a></li>
+<li><a href="#orga4e70b1">Managing the keys</a></li>
+<li><a href="#orgaa66761">Extending the features of GPG</a></li>
+<li><a href="#org5db3868">Splitting the key</a></li>
+<li><a href="#org57136cf">EGPG can work on any platform</a></li>
+<li><a href="#orge0b30db">EGPG is customizable and extensible</a></li>
+<li><a href="#orgcf9b8ad">EGPG criticism</a></li>
+<li><a href="#org28e31ca">EGPG improvements</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org794427e" class="outline-2">
+<h2 id="org794427e">Introduction</h2>
+<div class="outline-text-2" id="text-org794427e">
+<p>
+GnuPG (GNU Privacy Guard) is a complete and free implementation of the
+OpenPGP standard. It allows you to encrypt and sign your data and
+communications. GnuPG has scads of options which make it a flexible
+and powerful encryption framework. However this also makes it
+extremely complicated to get started with, and that quite reasonably
+puts people off.
+</p>
+
+<p>
+I have tried to use GnuPG since a long time ago, spent a lot of time
+reading detailed and complicated tutorials, manuals etc. and still I
+find myself lost when trying to use GnuPG. Some of the problems with
+GnuPG, in my opinion, are that the `gpg` command is monolithic,
+bloated with functionality and options, the docs are not clearly
+structured, the number of commands and options is huge, there is no
+clear distinction between the commands and the options, the supported
+use cases are not so clear (it tries to support everything), the
+terminology is a bit confusing and counter-intuitive, etc.
+</p>
+
+<p>
+EasyGnuPG is a wrapper script that aims to simplify the process of
+using GnuPG. The more people using strong encryption, the better for
+everyone. It tries to present to the users a simpler interface, with
+much less commands and options, better organized and structured, with
+a more intuitive terminology, with a modular construction that is also
+easy to customize, adapt and extend, etc.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgad4d822" class="outline-2">
+<h2 id="orgad4d822">EasyGnuPG is opinionated</h2>
+<div class="outline-text-2" id="text-orgad4d822">
+<p>
+In order to simplify things, EasyGnuPG is opinionated about the
+"right" way to use GnuPG. This means that while GPG offers lots of
+options and flexibility to perform a certain task, EGPG uses just a
+sensible default way, in order to keep things simple and not to
+bewilder the user with countless choices.
+</p>
+
+<p>
+For example, when you create a new key in GPG you have to specify a
+lot of options, most of which make no sense for a beginner, so they
+will just use the defaults anyway. EGPG on the other hand, just asks
+for a name and an email address, filling up the rest with reasonable
+default values. Not only that, but it also goes on and generates
+automatically the needed subkeys, according to well known
+recommendations and best practices of using GPG.
+</p>
+
+<p>
+Or, when encrypting a file, it also automatically signs it, encrypts
+it to the author as well, and generates the output in the text format
+(ASCII armored), which is more universal than the binary format.
+</p>
+
+<p>
+This simplicity makes it easier for the beginners to get started. At
+the same time, the selected subset of operations and features covers
+most of the common cases of usage, so hopefully it should be
+sufficient for the everyday needs of most of the users.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orge130c17" class="outline-2">
+<h2 id="orge130c17">EGPG integrates seamlessly with GPG</h2>
+<div class="outline-text-2" id="text-orge130c17">
+<p>
+In case users need to use some advanced features or commands which are
+not supported by EGPG, they can go on and use GPG itself at any time,
+because EGPG also integrates seamlessly with GPG. So, the reduced set
+of supported operations and features, while being convenient for
+everyday usage, does not limit or prevent users for doing more
+advanced or complex things.
+</p>
+
+<p>
+For example, if you want to do some extra editing to the key, which
+can't be done with EGPG due to its limited set of functionality, you
+can do it like this: <code>egpg gpg --edit-key 562AC309C01D2DBD</code> Running <code>gpg</code>
+as a subcommand of <code>egpg</code> will ensure that it uses the same environment
+(GNUPGHOME) as <code>egpg</code>.
+</p>
+
+<p>
+Also, when initiating a new EGPG environment (with <code>egpg init</code>), you can
+migrate all the data from an existing GPG or EGPG environment (with
+<code>egpg migrate</code>). Or you can fetch (pick up) only certain keys or
+contacts (public keys). For example: <code>egpg key fetch -k
+01D532A283DC1CBF</code> or <code>egpg contact fetch 01D532A283DC1CBF</code>.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org61de7fd" class="outline-2">
+<h2 id="org61de7fd">Clear and Intuitive terminology</h2>
+<div class="outline-text-2" id="text-org61de7fd">
+<p>
+One of the things that confuses people while using GPG is the
+overloaded and unclear terminology about keys, about signatures, etc.
+EGPG tries to improve this by making a clear distinction between the
+private keys and the public keys. In EGPG there is only one primary
+"key", which is used for signing, and a subkey which is used for
+decryption. All the public keys are called "contacts", since they
+contain the names and email addresses of the people that you use to
+communicate (either send them encrypted messages or verify their
+signatures).
+</p>
+
+<p>
+If you say "public key" to a beginner, you will also have to explain
+to him some cryptographic details and how public keys should be used.
+But if you say "contact" everybody gets that it contains details that
+enable and facilitate communication.
+</p>
+
+<p>
+Also, it makes more sense when you certify and trust a contact, rather
+than editing a key and changing its certification and trust levels.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org060cd01" class="outline-2">
+<h2 id="org060cd01">EGPG is transparent and auditable</h2>
+<div class="outline-text-2" id="text-org060cd01">
+<p>
+Being built as a set of shell scripts, EGPG is quite transparent and
+auditable (different from a GUI for example, or a web service). If you
+are concerned about what it does, open up the files and read them, or
+have someone you trust read them. The size of the main script is less
+than 250 lines, well within the reach of most of the users. Most of
+the commands are implemented on their own script, and these scripts
+are about 50 lines long on average.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org51b5c06" class="outline-2">
+<h2 id="org51b5c06">EGPG commands</h2>
+<div class="outline-text-2" id="text-org51b5c06">
+<p>
+The set of commands and options of EGPG is well structured and
+intuitive.  There are commands for working with files (for signing and
+encryption), commands for managing the key, commands for managing
+contacts, and other extra commands.
+</p>
+
+<p>
+The commands for managing the files are these:
+</p>
+<pre class="example">
+seal &lt;file&gt; [&lt;recipient&gt;...]
+    Sign and encrypt a file. The resulting file will have the
+    extension '.sealed'. The original file will be erased.
+
+open &lt;file.sealed&gt;
+    Decrypt and verify the signature of the given file.
+    The file has to end with '.sealed' and the output will have
+    that extension stripped.
+
+sign &lt;file&gt;
+    Sign a file. The signature will be saved to &lt;file.signature&gt;.
+
+verify &lt;file.signature&gt;
+    Verify the signature. The signed file must be present as well.
+</pre>
+
+<p>
+There are commands to generate a new key or fetch an existing one, to
+backup and restore the key, to split and join the key, to generate a
+revocation certificate and to revoke the key, to delete the key, etc.
+</p>
+
+<p>
+The commands about contacts include commands to search and receive
+contacts from the keyserver network, to export and import from files,
+to fetch from existing GPG/EGPG directories, to certify and trust,
+etc.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orga4e70b1" class="outline-2">
+<h2 id="orga4e70b1">Managing the keys</h2>
+<div class="outline-text-2" id="text-orga4e70b1">
+<p>
+To keep things simple, EGPG supports only one private key per
+directory. But there are ways to use several keys if needed. For
+example it can be done by using several EGPG
+directories/configurations, which can work in parallel and
+independently of each-other. This is a design decision and is on
+purpose, not only for simplicity, but also because when you need more
+than one key, you usually use them in different contexts. So, it makes
+more sense to keep and manage them separately and independently of
+each-other, which could also avoid any confusion or mistakes.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgaa66761" class="outline-2">
+<h2 id="orgaa66761">Extending the features of GPG</h2>
+<div class="outline-text-2" id="text-orgaa66761">
+<p>
+EGPG combines the features of GPG with external tools/commands in
+order to achieve better results or to be more user-friendly.
+</p>
+
+<p>
+For example, when making the backup of the key, the output is produced
+as a PDF file with a 2D barcode, which can be printed on paper and
+stored away on a safe place. Later this can be easily scanned back to
+digital format and restored. This is achieved by exporting the key
+from GPG in ASCII armor format, then using a bunch of Linux commands
+and tools, like qrencode and convert, to convert it to the proper PDF
+format.
+</p>
+
+<p>
+There is nothing that cannot be done manually or with a shell script,
+but EGPG already automates things for you in a single command, so that
+you can immediately take advantage of best practices and
+recommendations.
+</p>
+
+<p>
+Another example is printing the fingerprint of the key as a 2D barcode
+and picking it up from the camera. This can simplify the exchange of
+keys in mobile phones, if people have physical contact, for example in
+a meeting (one of them can show the code on the screen, and the other
+one can scan it from the camera, and automatically fetch the details
+from a keyserver).
+</p>
+
+<p>
+Yet another example is moving the main key (that is used for signing
+and certification) to a dongle (USB flash drive), for portability and
+security (the USB flash drive should be encrypted). This is done with
+the external command <code>egpg key2dongle</code> .
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org5db3868" class="outline-2">
+<h2 id="org5db3868">Splitting the key</h2>
+<div class="outline-text-2" id="text-org5db3868">
+<p>
+You can split a key into 3 partial keys, so that any 2 of them can be
+combined to recreate the original key (but a single one is not
+enough). EGPG takes advantage of this to save a partial key on the
+local machine and another partial on a dongle (USB flash drive,
+removable device). The third partial key is used as a backup, to
+recover the full key in case that the dongle or the computer is lost,
+and it can be stored for example on a cloud account.
+</p>
+
+<p>
+Splitting the key into partial keys makes key management safer and
+more robust. In case that you loose the dongle the key is not
+deconspired, because a single partial key is not enough to reconstruct
+the full key. The same goes for the backup partial key; you can store
+it on cloud and if somebody manages to get it, they still cannot get
+your key. Similarly, if you loose the dongle or change the PC, you
+still can recover the key using the remaining partial key and the
+backup partial key.
+</p>
+
+<p>
+EGPG manages all this with simple commands:
+</p>
+<pre class="example">
+split [-d,--dongle &lt;dir&gt;] [-b,--backup &lt;dir&gt;]
+     Split the key into 3 partial keys and store one of them on the
+     dongle (removable device, usb), keep the other one locally,
+     and use the third one as a backup. Afterwards, whenever the
+     key needs to be used, the dongle has to be present.
+
+ join
+     Join two partial keys into a full key and delete the partials.
+
+ recover &lt;backup-partial.key.xyz&gt;
+     Recover the key from the backup partial key and from the
+     partial key of the home or the dongle. This is useful when
+     either the dongle or the home partial key is lost.
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-org57136cf" class="outline-2">
+<h2 id="org57136cf">EGPG can work on any platform</h2>
+<div class="outline-text-2" id="text-org57136cf">
+<p>
+The file <code>platform.sh</code> contains a couple of functions that can be
+platform dependent. The platform is detected automatically and these
+functions are overridden with the right implementation for the current
+platform.
+</p>
+
+<p>
+So, EGPG is flexible enough to potentially work on any platform.
+However, currently it has been tested only on Ubuntu and Debian.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orge0b30db" class="outline-2">
+<h2 id="orge0b30db">EGPG is customizable and extensible</h2>
+<div class="outline-text-2" id="text-orge0b30db">
+<p>
+If EGPG doesn't fit your workflow, you can adapt and extend it to fit
+your way of doing things. You can also share your extensions with the
+others, in the form of external commands.
+</p>
+
+<p>
+The file <code>$EGPG_DIR/customize.sh</code> can be used to redefine and customize
+some functions, without having to touch the code of the main
+script. Also, external commands can be customized (or new commands can
+be defined) by adding the file <code>$EGPG_DIR/cmd_command.sh</code>, which
+contains the function <code>cmd_command() { . . . }</code>.
+</p>
+
+<p>
+In general, for an external command the script will first look for
+<code>$EGPG_DIR/cmd_command.sh</code>, then for
+<code>$LIBRARY/ext/$PLATFORM/cmd_command.sh</code>, and finally for
+<code>$LIBRARY/ext/cmd_command.sh</code>. The first that is found is loaded and
+used. For commands about the key the name of the file must be
+<code>cmd_key_command.sh</code> and for commands about contacts it must be
+<code>cmd_contact_command.sh</code>.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgcf9b8ad" class="outline-2">
+<h2 id="orgcf9b8ad">EGPG criticism</h2>
+<div class="outline-text-2" id="text-orgcf9b8ad">
+<p>
+The EGPG critics have expressed their concerns that since EGPG is just
+a wrapper script to GPG, it is too fragile. This is so because the GPG
+command line was meant to be an interactive tool, not a streamline
+tool that can be easily combined with other tools. As such, its output
+format can change at any time, and even small changes can break EGPG.
+</p>
+
+<p>
+A possible defense argument can be that EGPG should be used only with
+stable releases of Linux distributions, which by definition don't
+change the major versions of their supported tools and utilities and
+allow only for bug and security fixes. So, the chances of EGPG being
+broken are small, and it needs to be updated/fixed only for every next
+stable release (which does not occur too frequently).
+</p>
+
+<p>
+Nevertheless the problem still exists and the recommended solution is
+to re-implement parts of EGPG with Python bindings of GPGME (which is
+a library for doing GPG stuff).
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org28e31ca" class="outline-2">
+<h2 id="org28e31ca">EGPG improvements</h2>
+<div class="outline-text-2" id="text-org28e31ca">
+<p>
+There is a proposed project on GSoC about possible improvements to EGPG:
+<a href="https://wiki.debian.org/SummerOfCode2018/Projects/EasyGnuPG">https://wiki.debian.org/SummerOfCode2018/Projects/EasyGnuPG</a>
+</p>
+
+<p>
+I am looking for co-mentor, and of course for interested students.
+</p>
+
+<p>
+Some of the potential improvements are:
+</p>
+<ul class="org-ul">
+<li>Rewrite EasyGnuPG (or parts of it) so that it is built with Python
+and GPGME (<a href="https://www.gnupg.org/software/gpgme/">https://www.gnupg.org/software/gpgme/</a>)</li>
+<li>Implement a GUI to EasyGnuPG (maybe with Python).</li>
+<li>Extend EasyGnuPG with scripts/commands that automate other common
+usage scenarios (for example keeping the master key on a card).</li>
+<li>Write a Debian package for installing EasyGnuPG.</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Dashamir Hoxha</p>
+<p class="date">Created: 2018-01-26 Fri 06:51</p>
+<p class="validation"></p>
+</div>
+</body>
+</html>

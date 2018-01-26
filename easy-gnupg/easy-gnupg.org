@@ -1,0 +1,298 @@
+#+TITLE:     Easy GnuPG
+#+AUTHOR:    Dashamir Hoxha
+#+EMAIL:     dashohoxha@gmail.com
+#+LANGUAGE:  en
+#+OPTIONS:   H:3 num:nil toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+INFOJS_OPT: view:info toc:t ltoc:t mouse:#aadddd buttons:0 path:org-info.js
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="org-info.css" />
+
+* Introduction
+
+GnuPG (GNU Privacy Guard) is a complete and free implementation of the
+OpenPGP standard. It allows you to encrypt and sign your data and
+communications. GnuPG has scads of options which make it a flexible
+and powerful encryption framework. However this also makes it
+extremely complicated to get started with, and that quite reasonably
+puts people off.
+
+I have tried to use GnuPG since a long time ago, spent a lot of time
+reading detailed and complicated tutorials, manuals etc. and still I
+find myself lost when trying to use GnuPG. Some of the problems with
+GnuPG, in my opinion, are that the `gpg` command is monolithic,
+bloated with functionality and options, the docs are not clearly
+structured, the number of commands and options is huge, there is no
+clear distinction between the commands and the options, the supported
+use cases are not so clear (it tries to support everything), the
+terminology is a bit confusing and counter-intuitive, etc.
+
+EasyGnuPG is a wrapper script that aims to simplify the process of
+using GnuPG. The more people using strong encryption, the better for
+everyone. It tries to present to the users a simpler interface, with
+much less commands and options, better organized and structured, with
+a more intuitive terminology, with a modular construction that is also
+easy to customize, adapt and extend, etc.
+
+
+* EasyGnuPG is opinionated
+
+In order to simplify things, EasyGnuPG is opinionated about the
+"right" way to use GnuPG. This means that while GPG offers lots of
+options and flexibility to perform a certain task, EGPG uses just a
+sensible default way, in order to keep things simple and not to
+bewilder the user with countless choices.
+
+For example, when you create a new key in GPG you have to specify a
+lot of options, most of which make no sense for a beginner, so they
+will just use the defaults anyway. EGPG on the other hand, just asks
+for a name and an email address, filling up the rest with reasonable
+default values. Not only that, but it also goes on and generates
+automatically the needed subkeys, according to well known
+recommendations and best practices of using GPG.
+
+Or, when encrypting a file, it also automatically signs it, encrypts
+it to the author as well, and generates the output in the text format
+(ASCII armored), which is more universal than the binary format.
+
+This simplicity makes it easier for the beginners to get started. At
+the same time, the selected subset of operations and features covers
+most of the common cases of usage, so hopefully it should be
+sufficient for the everyday needs of most of the users.
+
+
+* EGPG integrates seamlessly with GPG
+
+In case users need to use some advanced features or commands which are
+not supported by EGPG, they can go on and use GPG itself at any time,
+because EGPG also integrates seamlessly with GPG. So, the reduced set
+of supported operations and features, while being convenient for
+everyday usage, does not limit or prevent users for doing more
+advanced or complex things.
+
+For example, if you want to do some extra editing to the key, which
+can't be done with EGPG due to its limited set of functionality, you
+can do it like this: =egpg gpg --edit-key 562AC309C01D2DBD= Running =gpg=
+as a subcommand of =egpg= will ensure that it uses the same environment
+(GNUPGHOME) as =egpg=.
+
+Also, when initiating a new EGPG environment (with =egpg init=), you can
+migrate all the data from an existing GPG or EGPG environment (with
+=egpg migrate=). Or you can fetch (pick up) only certain keys or
+contacts (public keys). For example: =egpg key fetch -k
+01D532A283DC1CBF= or =egpg contact fetch 01D532A283DC1CBF=.
+
+
+* Clear and Intuitive terminology
+
+One of the things that confuses people while using GPG is the
+overloaded and unclear terminology about keys, about signatures, etc.
+EGPG tries to improve this by making a clear distinction between the
+private keys and the public keys. In EGPG there is only one primary
+"key", which is used for signing, and a subkey which is used for
+decryption. All the public keys are called "contacts", since they
+contain the names and email addresses of the people that you use to
+communicate (either send them encrypted messages or verify their
+signatures).
+
+If you say "public key" to a beginner, you will also have to explain
+to him some cryptographic details and how public keys should be used.
+But if you say "contact" everybody gets that it contains details that
+enable and facilitate communication.
+
+Also, it makes more sense when you certify and trust a contact, rather
+than editing a key and changing its certification and trust levels.
+
+
+* EGPG is transparent and auditable
+
+Being built as a set of shell scripts, EGPG is quite transparent and
+auditable (different from a GUI for example, or a web service). If you
+are concerned about what it does, open up the files and read them, or
+have someone you trust read them. The size of the main script is less
+than 250 lines, well within the reach of most of the users. Most of
+the commands are implemented on their own script, and these scripts
+are about 50 lines long on average.
+
+
+* EGPG commands
+
+The set of commands and options of EGPG is well structured and
+intuitive.  There are commands for working with files (for signing and
+encryption), commands for managing the key, commands for managing
+contacts, and other extra commands.
+
+The commands for managing the files are these:
+#+begin_example
+    seal <file> [<recipient>...]
+        Sign and encrypt a file. The resulting file will have the
+        extension '.sealed'. The original file will be erased.
+
+    open <file.sealed>
+        Decrypt and verify the signature of the given file.
+        The file has to end with '.sealed' and the output will have
+        that extension stripped.
+
+    sign <file>
+        Sign a file. The signature will be saved to <file.signature>.
+
+    verify <file.signature>
+        Verify the signature. The signed file must be present as well.
+#+end_example
+
+There are commands to generate a new key or fetch an existing one, to
+backup and restore the key, to split and join the key, to generate a
+revocation certificate and to revoke the key, to delete the key, etc.
+
+The commands about contacts include commands to search and receive
+contacts from the keyserver network, to export and import from files,
+to fetch from existing GPG/EGPG directories, to certify and trust,
+etc.
+
+
+* Managing the keys
+
+To keep things simple, EGPG supports only one private key per
+directory. But there are ways to use several keys if needed. For
+example it can be done by using several EGPG
+directories/configurations, which can work in parallel and
+independently of each-other. This is a design decision and is on
+purpose, not only for simplicity, but also because when you need more
+than one key, you usually use them in different contexts. So, it makes
+more sense to keep and manage them separately and independently of
+each-other, which could also avoid any confusion or mistakes.
+
+
+* Extending the features of GPG
+
+EGPG combines the features of GPG with external tools/commands in
+order to achieve better results or to be more user-friendly.
+
+For example, when making the backup of the key, the output is produced
+as a PDF file with a 2D barcode, which can be printed on paper and
+stored away on a safe place. Later this can be easily scanned back to
+digital format and restored. This is achieved by exporting the key
+from GPG in ASCII armor format, then using a bunch of Linux commands
+and tools, like qrencode and convert, to convert it to the proper PDF
+format.
+
+There is nothing that cannot be done manually or with a shell script,
+but EGPG already automates things for you in a single command, so that
+you can immediately take advantage of best practices and
+recommendations.
+
+Another example is printing the fingerprint of the key as a 2D barcode
+and picking it up from the camera. This can simplify the exchange of
+keys in mobile phones, if people have physical contact, for example in
+a meeting (one of them can show the code on the screen, and the other
+one can scan it from the camera, and automatically fetch the details
+from a keyserver).
+
+Yet another example is moving the main key (that is used for signing
+and certification) to a dongle (USB flash drive), for portability and
+security (the USB flash drive should be encrypted). This is done with
+the external command =egpg key2dongle= .
+
+
+* Splitting the key
+
+You can split a key into 3 partial keys, so that any 2 of them can be
+combined to recreate the original key (but a single one is not
+enough). EGPG takes advantage of this to save a partial key on the
+local machine and another partial on a dongle (USB flash drive,
+removable device). The third partial key is used as a backup, to
+recover the full key in case that the dongle or the computer is lost,
+and it can be stored for example on a cloud account.
+
+Splitting the key into partial keys makes key management safer and
+more robust. In case that you loose the dongle the key is not
+deconspired, because a single partial key is not enough to reconstruct
+the full key. The same goes for the backup partial key; you can store
+it on cloud and if somebody manages to get it, they still cannot get
+your key. Similarly, if you loose the dongle or change the PC, you
+still can recover the key using the remaining partial key and the
+backup partial key.
+
+EGPG manages all this with simple commands:
+#+begin_example
+   split [-d,--dongle <dir>] [-b,--backup <dir>]
+        Split the key into 3 partial keys and store one of them on the
+        dongle (removable device, usb), keep the other one locally,
+        and use the third one as a backup. Afterwards, whenever the
+        key needs to be used, the dongle has to be present.
+
+    join
+        Join two partial keys into a full key and delete the partials.
+
+    recover <backup-partial.key.xyz>
+        Recover the key from the backup partial key and from the
+        partial key of the home or the dongle. This is useful when
+        either the dongle or the home partial key is lost.
+#+end_example
+
+
+* EGPG can work on any platform
+
+The file =platform.sh= contains a couple of functions that can be
+platform dependent. The platform is detected automatically and these
+functions are overridden with the right implementation for the current
+platform.
+
+So, EGPG is flexible enough to potentially work on any platform.
+However, currently it has been tested only on Ubuntu and Debian.
+
+
+* EGPG is customizable and extensible
+
+If EGPG doesn't fit your workflow, you can adapt and extend it to fit
+your way of doing things. You can also share your extensions with the
+others, in the form of external commands.
+
+The file =$EGPG_DIR/customize.sh= can be used to redefine and customize
+some functions, without having to touch the code of the main
+script. Also, external commands can be customized (or new commands can
+be defined) by adding the file =$EGPG_DIR/cmd_command.sh=, which
+contains the function =cmd_command() { . . . }=.
+
+In general, for an external command the script will first look for
+=$EGPG_DIR/cmd_command.sh=, then for
+=$LIBRARY/ext/$PLATFORM/cmd_command.sh=, and finally for
+=$LIBRARY/ext/cmd_command.sh=. The first that is found is loaded and
+used. For commands about the key the name of the file must be
+=cmd_key_command.sh= and for commands about contacts it must be
+=cmd_contact_command.sh=.
+
+
+* EGPG criticism
+
+The EGPG critics have expressed their concerns that since EGPG is just
+a wrapper script to GPG, it is too fragile. This is so because the GPG
+command line was meant to be an interactive tool, not a streamline
+tool that can be easily combined with other tools. As such, its output
+format can change at any time, and even small changes can break EGPG.
+
+A possible defense argument can be that EGPG should be used only with
+stable releases of Linux distributions, which by definition don't
+change the major versions of their supported tools and utilities and
+allow only for bug and security fixes. So, the chances of EGPG being
+broken are small, and it needs to be updated/fixed only for every next
+stable release (which does not occur too frequently).
+
+Nevertheless the problem still exists and the recommended solution is
+to re-implement parts of EGPG with Python bindings of GPGME (which is
+a library for doing GPG stuff).
+
+
+* EGPG improvements
+
+There is a proposed project on GSoC about possible improvements to EGPG:
+https://wiki.debian.org/SummerOfCode2018/Projects/EasyGnuPG
+
+I am looking for co-mentor, and of course for interested students.
+
+Some of the potential improvements are:
+ - Rewrite EasyGnuPG (or parts of it) so that it is built with Python
+   and GPGME (https://www.gnupg.org/software/gpgme/)
+ - Implement a GUI to EasyGnuPG (maybe with Python).
+ - Extend EasyGnuPG with scripts/commands that automate other common
+   usage scenarios (for example keeping the master key on a card).
+ - Write a Debian package for installing EasyGnuPG.
