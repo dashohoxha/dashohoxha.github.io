@@ -6,7 +6,7 @@
 #+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
 # #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
 #+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
-#+begin_html
+#+begin_export html
 ---
 layout:     post
 title:      Remote Desktop Support with VNC
@@ -20,7 +20,7 @@ summary:    VNC is a well-known tool for remote desktop view and control.
     things can be fixed to work.
 tags: [VNC, SSH]
 ---
-#+end_html
+#+end_export
 
 VNC is a well-known tool for remote desktop view and control. The two
 computers establish a TCP connection so that one of them can access

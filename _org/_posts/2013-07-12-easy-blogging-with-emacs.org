@@ -6,7 +6,7 @@
 #+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
 # #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
 #+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
-#+begin_html
+#+begin_export html
 ---
 layout:     post
 title:      Easy Blogging With Emacs
@@ -17,7 +17,7 @@ summary:    Time after time I write technical blogs and articles that describe
     me! I always find WYSIWYG editing tedious and frustrating.
 tags: [Emacs, org-mode, Blogging, Documentation]
 ---
-#+end_html
+#+end_export
 
 Time after time I write technical blogs and articles that describe and
 summarise my experiences. Nowadays all the blogging sites and tools
@@ -197,7 +197,7 @@ me! I always find WYSIWYG editing tedious and frustrating.
   generated HTML looks nice and beautiful. For a quick start, just
   download and use my [[https://gist.github.com/dashohoxha/5980833][org.css]] file, and later you can customise it for
   yourself. For example, it defines the style of preformatted text like this:
-  #+BEGIN_HTML
+  #+BEGIN_EXPORT HTML
   {% highlight css %}
   pre {
 	 padding: 10px;
@@ -208,7 +208,7 @@ me! I always find WYSIWYG editing tedious and frustrating.
 	 font-family: Ubuntu Mono, monospace, courier;
   }
   {% endhighlight %}
-  #+END_HTML
+  #+END_EXPORT
  
 
 * Converting the document to PDF

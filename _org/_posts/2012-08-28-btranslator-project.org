@@ -1,4 +1,4 @@
-#+begin_html
+#+begin_export html
 ---
 layout:     post
 title:      B-Translator as a Software Engineering Project
@@ -7,7 +7,7 @@ summary:    Using the project B-Translator as an example for illustrating
             some of software development concepts and practices.
 tags: [Software Engineering, Programing, B-Translator]
 ---
-#+end_html
+#+end_export
 
 #+TITLE:     B-Translator as a Software Engineering Project
 #+AUTHOR:    Dashamir Hoxha

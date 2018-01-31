@@ -6,7 +6,7 @@
 #+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
 # #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
 #+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
-#+begin_html
+#+begin_export html
 ---
 layout:     post
 title:      How to Build a Twitter-Bot
@@ -17,7 +17,7 @@ summary:    There is a command-line twitter client that can be used to send twee
     (https://twitter.com/l10n_sq). I will describe here how I did it.
 tags:       [linux twitter]
 ---
-#+end_html
+#+end_export
 
 There is a command-line twitter client that can be used to send tweets
 to a certain account from terminal. Combining it with cron and other

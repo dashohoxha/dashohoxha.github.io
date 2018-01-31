@@ -6,7 +6,7 @@
 #+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
 # #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
 #+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
-#+begin_html
+#+begin_export html
 ---
 layout:     post
 title:      Using Docker to Run Everything From a Single Server
@@ -21,7 +21,7 @@ summary: Often it is desirable to install several web pages or web applications
     use of some custom shell scripts that I have developed.
 tags:       [linux docker server]
 ---
-#+end_html
+#+end_export
 
 
 * Abstract

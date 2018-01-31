@@ -6,7 +6,7 @@
 #+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
 # #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
 #+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
-#+begin_html
+#+begin_export html
 ---
 layout:     post
 title:      Cloning a B-Translator Server
@@ -17,7 +17,7 @@ summary:    It can be possible and even simple to make identical clones just
     server.
 tags: [B-Translator]
 ---
-#+end_html
+#+end_export
 
 Why do I need to clone a [[http://info.btranslator.org][B-Translator]] server? An obvious reason is to
 have a backup server. In case that something goes wrong with the main

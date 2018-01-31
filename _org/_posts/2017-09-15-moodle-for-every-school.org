@@ -6,7 +6,7 @@
 #+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
 # #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
 #+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
-#+begin_html
+#+begin_export html
 ---
 layout:     post
 title:      Moodle For Every School
@@ -21,7 +21,7 @@ summary: Moodle is a well known and mature LMS (Learning Management System)
 
 tags:       moodle docker server bash scripting
 ---
-#+end_html
+#+end_export
 
 
 * Abstract

@@ -6,7 +6,7 @@
 #+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
 # #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
 #+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
-#+begin_html
+#+begin_export html
 ---
 layout:     post
 title:      Building a Technical Blog Site With Jekyll And Emacs
@@ -16,7 +16,7 @@ summary:    This article shows how I set up my own blog site on GitHub,
     for displaying them.
 tags: [Jekyll, Emacs, org-mode, Blogging]
 ---
-#+end_html
+#+end_export
 
 * Introduction
 
@@ -175,7 +175,7 @@ tags: [Jekyll, Emacs, org-mode, Blogging]
    #+END_EXAMPLE
    
    Then created the file ~_sass/_custom.scss~ with a content like this:
-   #+BEGIN_HTML
+   #+BEGIN_EXPORT HTML
    {% highlight css %}
    // Change the colors of the selected text.
    ::-moz-selection { 
@@ -213,7 +213,7 @@ tags: [Jekyll, Emacs, org-mode, Blogging]
        font-style: italic;
    }
    {% endhighlight %}
-   #+END_HTML
+   #+END_EXPORT
 
    Of course you will need to make your own customizations.
 
@@ -236,7 +236,7 @@ tags: [Jekyll, Emacs, org-mode, Blogging]
    #+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
    # #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
    # #+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
-   #+BEGIN_HTML
+   #+BEGIN_EXPORT HTML
    ---
    layout:     post
    title:      Building a Technical Blog Site With Jekyll And Emacs
@@ -246,7 +246,7 @@ tags: [Jekyll, Emacs, org-mode, Blogging]
        for displaying them.
    tags: [Jekyll, Emacs, org-mode, Blogging]
    ---
-   # +END_HTML
+   # +END_EXPORT
 
    Jekyll is a static web site generator written in Ruby. It can
    transform various text markups, using a templating language, into
@@ -261,7 +261,7 @@ tags: [Jekyll, Emacs, org-mode, Blogging]
    The top lines that start with =#+TITLE:=, =#+AUTHOR:=, etc. are not
    displayed on the converted HTML document. So, the first thing that
    is outputed is the YAML front matter, which is included between the
-   lines =#+BEGIN_HTML= and =#+END_HTML=:
+   lines =#+BEGIN_EXPORT HTML= and =#+END_EXPORT=:
    #+BEGIN_EXAMPLE
    ---
    layout:     post
@@ -293,7 +293,7 @@ tags: [Jekyll, Emacs, org-mode, Blogging]
    place the HTML article in the directory ~_posts/~, so that it can be
    found and processed by Jekyll. We do this by defining an org-mode
    /publish project/ in the file *~/.emacs*, with a content like this:
-   #+BEGIN_HTML
+   #+BEGIN_EXPORT HTML
    {% highlight lisp %}
    (setq org-publish-project-alist '(
 
@@ -325,7 +325,7 @@ tags: [Jekyll, Emacs, org-mode, Blogging]
 
    ))
    {% endhighlight %}
-   #+END_HTML
+   #+END_EXPORT
 
    The first project ("org-blog") defines how the org files are
    published.  =:base-directory ~/username.github.io/_org/= is the
@@ -383,7 +383,7 @@ tags: [Jekyll, Emacs, org-mode, Blogging]
    possible to make it look more nice and professional. Add these lines
    at the file ~_sass/_custom.scss~ and you will see that they create
    the splendid efect of a dynamic TOC:
-   #+BEGIN_HTML
+   #+BEGIN_EXPORT HTML
    {% highlight css %}
    // TOC copied from: http://orgmode.org/worg/
    #table-of-contents {
@@ -423,7 +423,7 @@ tags: [Jekyll, Emacs, org-mode, Blogging]
        margin-top: -1.5em;
    }
    {% endhighlight %}
-   #+END_HTML
+   #+END_EXPORT
 
 
 ** Displaying images properly
@@ -449,11 +449,11 @@ tags: [Jekyll, Emacs, org-mode, Blogging]
    the directory ~/_org/~ to the main directory of jekyll, so it will go
    to ~/images/btranslator_project/~. However the source of the image on
    the generated HTML file will look like this:
-   #+BEGIN_HTML
+   #+BEGIN_EXPORT HTML
    {% highlight html %}
    <img src="images/btranslator_project/db_diagram.png" />
    {% endhighlight %}
-   #+END_HTML
+   #+END_EXPORT
 
    It is missing a slash (/) in front. It can be corrected after
    exporting with a command like this:
@@ -468,7 +468,7 @@ tags: [Jekyll, Emacs, org-mode, Blogging]
    sections above (making sure that the YAML section is at the very
    top of the generated HTML file, and correcting the URL of images).
    It is in the file ~_org/post-process.sh~ and looks like this:
-   #+BEGIN_HTML
+   #+BEGIN_EXPORT HTML
    {% highlight bash %}
    #!/bin/bash
    ### Post-process .html files (after being converted from .org)
@@ -501,7 +501,7 @@ tags: [Jekyll, Emacs, org-mode, Blogging]
        sed -i $file -e 's|="images/|="/images/|g'
    done
    {% endhighlight %}
-   #+END_HTML
+   #+END_EXPORT
 
    To make sure that all the HTML posts are OK, I call it like this:
    #+BEGIN_EXAMPLE
@@ -521,17 +521,17 @@ tags: [Jekyll, Emacs, org-mode, Blogging]
    For syntax highlighting I let jekyll do it, using the tags
    ={ % highlight %}= and ={ % endhighlight %}=, like this:
    #+BEGIN_EXAMPLE
-   #+BEGIN_HTML
+   #+BEGIN_EXPORT HTML
    { % highlight bash %}
    #!/bin/bash
 
    . . . . . . . . . . .
 
    { % endhighlight %}
-   #+END_HTML
+   #+END_EXPORT
    #+END_EXAMPLE
-   Of course it has to be wrapped in org tags =#+BEGIN_HTML= and
-   =#+END_HTML=, so that it is copied verbatim while exporting to HTML.
+   Of course it has to be wrapped in org tags =#+BEGIN_EXPORT HTML= and
+   =#+END_EXPORT=, so that it is copied verbatim while exporting to HTML.
 
    For other tips about code examples see also this:
    http://mmistakes.github.io/hpstr-jekyll-theme/code-highlighting-post/

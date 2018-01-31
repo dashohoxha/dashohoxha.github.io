@@ -1,6 +1,6 @@
 #+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
 #+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
-#+begin_html
+#+begin_export html
 ---
 layout:     post
 title:      MikroTik Tips
@@ -8,7 +8,7 @@ date:       2012-08-19 15:21:00
 summary:    Some tips about the configuration of a MikroTik router.
 tags: [Network Configuration, MikroTik]
 ---
-#+end_html
+#+end_export
 
 Some tips about the configuration of a MikroTik router.
 

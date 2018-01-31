@@ -6,7 +6,7 @@
 #+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
 # #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
 #+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
-#+begin_html
+#+begin_export html
 ---
 layout:     post
 title:      Easy Presentation With Emacs And Reveal.js
@@ -15,7 +15,7 @@ summary:    Making a presentation with org-mode of Emacs and Reveal.js
     is very easy.
 tags: [Emacs, org-mode, presentation, Reveal.js]
 ---
-#+end_html
+#+end_export
 
 Recently I had to prepare a presentation for a workshop. I knew that
 org-mode of Emacs could be used for presentations as well, but I

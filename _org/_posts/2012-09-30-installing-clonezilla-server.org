@@ -8,7 +8,7 @@
 #+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
 # #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
 #+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
-#+begin_html
+#+begin_export html
 ---
 layout:     post
 title:      Installing a Clonezilla Server
@@ -18,7 +18,7 @@ summary:    Clonezilla Server is used to clone many computers simultaneously
     workstations that can boot from a network.
 tags: [Clonezilla, Network, Ubuntu]
 ---
-#+end_html
+#+end_export
 
 Clonezilla Server is used to clone many computers simultaneously
 across a network. This is done using a DRBL server and computer

@@ -4,7 +4,7 @@
 #+DATE:      2013-02-14
 #+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
 #+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
-#+begin_html
+#+begin_export html
 ---
 layout:     post
 title:      How to set up a chroot environment for testing
@@ -18,7 +18,7 @@ summary:    Recently I have suffered a total system destruction in one
     severe errors damage can be mitigated.
 tags: [Ubuntu, chroot]
 ---
-#+end_html
+#+end_export
 
 Recently I have suffered a total system destruction in one of my
 computers. It happened while I was testing a software that I am

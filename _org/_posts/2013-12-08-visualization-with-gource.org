@@ -6,7 +6,7 @@
 #+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
 # #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
 #+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
-#+begin_html
+#+begin_export html
 ---
 layout:     post
 title:      Visualization with Gourse
@@ -17,7 +17,7 @@ summary:    Recently I made a visualization for contributors to
     so I would like to describe how I did it.
 tags: [Visualization, Gourse, Hacking]
 ---
-#+end_html
+#+end_export
 
 Recently I made [[http://www.youtube.com/watch?v=qNCbEVVasto][this visualization]] for contributors to
 https://l10n.org.al for the last two years (2012-2013). This
@@ -38,7 +38,7 @@ would like to describe here how I did it.
 
   Then look at the script below which I used to extract the data.
 
-  #+BEGIN_HTML
+  #+BEGIN_EXPORT HTML
   {% highlight bash %}
   #!/bin/bash
   query="
@@ -53,7 +53,7 @@ would like to describe here how I did it.
   "
   mysql -u root -D btranslator_data -B -e "$query" > contrib.txt
   {% endhighlight %}
-  #+END_HTML
+  #+END_EXPORT
 
   This is simply a join of the tables and extracting the fields that
   are needed. When the time of vote is the same as the time of
@@ -76,7 +76,7 @@ would like to describe here how I did it.
 
   I had to transform the data to this format and I did it with a script
   like this:
-  #+BEGIN_HTML
+  #+BEGIN_EXPORT HTML
   {% highlight bash %}
   #!/bin/bash
 
@@ -93,7 +93,7 @@ would like to describe here how I did it.
       echo "$timestamp|$name|$action|$path"
   done < contrib.txt > contrib.log  
   {% endhighlight %}
-  #+END_HTML
+  #+END_EXPORT
 
   I also made sure that there are no lines containing NULL and that
   the file is sorted in increasing order by the timestamp:
