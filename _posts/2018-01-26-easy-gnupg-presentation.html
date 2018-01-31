@@ -1,9 +1,26 @@
+---
+layout:     post
+title:      Easy GnuPG
+date:       2018-01-26
+
+summary: GnuPG (GNU Privacy Guard) is a complete and free
+    implementation of the OpenPGP standard. It allows you to encrypt
+    and sign your data and communications. GnuPG has scads of options
+    which make it a flexible and powerful encryption
+    framework. However this also makes it extremely complicated to get
+    started with, and that quite reasonably puts people off.EasyGnuPG
+    is a wrapper script that tries to simplify the process of using
+    GnuPG. In order to simplify things, it is opinionated about the
+    "right" way to use GnuPG.
+
+tags: gnupg bash scripting
+---
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2018-01-26 Fri 06:47 -->
+<!-- 2018-01-31 Wed 11:57 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Easy GnuPG</title>
@@ -234,51 +251,25 @@ for the JavaScript code in this tag.
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orgfda2857">1. Introduction</a></li>
-<li><a href="#orgc3db53c">2. EasyGnuPG is opinionated</a></li>
-<li><a href="#orgeef79d6">3. EGPG integrates seamlessly with GPG</a></li>
-<li><a href="#org804cc98">4. Clear and Intuitive terminology</a></li>
-<li><a href="#org03eb500">5. EGPG is transparent and auditable</a></li>
-<li><a href="#orgbe37484">6. EGPG commands</a></li>
-<li><a href="#org6c880c0">7. Managing the keys</a></li>
-<li><a href="#org0e6cde8">8. Extending the features of GPG</a></li>
-<li><a href="#org7e2a4ac">9. Splitting the key</a></li>
-<li><a href="#orgfa3bac1">10. EGPG can work on any platform</a></li>
-<li><a href="#orgd05fa14">11. EGPG is customizable and extensible</a></li>
-<li><a href="#org2933a5a">12. EGPG criticism</a></li>
-<li><a href="#org9cde9bf">13. EGPG improvements</a></li>
+<li><a href="#org296079d">1. Introduction</a></li>
+<li><a href="#org48fa99c">2. EasyGnuPG is opinionated</a></li>
+<li><a href="#org32e2f31">3. EGPG integrates seamlessly with GPG</a></li>
+<li><a href="#org44ec053">4. Clear and Intuitive terminology</a></li>
+<li><a href="#orgc31fd66">5. EGPG is transparent and auditable</a></li>
+<li><a href="#org445e641">6. EGPG commands</a></li>
+<li><a href="#org04290a9">7. Managing the keys</a></li>
+<li><a href="#org95c3927">8. Extending the features of GPG</a></li>
+<li><a href="#org6f2febe">9. Splitting the key</a></li>
+<li><a href="#orge850f14">10. EGPG can work on any platform</a></li>
+<li><a href="#orgf8675c8">11. EGPG is customizable and extensible</a></li>
+<li><a href="#org831f06d">12. EGPG criticism</a></li>
+<li><a href="#orgc7397d1">13. EGPG improvements</a></li>
 </ul>
 </div>
 </div>
-<div class="html">
-<p>
-&#x2014;
-layout:     post
-title:      Easy GnuPG
-date:       2018-01-26
-</p>
 
-<p>
-summary: GnuPG (GNU Privacy Guard) is a complete and free
-    implementation of the OpenPGP standard. It allows you to encrypt
-    and sign your data and communications. GnuPG has scads of options
-    which make it a flexible and powerful encryption
-    framework. However this also makes it extremely complicated to get
-    started with, and that quite reasonably puts people off.EasyGnuPG
-    is a wrapper script that tries to simplify the process of using
-    GnuPG. In order to simplify things, it is opinionated about the
-    "right" way to use GnuPG.
-</p>
-
-<p>
-tags: gnupg bash scripting
-&#x2014;
-</p>
-
-</div>
-
-<div id="outline-container-orgfda2857" class="outline-2">
-<h2 id="orgfda2857"><span class="section-number-2">1</span> Introduction</h2>
+<div id="outline-container-org296079d" class="outline-2">
+<h2 id="org296079d"><span class="section-number-2">1</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 GnuPG (GNU Privacy Guard) is a complete and free implementation of the
@@ -313,8 +304,8 @@ easy to customize, adapt and extend, etc.
 </div>
 
 
-<div id="outline-container-orgc3db53c" class="outline-2">
-<h2 id="orgc3db53c"><span class="section-number-2">2</span> EasyGnuPG is opinionated</h2>
+<div id="outline-container-org48fa99c" class="outline-2">
+<h2 id="org48fa99c"><span class="section-number-2">2</span> EasyGnuPG is opinionated</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 In order to simplify things, EasyGnuPG is opinionated about the
@@ -350,8 +341,8 @@ sufficient for the everyday needs of most of the users.
 </div>
 
 
-<div id="outline-container-orgeef79d6" class="outline-2">
-<h2 id="orgeef79d6"><span class="section-number-2">3</span> EGPG integrates seamlessly with GPG</h2>
+<div id="outline-container-org32e2f31" class="outline-2">
+<h2 id="org32e2f31"><span class="section-number-2">3</span> EGPG integrates seamlessly with GPG</h2>
 <div class="outline-text-2" id="text-3">
 <p>
 In case users need to use some advanced features or commands which are
@@ -381,8 +372,8 @@ contacts (public keys). For example: <code>egpg key fetch -k
 </div>
 
 
-<div id="outline-container-org804cc98" class="outline-2">
-<h2 id="org804cc98"><span class="section-number-2">4</span> Clear and Intuitive terminology</h2>
+<div id="outline-container-org44ec053" class="outline-2">
+<h2 id="org44ec053"><span class="section-number-2">4</span> Clear and Intuitive terminology</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 One of the things that confuses people while using GPG is the
@@ -411,8 +402,8 @@ than editing a key and changing its certification and trust levels.
 </div>
 
 
-<div id="outline-container-org03eb500" class="outline-2">
-<h2 id="org03eb500"><span class="section-number-2">5</span> EGPG is transparent and auditable</h2>
+<div id="outline-container-orgc31fd66" class="outline-2">
+<h2 id="orgc31fd66"><span class="section-number-2">5</span> EGPG is transparent and auditable</h2>
 <div class="outline-text-2" id="text-5">
 <p>
 Being built as a set of shell scripts, EGPG is quite transparent and
@@ -427,8 +418,8 @@ are about 50 lines long on average.
 </div>
 
 
-<div id="outline-container-orgbe37484" class="outline-2">
-<h2 id="orgbe37484"><span class="section-number-2">6</span> EGPG commands</h2>
+<div id="outline-container-org445e641" class="outline-2">
+<h2 id="org445e641"><span class="section-number-2">6</span> EGPG commands</h2>
 <div class="outline-text-2" id="text-6">
 <p>
 The set of commands and options of EGPG is well structured and
@@ -473,8 +464,8 @@ etc.
 </div>
 
 
-<div id="outline-container-org6c880c0" class="outline-2">
-<h2 id="org6c880c0"><span class="section-number-2">7</span> Managing the keys</h2>
+<div id="outline-container-org04290a9" class="outline-2">
+<h2 id="org04290a9"><span class="section-number-2">7</span> Managing the keys</h2>
 <div class="outline-text-2" id="text-7">
 <p>
 To keep things simple, EGPG supports only one private key per
@@ -491,8 +482,8 @@ each-other, which could also avoid any confusion or mistakes.
 </div>
 
 
-<div id="outline-container-org0e6cde8" class="outline-2">
-<h2 id="org0e6cde8"><span class="section-number-2">8</span> Extending the features of GPG</h2>
+<div id="outline-container-org95c3927" class="outline-2">
+<h2 id="org95c3927"><span class="section-number-2">8</span> Extending the features of GPG</h2>
 <div class="outline-text-2" id="text-8">
 <p>
 EGPG combines the features of GPG with external tools/commands in
@@ -535,8 +526,8 @@ the external command <code>egpg key2dongle</code> .
 </div>
 
 
-<div id="outline-container-org7e2a4ac" class="outline-2">
-<h2 id="org7e2a4ac"><span class="section-number-2">9</span> Splitting the key</h2>
+<div id="outline-container-org6f2febe" class="outline-2">
+<h2 id="org6f2febe"><span class="section-number-2">9</span> Splitting the key</h2>
 <div class="outline-text-2" id="text-9">
 <p>
 You can split a key into 3 partial keys, so that any 2 of them can be
@@ -581,8 +572,8 @@ split [-d,--dongle &lt;dir&gt;] [-b,--backup &lt;dir&gt;]
 </div>
 
 
-<div id="outline-container-orgfa3bac1" class="outline-2">
-<h2 id="orgfa3bac1"><span class="section-number-2">10</span> EGPG can work on any platform</h2>
+<div id="outline-container-orge850f14" class="outline-2">
+<h2 id="orge850f14"><span class="section-number-2">10</span> EGPG can work on any platform</h2>
 <div class="outline-text-2" id="text-10">
 <p>
 The file <code>platform.sh</code> contains a couple of functions that can be
@@ -599,8 +590,8 @@ However, currently it has been tested only on Ubuntu and Debian.
 </div>
 
 
-<div id="outline-container-orgd05fa14" class="outline-2">
-<h2 id="orgd05fa14"><span class="section-number-2">11</span> EGPG is customizable and extensible</h2>
+<div id="outline-container-orgf8675c8" class="outline-2">
+<h2 id="orgf8675c8"><span class="section-number-2">11</span> EGPG is customizable and extensible</h2>
 <div class="outline-text-2" id="text-11">
 <p>
 If EGPG doesn't fit your workflow, you can adapt and extend it to fit
@@ -629,8 +620,8 @@ used. For commands about the key the name of the file must be
 </div>
 
 
-<div id="outline-container-org2933a5a" class="outline-2">
-<h2 id="org2933a5a"><span class="section-number-2">12</span> EGPG criticism</h2>
+<div id="outline-container-org831f06d" class="outline-2">
+<h2 id="org831f06d"><span class="section-number-2">12</span> EGPG criticism</h2>
 <div class="outline-text-2" id="text-12">
 <p>
 The EGPG critics have expressed their concerns that since EGPG is just
@@ -658,8 +649,8 @@ a library for doing GPG stuff).
 </div>
 
 
-<div id="outline-container-org9cde9bf" class="outline-2">
-<h2 id="org9cde9bf"><span class="section-number-2">13</span> EGPG improvements</h2>
+<div id="outline-container-orgc7397d1" class="outline-2">
+<h2 id="orgc7397d1"><span class="section-number-2">13</span> EGPG improvements</h2>
 <div class="outline-text-2" id="text-13">
 <p>
 There is a proposed project on GSoC about possible improvements to EGPG:
@@ -687,7 +678,7 @@ usage scenarios (for example keeping the master key on a card).</li>
 <div id="postamble" class="status">
 <p class="date">Date: 2018-01-26</p>
 <p class="author">Author: Dashamir Hoxha</p>
-<p class="date">Created: 2018-01-26 Fri 06:47</p>
+<p class="date">Created: 2018-01-31 Wed 11:57</p>
 <p class="validation"></p>
 </div>
 </body>
