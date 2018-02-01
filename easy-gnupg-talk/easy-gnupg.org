@@ -12,12 +12,14 @@
 #+REVEAL_TRANS: linear
 
 * FOSDEM 2018
+
 #+begin_export html
 <h1 class="title">Easy GnuPG</h1>
 <h2 class="author">Dashamir Hoxha</h2>
 <h3 class="email">dashohoxha@gmail.com</h3>
 <h4>https://github.com/dashohoxha/egpg</h4>
 #+end_export
+
 
 * What is GnuPG
 
@@ -250,7 +252,7 @@
     order to achieve better results or to be more user-friendly.
 
   + For example, when making the backup of the key, the output is
-    produced as a PDF file with a 2D barcode, which can be printed on
+    produced as a _PDF file_ with a _2D barcode_, which can be printed on
     paper and stored away on a safe place. Later this can be easily
     scanned back to digital format and restored.
 
@@ -258,7 +260,7 @@
 
   + This is achieved by exporting the key from GPG in ASCII armor
     format, then using a bunch of Linux commands and tools, like
-    qrencode and convert, to convert it to the proper PDF format.
+    *qrencode* and *convert*, to convert it to the proper PDF format.
 
   + There is nothing that cannot be done manually or with a shell
     script, but EGPG already automates things for you in a single
@@ -271,10 +273,11 @@
     barcode and picking it up from the camera.
   + This can simplify the exchange of keys in mobile phones, if people
     have physical contact.
-  + For example in a meeting (one of them can show the code on the
+  + For example in a meeting one of them can show the code on the
     screen, and the other one can scan it from the camera, and
-    automatically fetch the details from a keyserver).
-  + Or it can be printed and scaned from a business card.
+    automatically fetch the details from a keyserver.
+  + Or the fingerprint can be printed as a 2D barcode on a business
+    card, and scanned from there.
 
 ** EGPG extends the features of GPG
 
@@ -286,7 +289,6 @@
     #+begin_example
     egpg key2dongle
     #+end_example
-
 
 * Splitting the key
 
@@ -304,7 +306,7 @@
 
   + Splitting the key into partial keys makes key management safer and
     more robust.
-  + In case that you loose the dongle the key is not deconspired,
+  + In case that you loose the dongle, the key is not deconspired,
     because a single partial key is not enough to reconstruct the full
     key.
   + The same goes for the backup partial key; you can store it on
@@ -370,6 +372,18 @@
   + For commands about the key the name of the file must be
     *cmd_key_example.sh*
   + For commands about contacts it must be *cmd_contact_example.sh*
+
+
+* EGPG enables scripting
+
+  + I think that it is time to stop writting detailed tutorials with
+    best practices on how to use GPG on certain situations.
+
+  + Write instead scripts (in EGPG or some other framework) that
+    automate these processes.
+
+  + GPG itself does not facilitate writing such scripts and EGPG tries
+    to improve this.
 
 
 * EGPG criticism

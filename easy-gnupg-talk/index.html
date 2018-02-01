@@ -28,18 +28,19 @@
 <div class="slides">
 
 <section>
-<section id="slide-orgdfb1962">
-<h2 id="orgdfb1962">FOSDEM 2018</h2>
+<section id="slide-org18e8b3e">
+<h2 id="org18e8b3e">FOSDEM 2018</h2>
 <h1 class="title">Easy GnuPG</h1>
 <h2 class="author">Dashamir Hoxha</h2>
 <h3 class="email">dashohoxha@gmail.com</h3>
 <h4>https://github.com/dashohoxha/egpg</h4>
 
+
 </section>
 </section>
 <section>
-<section id="slide-org06e89bf">
-<h2 id="org06e89bf">What is GnuPG</h2>
+<section id="slide-org90577a9">
+<h2 id="org90577a9">What is GnuPG</h2>
 <ul>
 <li><b>GnuPG (GNU Privacy Guard)</b> is a complete and free implementation of
 the <b>OpenPGP</b> standard. It allows you to encrypt and sign your data
@@ -53,8 +54,8 @@ people off.</li>
 </ul>
 
 </section>
-<section id="slide-orgeec075f">
-<h3 id="orgeec075f">GnuPG is difficult</h3>
+<section id="slide-orga0aa064">
+<h3 id="orga0aa064">GnuPG is difficult</h3>
 <ul>
 <li>I have tried to use GnuPG since a long time ago, spent a lot of
 time reading detailed and complicated tutorials, manuals etc. and
@@ -64,8 +65,8 @@ still I find myself lost when trying to use GnuPG.</li>
 
 
 </section>
-<section id="slide-org49080d4">
-<h3 id="org49080d4">Problems with GnuPG (in my opinion)</h3>
+<section id="slide-org920ba96">
+<h3 id="org920ba96">Problems with GnuPG (in my opinion)</h3>
 <ul>
 <li>The <b>gpg</b> command is monolithic, bloated with functionality and options.</li>
 <li>The docs are not clearly structured.</li>
@@ -79,8 +80,8 @@ still I find myself lost when trying to use GnuPG.</li>
 </section>
 </section>
 <section>
-<section id="slide-org0784fb8">
-<h2 id="org0784fb8">What is EasyGnuPG</h2>
+<section id="slide-orgb28e200">
+<h2 id="orgb28e200">What is EasyGnuPG</h2>
 <ul>
 <li><b>EasyGnuPG</b> is a <span class="underline">wrapper script</span> that aims to <span class="underline">simplify</span> the process of
 using GnuPG.</li>
@@ -89,8 +90,8 @@ using GnuPG.</li>
 </ul>
 
 </section>
-<section id="slide-org86074f9">
-<h3 id="org86074f9">What is EasyGnuPG</h3>
+<section id="slide-orgc70b69a">
+<h3 id="orgc70b69a">What is EasyGnuPG</h3>
 <ul>
 <li>It tries to offer:
 <ul>
@@ -109,8 +110,8 @@ using GnuPG.</li>
 </section>
 </section>
 <section>
-<section id="slide-org8854b2c">
-<h2 id="org8854b2c">EasyGnuPG is opinionated</h2>
+<section id="slide-org5d51cd3">
+<h2 id="org5d51cd3">EasyGnuPG is opinionated</h2>
 <ul>
 <li>In order to simplify things, <b>EasyGnuPG</b> is opinionated about the
 "right" way to use GnuPG. This means that while <b>GPG</b> offers lots of
@@ -121,8 +122,8 @@ bewilder the user with countless choices.</li>
 </ul>
 
 </section>
-<section id="slide-org6c5e2b9">
-<h3 id="org6c5e2b9">EasyGnuPG is opinionated</h3>
+<section id="slide-org6aa05c1">
+<h3 id="org6aa05c1">EasyGnuPG is opinionated</h3>
 <ul>
 <li>For example, when you create a new key in GPG you have to specify
 a lot of options, most of which make no sense for a beginner, so
@@ -136,8 +137,8 @@ practices of using GPG.</li>
 </ul>
 
 </section>
-<section id="slide-org39c2bc0">
-<h3 id="org39c2bc0">EasyGnuPG is opinionated</h3>
+<section id="slide-org36d6a73">
+<h3 id="org36d6a73">EasyGnuPG is opinionated</h3>
 <ul>
 <li>Or, when encrypting a file, it also automatically signs it,
 encrypts it to the author as well, and generates the output in the
@@ -147,8 +148,8 @@ binary format.</li>
 </ul>
 
 </section>
-<section id="slide-org105540a">
-<h3 id="org105540a">EasyGnuPG is opinionated</h3>
+<section id="slide-org31dcd15">
+<h3 id="org31dcd15">EasyGnuPG is opinionated</h3>
 <ul>
 <li>This simplicity makes it easier for the beginners to get started.</li>
 <li>At the same time, the selected subset of operations and features
@@ -161,8 +162,8 @@ be sufficient for the everyday needs of most of the users.</li>
 </section>
 </section>
 <section>
-<section id="slide-org8b58293">
-<h2 id="org8b58293">EGPG integrates seamlessly with GPG</h2>
+<section id="slide-orgad4a969">
+<h2 id="orgad4a969">EGPG integrates seamlessly with GPG</h2>
 <ul>
 <li>In case users need to use some advanced features or commands which
 are not supported by EGPG, they can go on and use GPG itself at
@@ -174,8 +175,8 @@ users for doing more advanced or complex things.</li>
 </ul>
 
 </section>
-<section id="slide-orga7b9593">
-<h3 id="orga7b9593">EGPG integrates seamlessly with GPG</h3>
+<section id="slide-org53e83d3">
+<h3 id="org53e83d3">EGPG integrates seamlessly with GPG</h3>
 <ul>
 <li><p>
 For example, if you want to do some extra editing to the key,
@@ -193,8 +194,8 @@ that it uses the same environment (<code>GNUPGHOME</code>) as <code>egpg</code>.
 </ul>
 
 </section>
-<section id="slide-org357ac3e">
-<h3 id="org357ac3e">EGPG integrates seamlessly with GPG</h3>
+<section id="slide-org481aa8c">
+<h3 id="org481aa8c">EGPG integrates seamlessly with GPG</h3>
 <ul>
 <li>Also, when initiating a new EGPG environment (with <code>egpg init</code>), you
 can migrate all the data from an existing GPG or EGPG environment
@@ -214,8 +215,8 @@ egpg contact fetch 01D532A283DC1CBF
 </section>
 </section>
 <section>
-<section id="slide-orga14c837">
-<h2 id="orga14c837">EGPG has a clear and intuitive terminology</h2>
+<section id="slide-org4aaea97">
+<h2 id="org4aaea97">EGPG has a clear and intuitive terminology</h2>
 <ul>
 <li>One of the things that confuses people while using GPG is the
 overloaded and unclear terminology about keys, about signatures,
@@ -226,8 +227,8 @@ the private keys and the public keys.</li>
 </ul>
 
 </section>
-<section id="slide-org0cc5bad">
-<h3 id="org0cc5bad">EGPG has a clear and intuitive terminology</h3>
+<section id="slide-org7e83f67">
+<h3 id="org7e83f67">EGPG has a clear and intuitive terminology</h3>
 <ul>
 <li>In EGPG there is only one primary <b>key</b>, which is used for
 signing, and a subkey which is used for decryption.</li>
@@ -239,8 +240,8 @@ signatures).</li>
 </ul>
 
 </section>
-<section id="slide-orgeaf7ce7">
-<h3 id="orgeaf7ce7">EGPG has a clear and intuitive terminology</h3>
+<section id="slide-orged9a617">
+<h3 id="orged9a617">EGPG has a clear and intuitive terminology</h3>
 <ul>
 <li>If you say <b>public key</b> to a beginner, you will also have to
 explain to him some cryptographic details and how public keys
@@ -257,8 +258,8 @@ levels.</li>
 </section>
 </section>
 <section>
-<section id="slide-org58f5825">
-<h2 id="org58f5825">EGPG is transparent and auditable</h2>
+<section id="slide-org3adfa72">
+<h2 id="org3adfa72">EGPG is transparent and auditable</h2>
 <ul>
 <li>Being built as a set of shell scripts, EGPG is quite transparent
 and auditable (different from a GUI for example, or a web
@@ -269,8 +270,8 @@ read them, or have someone you trust read them.</li>
 </ul>
 
 </section>
-<section id="slide-org0fb5205">
-<h3 id="org0fb5205">EGPG is transparent and auditable</h3>
+<section id="slide-orgb341a4b">
+<h3 id="orgb341a4b">EGPG is transparent and auditable</h3>
 <ul>
 <li>The size of the main script is less than 250 lines, well within
 the reach of most of the users.</li>
@@ -283,8 +284,8 @@ these scripts are about 50 lines long on average.</li>
 </section>
 </section>
 <section>
-<section id="slide-orgcf679a5">
-<h2 id="orgcf679a5">EGPG commands</h2>
+<section id="slide-org66608b1">
+<h2 id="org66608b1">EGPG commands</h2>
 <ul>
 <li>The set of commands and options of EGPG is well structured and
 intuitive.  There are commands for:
@@ -299,8 +300,8 @@ intuitive.  There are commands for:
 </ul>
 
 </section>
-<section id="slide-org1f82910">
-<h3 id="org1f82910">EGPG file commands</h3>
+<section id="slide-orga8b6ce2">
+<h3 id="orga8b6ce2">EGPG file commands</h3>
 <ul>
 <li><p>
 The commands for working with files are these:
@@ -325,8 +326,8 @@ egpg verify &lt;file.signature&gt;
 </ul>
 
 </section>
-<section id="slide-org13b81b3">
-<h3 id="org13b81b3">EGPG key commands</h3>
+<section id="slide-org8e620d4">
+<h3 id="org8e620d4">EGPG key commands</h3>
 <ul>
 <li>There are commands to:
 <ul>
@@ -343,8 +344,8 @@ egpg verify &lt;file.signature&gt;
 </ul>
 
 </section>
-<section id="slide-orga4973a9">
-<h3 id="orga4973a9">EGPG contact commands</h3>
+<section id="slide-org78225c3">
+<h3 id="org78225c3">EGPG contact commands</h3>
 <ul>
 <li>The commands about contacts include:
 <ul>
@@ -363,8 +364,8 @@ network</li>
 </section>
 </section>
 <section>
-<section id="slide-org7917dd9">
-<h2 id="org7917dd9">Managing the keys</h2>
+<section id="slide-org367d406">
+<h2 id="org367d406">Managing the keys</h2>
 <ul>
 <li>To keep things simple, EGPG supports only one private key per
 directory.</li>
@@ -375,8 +376,8 @@ which can work in parallel and independently of each-other.</li>
 </ul>
 
 </section>
-<section id="slide-orga73fd47">
-<h3 id="orga73fd47">Managing the keys</h3>
+<section id="slide-org1543ec5">
+<h3 id="org1543ec5">Managing the keys</h3>
 <ul>
 <li>This is a design decision and is on purpose, not only for
 simplicity, but also because when you need more than one key, you
@@ -391,26 +392,26 @@ using them.</li>
 </section>
 </section>
 <section>
-<section id="slide-orgfacbdd9">
-<h2 id="orgfacbdd9">EGPG extends the features of GPG</h2>
+<section id="slide-orgbfb1ac1">
+<h2 id="orgbfb1ac1">EGPG extends the features of GPG</h2>
 <ul>
 <li>EGPG combines the features of GPG with external tools/commands in
 order to achieve better results or to be more user-friendly.</li>
 
 <li>For example, when making the backup of the key, the output is
-produced as a PDF file with a 2D barcode, which can be printed on
+produced as a <span class="underline">PDF file</span> with a <span class="underline">2D barcode</span>, which can be printed on
 paper and stored away on a safe place. Later this can be easily
 scanned back to digital format and restored.</li>
 
 </ul>
 
 </section>
-<section id="slide-orgc5daaac">
-<h3 id="orgc5daaac">EGPG extends the features of GPG</h3>
+<section id="slide-org483d79c">
+<h3 id="org483d79c">EGPG extends the features of GPG</h3>
 <ul>
 <li>This is achieved by exporting the key from GPG in ASCII armor
 format, then using a bunch of Linux commands and tools, like
-qrencode and convert, to convert it to the proper PDF format.</li>
+<b>qrencode</b> and <b>convert</b>, to convert it to the proper PDF format.</li>
 
 <li>There is nothing that cannot be done manually or with a shell
 script, but EGPG already automates things for you in a single
@@ -420,23 +421,24 @@ practices and recommendations.</li>
 </ul>
 
 </section>
-<section id="slide-org489a223">
-<h3 id="org489a223">EGPG extends the features of GPG</h3>
+<section id="slide-orgb447ec9">
+<h3 id="orgb447ec9">EGPG extends the features of GPG</h3>
 <ul>
 <li>Another example is printing the fingerprint of the key as a 2D
 barcode and picking it up from the camera.</li>
 <li>This can simplify the exchange of keys in mobile phones, if people
 have physical contact.</li>
-<li>For example in a meeting (one of them can show the code on the
+<li>For example in a meeting one of them can show the code on the
 screen, and the other one can scan it from the camera, and
-automatically fetch the details from a keyserver).</li>
-<li>Or it can be printed and scaned from a business card.</li>
+automatically fetch the details from a keyserver.</li>
+<li>Or the fingerprint can be printed as a 2D barcode on a business
+card, and scanned from there.</li>
 
 </ul>
 
 </section>
-<section id="slide-org0827bbf">
-<h3 id="org0827bbf">EGPG extends the features of GPG</h3>
+<section id="slide-org47a1831">
+<h3 id="org47a1831">EGPG extends the features of GPG</h3>
 <ul>
 <li>Yet another example is moving the main key (that is used for
 signing and certification) to a dongle (USB flash drive), for
@@ -451,12 +453,11 @@ egpg key2dongle
 
 </ul>
 
-
 </section>
 </section>
 <section>
-<section id="slide-orgd15c45a">
-<h2 id="orgd15c45a">Splitting the key</h2>
+<section id="slide-orgd27e898">
+<h2 id="orgd27e898">Splitting the key</h2>
 <ul>
 <li>You can split a key into 3 partial keys, so that any 2 of them can
 be combined to recreate the original key (but a single one is not
@@ -471,12 +472,12 @@ stored for example on a cloud account.</li>
 </ul>
 
 </section>
-<section id="slide-org17ef8b1">
-<h3 id="org17ef8b1">Splitting the key</h3>
+<section id="slide-orgf00f49f">
+<h3 id="orgf00f49f">Splitting the key</h3>
 <ul>
 <li>Splitting the key into partial keys makes key management safer and
 more robust.</li>
-<li>In case that you loose the dongle the key is not deconspired,
+<li>In case that you loose the dongle, the key is not deconspired,
 because a single partial key is not enough to reconstruct the full
 key.</li>
 <li>The same goes for the backup partial key; you can store it on
@@ -489,8 +490,8 @@ partial key.</li>
 </ul>
 
 </section>
-<section id="slide-org5e8875e">
-<h3 id="org5e8875e">Splitting the key</h3>
+<section id="slide-orge27f5e4">
+<h3 id="orge27f5e4">Splitting the key</h3>
 <ul>
 <li><p>
 EGPG manages all this with simple commands:
@@ -517,8 +518,8 @@ egpg key recover &lt;backup-partial.key.xyz&gt;
 </section>
 </section>
 <section>
-<section id="slide-orga21987d">
-<h2 id="orga21987d">EGPG can work on any platform</h2>
+<section id="slide-org3e3098f">
+<h2 id="org3e3098f">EGPG can work on any platform</h2>
 <ul>
 <li>The file <b>platform.sh</b> contains a couple of functions that can be
 platform dependent.</li>
@@ -533,8 +534,8 @@ overridden with the right implementation for the current platform.</li>
 </section>
 </section>
 <section>
-<section id="slide-orgfcfa1b6">
-<h2 id="orgfcfa1b6">EGPG is customizable and extensible</h2>
+<section id="slide-orgad91080">
+<h2 id="orgad91080">EGPG is customizable and extensible</h2>
 <ul>
 <li>If EGPG doesn't fit your workflow, you can adapt and extend it to
 fit your way of doing things.</li>
@@ -544,8 +545,8 @@ external commands.</li>
 </ul>
 
 </section>
-<section id="slide-orgd461063">
-<h3 id="orgd461063">EGPG is customizable and extensible</h3>
+<section id="slide-orgcc88063">
+<h3 id="orgcc88063">EGPG is customizable and extensible</h3>
 <ul>
 <li>The file <b>$EGPG_DIR/customize.sh</b> can be used to redefine and
 customize some functions, without having to touch the code of the
@@ -557,8 +558,8 @@ the file <b>$EGPG_DIR/cmd_example.sh</b>, which contains the function
 </ul>
 
 </section>
-<section id="slide-org0793b85">
-<h3 id="org0793b85">EGPG is customizable and extensible</h3>
+<section id="slide-org43eda98">
+<h3 id="org43eda98">EGPG is customizable and extensible</h3>
 <ul>
 <li><p>
 For an external command the script will look:
@@ -582,8 +583,26 @@ The first that is found is loaded and used.
 </section>
 </section>
 <section>
-<section id="slide-org662af56">
-<h2 id="org662af56">EGPG criticism</h2>
+<section id="slide-orge0e8329">
+<h2 id="orge0e8329">EGPG enables scripting</h2>
+<ul>
+<li>I think that it is time to stop writting detailed tutorials with
+best practices on how to use GPG on certain situations.</li>
+
+<li>Write instead scripts (in EGPG or some other framework) that
+automate these processes.</li>
+
+<li>GPG itself does not facilitate writing such scripts and EGPG tries
+to improve this.</li>
+
+</ul>
+
+
+</section>
+</section>
+<section>
+<section id="slide-org017ea4a">
+<h2 id="org017ea4a">EGPG criticism</h2>
 <ul>
 <li>The EGPG critics have expressed their concerns that since EGPG is
 just a wrapper script to GPG, it is too fragile.</li>
@@ -596,8 +615,8 @@ changes can break EGPG.</li>
 </ul>
 
 </section>
-<section id="slide-org0dbda1a">
-<h3 id="org0dbda1a">EGPG criticism</h3>
+<section id="slide-orgef77562">
+<h3 id="orgef77562">EGPG criticism</h3>
 <ul>
 <li>A possible defense argument can be that EGPG should be used only
 with stable releases of Linux distributions, which by definition
@@ -617,8 +636,8 @@ is to re-implement parts of EGPG with Python bindings of GPGME
 </section>
 </section>
 <section>
-<section id="slide-orga0b5297">
-<h2 id="orga0b5297">EGPG improvements</h2>
+<section id="slide-org96b25af">
+<h2 id="org96b25af">EGPG improvements</h2>
 <ul>
 <li>There is a proposed project on GSoC about possible improvements to
 EGPG: <a href="https://wiki.debian.org/SummerOfCode2018/Projects/EasyGnuPG">https://wiki.debian.org/SummerOfCode2018/Projects/EasyGnuPG</a></li>
@@ -629,8 +648,8 @@ students.</li>
 </ul>
 
 </section>
-<section id="slide-orgc72a4d6">
-<h3 id="orgc72a4d6">EGPG improvements</h3>
+<section id="slide-org4179899">
+<h3 id="org4179899">EGPG improvements</h3>
 <ul>
 <li>Some of the potential improvements are:
 <ul>
@@ -649,8 +668,8 @@ card).</li>
 </section>
 </section>
 <section>
-<section id="slide-orgd0aa9de">
-<h2 id="orgd0aa9de">Thank you for your attention</h2>
+<section id="slide-orgb19f317">
+<h2 id="orgb19f317">Thank you for your attention</h2>
 <ul>
 <li>Any questions or comments?
 <ul>
