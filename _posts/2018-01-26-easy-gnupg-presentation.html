@@ -20,7 +20,7 @@ tags: gnupg bash scripting
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2018-01-31 Wed 11:57 -->
+<!-- 2018-02-03 Sat 17:40 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Easy GnuPG</title>
@@ -251,66 +251,87 @@ for the JavaScript code in this tag.
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org296079d">1. Introduction</a></li>
-<li><a href="#org48fa99c">2. EasyGnuPG is opinionated</a></li>
-<li><a href="#org32e2f31">3. EGPG integrates seamlessly with GPG</a></li>
-<li><a href="#org44ec053">4. Clear and Intuitive terminology</a></li>
-<li><a href="#orgc31fd66">5. EGPG is transparent and auditable</a></li>
-<li><a href="#org445e641">6. EGPG commands</a></li>
-<li><a href="#org04290a9">7. Managing the keys</a></li>
-<li><a href="#org95c3927">8. Extending the features of GPG</a></li>
-<li><a href="#org6f2febe">9. Splitting the key</a></li>
-<li><a href="#orge850f14">10. EGPG can work on any platform</a></li>
-<li><a href="#orgf8675c8">11. EGPG is customizable and extensible</a></li>
-<li><a href="#org831f06d">12. EGPG criticism</a></li>
-<li><a href="#orgc7397d1">13. EGPG improvements</a></li>
+<li><a href="#org7ce1dd4">1. What is GnuPG</a></li>
+<li><a href="#orge899c85">2. What is EasyGnuPG</a></li>
+<li><a href="#orgc976531">3. EasyGnuPG is opinionated</a></li>
+<li><a href="#orgb7771a6">4. EGPG integrates seamlessly with GPG</a></li>
+<li><a href="#org3f69869">5. EGPG has a clear and intuitive terminology</a></li>
+<li><a href="#org9b558a4">6. EGPG is transparent and auditable</a></li>
+<li><a href="#orga0a20b8">7. EGPG commands</a></li>
+<li><a href="#orgd0483b2">8. Managing the keys</a></li>
+<li><a href="#org0d2cc7c">9. EGPG extends the features of GPG</a></li>
+<li><a href="#orgab4c138">10. Splitting the key</a></li>
+<li><a href="#orgc9acd14">11. EGPG can work on any platform</a></li>
+<li><a href="#org15cf98a">12. EGPG is customizable and extensible</a></li>
+<li><a href="#org34161a4">13. EGPG enables scripting</a></li>
+<li><a href="#orged7b59e">14. EGPG criticism</a></li>
+<li><a href="#org1b2bd62">15. EGPG improvements</a></li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-org296079d" class="outline-2">
-<h2 id="org296079d"><span class="section-number-2">1</span> Introduction</h2>
+
+<div id="outline-container-org7ce1dd4" class="outline-2">
+<h2 id="org7ce1dd4"><span class="section-number-2">1</span> What is GnuPG</h2>
 <div class="outline-text-2" id="text-1">
 <p>
-GnuPG (GNU Privacy Guard) is a complete and free implementation of the
-OpenPGP standard. It allows you to encrypt and sign your data and
-communications. GnuPG has scads of options which make it a flexible
-and powerful encryption framework. However this also makes it
-extremely complicated to get started with, and that quite reasonably
-puts people off.
+<b>GnuPG (GNU Privacy Guard)</b> is a complete and free implementation of the
+<b>OpenPGP</b> standard. It allows you to encrypt and sign your data and
+communications.
+</p>
+
+<p>
+<b>GnuPG</b> has <span class="underline">scads of options</span> which make it a <span class="underline">flexible</span> and <span class="underline">powerful</span>
+encryption framework. However this also makes it <span class="underline">extremely complicated</span>
+to get started with, and that quite reasonably puts people off.
 </p>
 
 <p>
 I have tried to use GnuPG since a long time ago, spent a lot of time
 reading detailed and complicated tutorials, manuals etc. and still I
-find myself lost when trying to use GnuPG. Some of the problems with
-GnuPG, in my opinion, are that the `gpg` command is monolithic,
-bloated with functionality and options, the docs are not clearly
-structured, the number of commands and options is huge, there is no
-clear distinction between the commands and the options, the supported
-use cases are not so clear (it tries to support everything), the
-terminology is a bit confusing and counter-intuitive, etc.
+find myself lost when trying to use GnuPG.
 </p>
 
 <p>
-EasyGnuPG is a wrapper script that aims to simplify the process of
-using GnuPG. The more people using strong encryption, the better for
-everyone. It tries to present to the users a simpler interface, with
-much less commands and options, better organized and structured, with
-a more intuitive terminology, with a modular construction that is also
-easy to customize, adapt and extend, etc.
+Some of the problems with GnuPG (in my opinion) are these:
 </p>
+<ul class="org-ul">
+<li>The <b>gpg</b> command is monolithic, bloated with functionality and options.</li>
+<li>The docs are not clearly structured.</li>
+<li>The number of commands and options is huge.</li>
+<li>There is no clear distinction between the commands and the options.</li>
+<li>The supported use cases are not so clear (it tries to support everything).</li>
+<li>The terminology is a bit confusing and counter-intuitive.</li>
+</ul>
 </div>
 </div>
 
-
-<div id="outline-container-org48fa99c" class="outline-2">
-<h2 id="org48fa99c"><span class="section-number-2">2</span> EasyGnuPG is opinionated</h2>
+<div id="outline-container-orge899c85" class="outline-2">
+<h2 id="orge899c85"><span class="section-number-2">2</span> What is EasyGnuPG</h2>
 <div class="outline-text-2" id="text-2">
 <p>
-In order to simplify things, EasyGnuPG is opinionated about the
-"right" way to use GnuPG. This means that while GPG offers lots of
-options and flexibility to perform a certain task, EGPG uses just a
+<b>EasyGnuPG</b> is a <span class="underline">wrapper script</span> that aims to <span class="underline">simplify</span> the process of
+using GnuPG. It tries to offer:
+</p>
+<ul class="org-ul">
+<li>a simpler interface</li>
+<li>with much less commands and options</li>
+<li>better organized and structured</li>
+<li>with a more intuitive terminology</li>
+<li>with a modular construction</li>
+<li>that is also easy to customize, adapt and extend</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-orgc976531" class="outline-2">
+<h2 id="orgc976531"><span class="section-number-2">3</span> EasyGnuPG is opinionated</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+In order to simplify things, <b>EasyGnuPG</b> is opinionated about the
+"right" way to use GnuPG. This means that while <b>GPG</b> offers lots of
+options and flexibility to perform a certain task, <b>EGPG</b> uses just a
 sensible default way, in order to keep things simple and not to
 bewilder the user with countless choices.
 </p>
@@ -332,65 +353,86 @@ it to the author as well, and generates the output in the text format
 </p>
 
 <p>
-This simplicity makes it easier for the beginners to get started. At
-the same time, the selected subset of operations and features covers
-most of the common cases of usage, so hopefully it should be
+This simplicity makes it easier for the beginners to get started.
+</p>
+
+<p>
+At the same time, the selected subset of operations and features
+covers most of the common cases of usage, so hopefully it should be
 sufficient for the everyday needs of most of the users.
 </p>
 </div>
 </div>
 
 
-<div id="outline-container-org32e2f31" class="outline-2">
-<h2 id="org32e2f31"><span class="section-number-2">3</span> EGPG integrates seamlessly with GPG</h2>
-<div class="outline-text-2" id="text-3">
+<div id="outline-container-orgb7771a6" class="outline-2">
+<h2 id="orgb7771a6"><span class="section-number-2">4</span> EGPG integrates seamlessly with GPG</h2>
+<div class="outline-text-2" id="text-4">
 <p>
 In case users need to use some advanced features or commands which are
 not supported by EGPG, they can go on and use GPG itself at any time,
-because EGPG also integrates seamlessly with GPG. So, the reduced set
-of supported operations and features, while being convenient for
-everyday usage, does not limit or prevent users for doing more
-advanced or complex things.
+because EGPG also integrates seamlessly with GPG.
+</p>
+
+<p>
+So, the reduced set of supported operations and features, while being
+convenient for everyday usage, does not limit or prevent users for
+doing more advanced or complex things.
 </p>
 
 <p>
 For example, if you want to do some extra editing to the key, which
 can't be done with EGPG due to its limited set of functionality, you
-can do it like this: <code>egpg gpg --edit-key 562AC309C01D2DBD</code> Running <code>gpg</code>
-as a subcommand of <code>egpg</code> will ensure that it uses the same environment
-(GNUPGHOME) as <code>egpg</code>.
+can do it like this:
+</p>
+<pre class="example">
+egpg gpg --edit-key 562AC309C01D2DBD
+</pre>
+<p>
+Running <code>gpg</code> as a subcommand of <code>egpg</code> will ensure that it uses the same
+environment (<code>GNUPGHOME</code>) as <code>egpg</code>.
 </p>
 
 <p>
 Also, when initiating a new EGPG environment (with <code>egpg init</code>), you can
 migrate all the data from an existing GPG or EGPG environment (with
-<code>egpg migrate</code>). Or you can fetch (pick up) only certain keys or
-contacts (public keys). For example: <code>egpg key fetch -k
-01D532A283DC1CBF</code> or <code>egpg contact fetch 01D532A283DC1CBF</code>.
+<code>egpg migrate</code>).
 </p>
+
+<p>
+Or you can fetch (pick up) only certain keys or contacts (public
+keys). For example:
+</p>
+<pre class="example">
+egpg key fetch -k 01D532A283DC1CBF
+egpg contact fetch 01D532A283DC1CBF
+</pre>
 </div>
 </div>
 
 
-<div id="outline-container-org44ec053" class="outline-2">
-<h2 id="org44ec053"><span class="section-number-2">4</span> Clear and Intuitive terminology</h2>
-<div class="outline-text-2" id="text-4">
+<div id="outline-container-org3f69869" class="outline-2">
+<h2 id="org3f69869"><span class="section-number-2">5</span> EGPG has a clear and intuitive terminology</h2>
+<div class="outline-text-2" id="text-5">
 <p>
 One of the things that confuses people while using GPG is the
 overloaded and unclear terminology about keys, about signatures, etc.
 EGPG tries to improve this by making a clear distinction between the
-private keys and the public keys. In EGPG there is only one primary
-"key", which is used for signing, and a subkey which is used for
-decryption. All the public keys are called "contacts", since they
-contain the names and email addresses of the people that you use to
-communicate (either send them encrypted messages or verify their
-signatures).
+private keys and the public keys.
 </p>
 
 <p>
-If you say "public key" to a beginner, you will also have to explain
-to him some cryptographic details and how public keys should be used.
-But if you say "contact" everybody gets that it contains details that
+In EGPG there is only one primary <b>key</b>, which is used for signing, and
+a subkey which is used for decryption. All the public keys are called
+<b>contacts</b>, since they contain the names and email addresses of the
+people that you use to communicate (either send them encrypted
+messages or verify their signatures).
+</p>
+
+<p>
+If you say <b>public key</b> to a beginner, you will also have to explain to
+him some cryptographic details and how public keys should be used.
+But if you say <b>contact</b> everybody gets that it contains details that
 enable and facilitate communication.
 </p>
 
@@ -402,89 +444,114 @@ than editing a key and changing its certification and trust levels.
 </div>
 
 
-<div id="outline-container-orgc31fd66" class="outline-2">
-<h2 id="orgc31fd66"><span class="section-number-2">5</span> EGPG is transparent and auditable</h2>
-<div class="outline-text-2" id="text-5">
-<p>
-Being built as a set of shell scripts, EGPG is quite transparent and
-auditable (different from a GUI for example, or a web service). If you
-are concerned about what it does, open up the files and read them, or
-have someone you trust read them. The size of the main script is less
-than 250 lines, well within the reach of most of the users. Most of
-the commands are implemented on their own script, and these scripts
-are about 50 lines long on average.
-</p>
-</div>
-</div>
-
-
-<div id="outline-container-org445e641" class="outline-2">
-<h2 id="org445e641"><span class="section-number-2">6</span> EGPG commands</h2>
+<div id="outline-container-org9b558a4" class="outline-2">
+<h2 id="org9b558a4"><span class="section-number-2">6</span> EGPG is transparent and auditable</h2>
 <div class="outline-text-2" id="text-6">
 <p>
-The set of commands and options of EGPG is well structured and
-intuitive.  There are commands for working with files (for signing and
-encryption), commands for managing the key, commands for managing
-contacts, and other extra commands.
+Being built as a set of shell scripts, EGPG is quite transparent and
+auditable (different from a GUI for example, or a web service).  If
+you are concerned about what it does, open up the files and read them,
+or have someone you trust read them.
 </p>
 
 <p>
-The commands for managing the files are these:
+The size of the main script is less than 250 lines, well within the
+reach of most of the users.  Most of the commands are implemented on
+their own script, and these scripts are about 50 lines long on
+average.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orga0a20b8" class="outline-2">
+<h2 id="orga0a20b8"><span class="section-number-2">7</span> EGPG commands</h2>
+<div class="outline-text-2" id="text-7">
+<p>
+The set of commands and options of EGPG is well structured and
+intuitive.  There are commands for:
+</p>
+<ul class="org-ul">
+<li>working with files (for signing and encryption)</li>
+<li>managing the key</li>
+<li>managing contacts</li>
+<li>other extra commands</li>
+</ul>
+
+<p>
+EGPG file commands:
 </p>
 <pre class="example">
-seal &lt;file&gt; [&lt;recipient&gt;...]
+egpg seal &lt;file&gt; [&lt;recipient&gt;...]
     Sign and encrypt a file. The resulting file will have the
     extension '.sealed'. The original file will be erased.
 
-open &lt;file.sealed&gt;
+egpg open &lt;file.sealed&gt;
     Decrypt and verify the signature of the given file.
     The file has to end with '.sealed' and the output will have
     that extension stripped.
 
-sign &lt;file&gt;
+egpg sign &lt;file&gt;
     Sign a file. The signature will be saved to &lt;file.signature&gt;.
 
-verify &lt;file.signature&gt;
+egpg verify &lt;file.signature&gt;
     Verify the signature. The signed file must be present as well.
 </pre>
 
 <p>
-There are commands to generate a new key or fetch an existing one, to
-backup and restore the key, to split and join the key, to generate a
-revocation certificate and to revoke the key, to delete the key, etc.
+The key commands include:
 </p>
+<ul class="org-ul">
+<li>generate a new key or fetch an existing one</li>
+<li>to backup and restore the key</li>
+<li>to split and join the key</li>
+<li>to generate a revocation certificate</li>
+<li>to revoke the key</li>
+<li>to delete the key</li>
+</ul>
 
 <p>
-The commands about contacts include commands to search and receive
-contacts from the keyserver network, to export and import from files,
-to fetch from existing GPG/EGPG directories, to certify and trust,
-etc.
+The commands about contacts include:
 </p>
+<ul class="org-ul">
+<li>commands to search and receive contacts from the keyserver
+network</li>
+<li>to export and import from files</li>
+<li>to fetch from existing GPG/EGPG directories</li>
+<li>to certify and trust</li>
+</ul>
 </div>
 </div>
 
 
-<div id="outline-container-org04290a9" class="outline-2">
-<h2 id="org04290a9"><span class="section-number-2">7</span> Managing the keys</h2>
-<div class="outline-text-2" id="text-7">
+<div id="outline-container-orgd0483b2" class="outline-2">
+<h2 id="orgd0483b2"><span class="section-number-2">8</span> Managing the keys</h2>
+<div class="outline-text-2" id="text-8">
 <p>
 To keep things simple, EGPG supports only one private key per
-directory. But there are ways to use several keys if needed. For
-example it can be done by using several EGPG
-directories/configurations, which can work in parallel and
-independently of each-other. This is a design decision and is on
-purpose, not only for simplicity, but also because when you need more
-than one key, you usually use them in different contexts. So, it makes
-more sense to keep and manage them separately and independently of
-each-other, which could also avoid any confusion or mistakes.
+directory.
+</p>
+
+<p>
+But there are ways to use several keys if needed.  For example it can
+be done by using several EGPG directories/configurations, which can
+work in parallel and independently of each-other.
+</p>
+
+<p>
+This is a design decision and is on purpose, not only for simplicity,
+but also because when you need more than one key, you usually use them
+in different contexts. So, it makes more sense to keep and manage them
+separately and independently of each-other, which could also help to
+avoid any confusion or mistakes when using them.
 </p>
 </div>
 </div>
 
 
-<div id="outline-container-org95c3927" class="outline-2">
-<h2 id="org95c3927"><span class="section-number-2">8</span> Extending the features of GPG</h2>
-<div class="outline-text-2" id="text-8">
+<div id="outline-container-org0d2cc7c" class="outline-2">
+<h2 id="org0d2cc7c"><span class="section-number-2">9</span> EGPG extends the features of GPG</h2>
+<div class="outline-text-2" id="text-9">
 <p>
 EGPG combines the features of GPG with external tools/commands in
 order to achieve better results or to be more user-friendly.
@@ -492,12 +559,15 @@ order to achieve better results or to be more user-friendly.
 
 <p>
 For example, when making the backup of the key, the output is produced
-as a PDF file with a 2D barcode, which can be printed on paper and
+as a <span class="underline">PDF file</span> with a <span class="underline">2D barcode</span>, which can be printed on paper and
 stored away on a safe place. Later this can be easily scanned back to
-digital format and restored. This is achieved by exporting the key
-from GPG in ASCII armor format, then using a bunch of Linux commands
-and tools, like qrencode and convert, to convert it to the proper PDF
-format.
+digital format and restored.
+</p>
+
+<p>
+This is achieved by exporting the key from GPG in ASCII armor format,
+then using a bunch of Linux commands and tools, like <b>qrencode</b> and
+<b>convert</b>, to convert it to the proper PDF format.
 </p>
 
 <p>
@@ -509,74 +579,92 @@ recommendations.
 
 <p>
 Another example is printing the fingerprint of the key as a 2D barcode
-and picking it up from the camera. This can simplify the exchange of
-keys in mobile phones, if people have physical contact, for example in
-a meeting (one of them can show the code on the screen, and the other
-one can scan it from the camera, and automatically fetch the details
-from a keyserver).
+and picking it up from the camera.  This can simplify the exchange of
+keys in mobile phones, if people have physical contact.
+</p>
+
+<p>
+For example in a meeting one of them can show the code on the screen,
+and the other one can scan it from the camera, and automatically fetch
+the details from a keyserver. Or the fingerprint can be printed as a
+2D barcode on a business card, and scanned from there.
 </p>
 
 <p>
 Yet another example is moving the main key (that is used for signing
 and certification) to a dongle (USB flash drive), for portability and
-security (the USB flash drive should be encrypted). This is done with
-the external command <code>egpg key2dongle</code> .
+security (the USB flash drive should be encrypted).  This is done with
+the external command:
 </p>
+<pre class="example">
+egpg key2dongle
+</pre>
 </div>
 </div>
 
 
-<div id="outline-container-org6f2febe" class="outline-2">
-<h2 id="org6f2febe"><span class="section-number-2">9</span> Splitting the key</h2>
-<div class="outline-text-2" id="text-9">
+<div id="outline-container-orgab4c138" class="outline-2">
+<h2 id="orgab4c138"><span class="section-number-2">10</span> Splitting the key</h2>
+<div class="outline-text-2" id="text-10">
 <p>
 You can split a key into 3 partial keys, so that any 2 of them can be
 combined to recreate the original key (but a single one is not
-enough). EGPG takes advantage of this to save a partial key on the
-local machine and another partial on a dongle (USB flash drive,
-removable device). The third partial key is used as a backup, to
-recover the full key in case that the dongle or the computer is lost,
-and it can be stored for example on a cloud account.
+enough).
+</p>
+
+<p>
+EGPG takes advantage of this to save a partial key on the local
+machine and another partial on a dongle (USB flash drive, removable
+device). The third partial key is used as a backup, to recover the
+full key in case that the dongle or the computer is lost, and it can
+be stored for example on a cloud account.
 </p>
 
 <p>
 Splitting the key into partial keys makes key management safer and
-more robust. In case that you loose the dongle the key is not
+more robust. In case that you loose the dongle, the key is not
 deconspired, because a single partial key is not enough to reconstruct
-the full key. The same goes for the backup partial key; you can store
-it on cloud and if somebody manages to get it, they still cannot get
-your key. Similarly, if you loose the dongle or change the PC, you
-still can recover the key using the remaining partial key and the
-backup partial key.
+the full key.
+</p>
+
+<p>
+The same goes for the backup partial key; you can store it on cloud
+and if somebody manages to get it, they still cannot get your key.
+</p>
+
+<p>
+Similarly, if you loose the dongle or change the PC, you still can
+recover the key using the remaining partial key and the backup partial
+key.
 </p>
 
 <p>
 EGPG manages all this with simple commands:
 </p>
 <pre class="example">
-split [-d,--dongle &lt;dir&gt;] [-b,--backup &lt;dir&gt;]
-     Split the key into 3 partial keys and store one of them on the
-     dongle (removable device, usb), keep the other one locally,
-     and use the third one as a backup. Afterwards, whenever the
-     key needs to be used, the dongle has to be present.
+egpg key split [-d,--dongle &lt;dir&gt;] [-b,--backup &lt;dir&gt;]
+    Split the key into 3 partial keys and store one of them on the
+    dongle (removable device, usb), keep the other one locally,
+    and use the third one as a backup. Afterwards, whenever the
+    key needs to be used, the dongle has to be present.
 
- join
-     Join two partial keys into a full key and delete the partials.
+egpg key join
+    Join two partial keys into a full key and delete the partials.
 
- recover &lt;backup-partial.key.xyz&gt;
-     Recover the key from the backup partial key and from the
-     partial key of the home or the dongle. This is useful when
-     either the dongle or the home partial key is lost.
+egpg key recover &lt;backup-partial.key.xyz&gt;
+    Recover the key from the backup partial key and from the
+    partial key of the home or the dongle. This is useful when
+    either the dongle or the home partial key is lost.
 </pre>
 </div>
 </div>
 
 
-<div id="outline-container-orge850f14" class="outline-2">
-<h2 id="orge850f14"><span class="section-number-2">10</span> EGPG can work on any platform</h2>
-<div class="outline-text-2" id="text-10">
+<div id="outline-container-orgc9acd14" class="outline-2">
+<h2 id="orgc9acd14"><span class="section-number-2">11</span> EGPG can work on any platform</h2>
+<div class="outline-text-2" id="text-11">
 <p>
-The file <code>platform.sh</code> contains a couple of functions that can be
+The file <b>platform.sh</b> contains a couple of functions that can be
 platform dependent. The platform is detected automatically and these
 functions are overridden with the right implementation for the current
 platform.
@@ -590,52 +678,75 @@ However, currently it has been tested only on Ubuntu and Debian.
 </div>
 
 
-<div id="outline-container-orgf8675c8" class="outline-2">
-<h2 id="orgf8675c8"><span class="section-number-2">11</span> EGPG is customizable and extensible</h2>
-<div class="outline-text-2" id="text-11">
+<div id="outline-container-org15cf98a" class="outline-2">
+<h2 id="org15cf98a"><span class="section-number-2">12</span> EGPG is customizable and extensible</h2>
+<div class="outline-text-2" id="text-12">
 <p>
 If EGPG doesn't fit your workflow, you can adapt and extend it to fit
-your way of doing things. You can also share your extensions with the
+your way of doing things.  You can also share your extensions with the
 others, in the form of external commands.
 </p>
 
 <p>
-The file <code>$EGPG_DIR/customize.sh</code> can be used to redefine and customize
-some functions, without having to touch the code of the main
-script. Also, external commands can be customized (or new commands can
-be defined) by adding the file <code>$EGPG_DIR/cmd_command.sh</code>, which
-contains the function <code>cmd_command() { . . . }</code>.
+The file <b>$EGPG_DIR/customize.sh</b> can be used to redefine and customize
+some functions, without having to touch the code of the main script.
 </p>
 
 <p>
-In general, for an external command the script will first look for
-<code>$EGPG_DIR/cmd_command.sh</code>, then for
-<code>$LIBRARY/ext/$PLATFORM/cmd_command.sh</code>, and finally for
-<code>$LIBRARY/ext/cmd_command.sh</code>. The first that is found is loaded and
-used. For commands about the key the name of the file must be
-<code>cmd_key_command.sh</code> and for commands about contacts it must be
-<code>cmd_contact_command.sh</code>.
+External command <b>example</b> can be overridden (or defined) by adding the
+file <b>$EGPG_DIR/cmd_example.sh</b>, which contains the function
+<b>cmd_example() { . . . }</b>. For an external command the script will look:
+</p>
+<ul class="org-ul">
+<li>first for <b>$EGPG_DIR/cmd_example.sh</b></li>
+<li>then for <b>$LIB/ext/$PLATFORM/cmd_command.sh</b></li>
+<li>and finally for <b>$LIB/ext/cmd_command.sh</b></li>
+</ul>
+
+<p>
+The first that is found is loaded and used. For commands about the
+key the name of the file must be <b>cmd_key_example.sh</b> For commands about
+contacts it must be <b>cmd_contact_example.sh</b>
 </p>
 </div>
 </div>
 
 
-<div id="outline-container-org831f06d" class="outline-2">
-<h2 id="org831f06d"><span class="section-number-2">12</span> EGPG criticism</h2>
-<div class="outline-text-2" id="text-12">
+<div id="outline-container-org34161a4" class="outline-2">
+<h2 id="org34161a4"><span class="section-number-2">13</span> EGPG enables scripting</h2>
+<div class="outline-text-2" id="text-13">
+<p>
+I think that it is time to stop writting detailed tutorials with best
+practices on how to use GPG on certain situations.  Write instead
+scripts (in EGPG or some other framework) that automate these
+processes.
+</p>
+
+<p>
+GPG itself does not facilitate writing such scripts and EGPG tries to
+improve this.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orged7b59e" class="outline-2">
+<h2 id="orged7b59e"><span class="section-number-2">14</span> EGPG criticism</h2>
+<div class="outline-text-2" id="text-14">
 <p>
 The EGPG critics have expressed their concerns that since EGPG is just
-a wrapper script to GPG, it is too fragile. This is so because the GPG
-command line was meant to be an interactive tool, not a streamline
-tool that can be easily combined with other tools. As such, its output
-format can change at any time, and even small changes can break EGPG.
+a wrapper script to GPG, it is too fragile.  This is so because the
+GPG command line was meant to be an interactive tool, not a streamline
+tool that can be easily combined with other tools.  As such, its
+output format can change at any time, and even small changes can break
+EGPG.
 </p>
 
 <p>
 A possible defense argument can be that EGPG should be used only with
 stable releases of Linux distributions, which by definition don't
 change the major versions of their supported tools and utilities and
-allow only for bug and security fixes. So, the chances of EGPG being
+allow only for bug and security fixes.  So, the chances of EGPG being
 broken are small, and it needs to be updated/fixed only for every next
 stable release (which does not occur too frequently).
 </p>
@@ -649,16 +760,13 @@ a library for doing GPG stuff).
 </div>
 
 
-<div id="outline-container-orgc7397d1" class="outline-2">
-<h2 id="orgc7397d1"><span class="section-number-2">13</span> EGPG improvements</h2>
-<div class="outline-text-2" id="text-13">
+<div id="outline-container-org1b2bd62" class="outline-2">
+<h2 id="org1b2bd62"><span class="section-number-2">15</span> EGPG improvements</h2>
+<div class="outline-text-2" id="text-15">
 <p>
-There is a proposed project on GSoC about possible improvements to EGPG:
-<a href="https://wiki.debian.org/SummerOfCode2018/Projects/EasyGnuPG">https://wiki.debian.org/SummerOfCode2018/Projects/EasyGnuPG</a>
-</p>
-
-<p>
-I am looking for co-mentor, and of course for interested students.
+There is a proposed project on GSoC about possible improvements to
+EGPG: <a href="https://wiki.debian.org/SummerOfCode2018/Projects/EasyGnuPG">https://wiki.debian.org/SummerOfCode2018/Projects/EasyGnuPG</a> I am
+looking for co-mentors, and of course for interested students.
 </p>
 
 <p>
@@ -670,7 +778,7 @@ and GPGME (<a href="https://www.gnupg.org/software/gpgme/">https://www.gnupg.org
 <li>Implement a GUI to EasyGnuPG (maybe with Python).</li>
 <li>Extend EasyGnuPG with scripts/commands that automate other common
 usage scenarios (for example keeping the master key on a card).</li>
-<li>Write a Debian package for installing EasyGnuPG.</li>
+<li>Make a Debian package for installing EasyGnuPG.</li>
 </ul>
 </div>
 </div>
@@ -678,7 +786,7 @@ usage scenarios (for example keeping the master key on a card).</li>
 <div id="postamble" class="status">
 <p class="date">Date: 2018-01-26</p>
 <p class="author">Author: Dashamir Hoxha</p>
-<p class="date">Created: 2018-01-31 Wed 11:57</p>
+<p class="date">Created: 2018-02-03 Sat 17:40</p>
 <p class="validation"></p>
 </div>
 </body>
