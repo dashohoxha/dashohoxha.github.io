@@ -1,0 +1,523 @@
+---
+layout:     post
+title:      Upgrading MacOS to High Sierra
+date:       2018-04-29
+
+summary: I have an old MacBook Pro with Linux dual boot. Maybe because I have
+    tinkered with the partition table, it failed to do a clean upgrade
+    on its own, living me with a broken macos system that would not boot.
+    Recovery and internet recovery (Cmd+R) failed as well. Luckily I managed
+    to find a way to install it back again, while preserving the Linux installation.
+
+tags: macos upgrade linux
+---
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2018-05-02 Wed 13:33 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Upgrading MacOS to High Sierra</title>
+<meta name="generator" content="Org mode" />
+<meta name="author" content="Dashamir Hoxha" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { width: 90%; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2018 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Upgrading MacOS to High Sierra</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org7f6cdc7">1. Fixing the partitions</a></li>
+<li><a href="#org3abffce">2. Getting the Mac OS X Installer</a></li>
+<li><a href="#orgf91fc30">3. Extracting the pkg archive</a></li>
+<li><a href="#org1d87743">4. Restoring the content of the partition RecoveryHD</a></li>
+<li><a href="#orgaa780db">5. Reinstalling Mac OS</a></li>
+<li><a href="#org74accff">6. Restoring the GRUB menu and the Linux system</a></li>
+<li><a href="#org38d6b42">7. References</a></li>
+</ul>
+</div>
+</div>
+
+<p>
+I have an old MacBook Pro with Linux dual boot. Maybe because I have
+tinkered with the partition table, it failed to do a clean upgrade on
+its own, living me with a broken macos system that would not boot.
+Recovery and internet recovery (Cmd+R) failed as well. Luckily I
+managed to find a way to install it back again, while preserving the
+Linux installation.
+</p>
+
+<p>
+First of all, I had to fix the boot menu (GRUB) with the help of a
+rescue USB stick. In my case, I have a Debian installation stick,
+which also has rescue options in the menu, including restoring the
+GRUB menu from a partion.
+</p>
+
+<p>
+After getting back to Linux, I searched about how to reinstall
+mac ox from a Linux system. I found this post, which is a bit 
+outdated, but nevertheless showed me the general approach:
+<a href="https://linuxforums.org.uk/index.php?topic=1072.0">https://linuxforums.org.uk/index.php?topic=1072.0</a>
+</p>
+
+
+<div id="outline-container-org7f6cdc7" class="outline-2">
+<h2 id="org7f6cdc7"><span class="section-number-2">1</span> Fixing the partitions</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+We need at least 2 <b>HFS+</b> partitions, one of size <b>~1GB</b> to be used as
+RecoveryHD partition, and the other of size <b>&gt;30GB</b> to be used for
+installing the system. I already had such partitions, but anyway I
+deleted and recreated them with <code>parted</code> (<code>gparted</code> can be used as
+well).
+</p>
+
+<p>
+We need to install first these tools:
+</p>
+<pre class="example">
+apt install gparted hfsplus hfsutils hfsprogs
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-org3abffce" class="outline-2">
+<h2 id="org3abffce"><span class="section-number-2">2</span> Getting the Mac OS X Installer</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+This turned out to be more difficult than I thought, because usually
+you cannot find anything related to Mac outside of Mac App Store
+(MAS), and in order to access MAS you need to have a running Mac OS
+and an apple account. After lots of searches and failures, I managed
+to find this page with direct download archives:
+<a href="https://7labs.io/tips-tricks/macos-high-sierra-direct-download.html">https://7labs.io/tips-tricks/macos-high-sierra-direct-download.html</a>
+</p>
+
+<p>
+The part that I used was <a href="http://swcdn.apple.com/content/downloads/10/62/091-76233/v27a64q1zvxd2lbw4gbej9c2s5gxk6zb1l/RecoveryHDMetaDmg.pkg">RecoveryHDMetaDmg.pkg</a> which contains an
+archive with the content of the RecoveryHD partition.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgf91fc30" class="outline-2">
+<h2 id="orgf91fc30"><span class="section-number-2">3</span> Extracting the pkg archive</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+The <code>*.pkg</code> archives can be opened with the command <code>xar</code>, which is not
+a part of the standard Debian linux, so I had to install it manually,
+according to the instructions on this page:
+<a href="https://www.oueta.com/linux/extract-pkg-and-mpkg-files-with-xar-on-linux/">https://www.oueta.com/linux/extract-pkg-and-mpkg-files-with-xar-on-linux/</a>
+</p>
+
+<pre class="example">
+apt install build-essential libxml2-dev libssl1.0-dev zlib1g-dev
+wget https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/xar/xar-1.5.2.tar.gz
+tar -xfz xar-1.5.2.tar.gz
+cd xar-1.5.2
+./configure
+make
+make install
+</pre>
+
+<p>
+Then I extracted the archive with the command: <code>xar -xvf
+ RecoveryHDMetaDmg.pkg</code>.  From the extracted files we are interested
+only on <code>RecoveryHDMeta.dmg</code>, which has the content of the partition
+<b>RecoveryHD</b>.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org1d87743" class="outline-2">
+<h2 id="org1d87743"><span class="section-number-2">4</span> Restoring the content of the partition RecoveryHD</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+First we need to convert the file <code>RecoveryHDMeta.dmg</code> to a disk
+image, then mount this image, and finally copy its content to the
+recovery partition:
+</p>
+
+<ol class="org-ol">
+<li><p>
+Make sure that we have the needed tools:
+</p>
+<pre class="example">
+apt install dmg2img hfsplus hfsutils hfsprogs
+</pre></li>
+
+<li><p>
+Convert the dmg file to a disk image:
+</p>
+<pre class="example">
+dmg2img RecoveryHDMeta.dmg RecoveryHDMeta.img
+</pre></li>
+
+<li><p>
+Mount the hfs+ partition of the disk image:
+</p>
+<pre class="example">
+umount recovery_image
+rm -rf recovery_image
+mkdir -p recovery_image
+
+devloop=$(losetup --find --show ./RecoveryHDMeta.img)
+partprobe $devloop
+mount ${devloop}p1 recovery_image
+</pre></li>
+
+<li><p>
+Mount the partition RecoveryHD:
+</p>
+<pre class="example">
+umount recovery_hd
+rm -rf recovery_hd
+mkdir recovery_hd
+
+parted /dev/sda print
+parted /dev/sda print | grep hfs+
+mount /dev/sdaX recovery_hd
+</pre></li>
+
+<li><p>
+Restore the content of RecoveryHD from the image:
+</p>
+<pre class="example">
+rm -rf recovery_hd/*
+cp -a recovery_image/* recovery_hd/
+</pre></li>
+
+<li><p>
+Cleanup:
+</p>
+<pre class="example">
+umount recovery_hd/
+rmdir recovery_hd/
+umount recovery_image/
+rmdir recovery_image/
+losetup --detach /dev/loop4
+</pre></li>
+</ol>
+</div>
+</div>
+
+
+<div id="outline-container-orgaa780db" class="outline-2">
+<h2 id="orgaa780db"><span class="section-number-2">5</span> Reinstalling Mac OS</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+After replacing the content of the RecoveryHD partition with the one
+that we downloaded from the internet we have to restart the computer
+and boot it from this partition. In Mac this is done by keeping
+pressed the <b>[Alt]</b> key as soon as it makes the startup sound, then
+selecting to boot from the recovery disk. It is important to have an
+internet connection during installation, since the installation image
+will be downloaded from the internet.
+</p>
+
+<p>
+After the recovery system is started, it allows us to use several
+tools.  One of them is <b>Disk Util</b>, which I used to delete the 30GB
+partition and create it again. This step may not be necessary, but I
+had messed a lot with the partition table and didn't know how to
+restore it in a suitable state. Deleting and recreating that partition
+ensures that it is in a state suitable for being used by the
+installer. This also has the drawback of erasing all your previous
+content, but in my case this was OK, because I had not used it much
+and had nothing important on it. If I had something important on it,
+then I would make sure to backup it first, by mounting this partion
+from the Linux system first (similar to what was done on the previous
+section).
+</p>
+
+<p>
+After that, I started the Mac OS X Installer and selected the 30GB
+partition as the place where to install the new system. The
+installation takes several hours because it downloads the installation
+image from the internet.
+</p>
+
+<p>
+<b>Note:</b> MacOS High Sierra by default formats the disk with the format
+APFS, instead of the traditional HFS+ format. For some reasons, the
+HFS+ format is sometimes more preferred than the new one. This
+tutorial shows how to start the installer and tell it to use the HFS+
+format instead:
+<a href="https://malcont.net/2017/09/how-to-upgrade-macos-to-high-sierra-without-filesystem-change-hfs-to-apfs/">https://malcont.net/2017/09/how-to-upgrade-macos-to-high-sierra-without-filesystem-change-hfs-to-apfs/</a>
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org74accff" class="outline-2">
+<h2 id="org74accff"><span class="section-number-2">6</span> Restoring the GRUB menu and the Linux system</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+The Mac installer will overwrite the boot menu so that it boots
+directly to the Mac OS. We can fix this with a recovery USB stick,
+for example with the Debian installer stick. It can restore the
+boot menu so that we can boot to Linux again.
+</p>
+
+<p>
+However, the Mac OS installer had also messed with the partition
+table, by creating one more partition. This had shifted the number of
+the rest of partitions by 1, for example <code>/dev/sda5</code> became
+<code>/dev/sda6</code> etc.  For this reason Linux failed to boot
+properly. However this can be fixed easily from a rescue shell, by
+editing the file <code>/etc/fstab</code> and fixing partition numbers
+accordingly. Then I also reinstalled GRUB:
+</p>
+<pre class="example">
+grub-install /dev/sda
+update-grub
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-org38d6b42" class="outline-2">
+<h2 id="org38d6b42"><span class="section-number-2">7</span> References</h2>
+<div class="outline-text-2" id="text-7">
+<ul class="org-ul">
+<li><a href="https://linuxforums.org.uk/index.php?topic=1072.0">Use Linux to install OSX from a DMG extracted to a partition - without a Mac DVD</a></li>
+<li><a href="https://7labs.io/tips-tricks/macos-high-sierra-direct-download.html">Install macOS High Sierra on Mac &#x2013; Direct Download</a></li>
+<li><a href="https://www.oueta.com/linux/extract-pkg-and-mpkg-files-with-xar-on-linux/">Extract .pkg and .mpkg files with xar on Linux</a></li>
+<li><a href="https://askubuntu.com/a/845416/41687">Mount the HFS+ partition of a disk image</a></li>
+<li><a href="https://malcont.net/2017/09/how-to-upgrade-macos-to-high-sierra-without-filesystem-change-hfs-to-apfs/">https://malcont.net/2017/09/how-to-upgrade-macos-to-high-sierra-without-filesystem-change-hfs-to-apfs/</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Date: 2018-04-29</p>
+<p class="author">Author: Dashamir Hoxha</p>
+<p class="date">Created: 2018-05-02 Wed 13:33</p>
+<p class="validation"></p>
+</div>
+</body>
+</html>

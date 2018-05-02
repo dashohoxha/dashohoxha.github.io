@@ -1,0 +1,210 @@
+#+TITLE:     Upgrading MacOS to High Sierra
+#+AUTHOR:    Dashamir Hoxha
+#+EMAIL:     dashohoxha@gmail.com
+#+DATE:      2018-04-29
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+# #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
+#+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
+#+begin_export html
+---
+layout:     post
+title:      Upgrading MacOS to High Sierra
+date:       2018-04-29
+
+summary: I have an old MacBook Pro with Linux dual boot. Maybe because I have
+    tinkered with the partition table, it failed to do a clean upgrade
+    on its own, living me with a broken macos system that would not boot.
+    Recovery and internet recovery (Cmd+R) failed as well. Luckily I managed
+    to find a way to install it back again, while preserving the Linux installation.
+
+tags: macos upgrade linux
+---
+#+end_export
+
+I have an old MacBook Pro with Linux dual boot. Maybe because I have
+tinkered with the partition table, it failed to do a clean upgrade on
+its own, living me with a broken macos system that would not boot.
+Recovery and internet recovery (Cmd+R) failed as well. Luckily I
+managed to find a way to install it back again, while preserving the
+Linux installation.
+
+First of all, I had to fix the boot menu (GRUB) with the help of a
+rescue USB stick. In my case, I have a Debian installation stick,
+which also has rescue options in the menu, including restoring the
+GRUB menu from a partion.
+
+After getting back to Linux, I searched about how to reinstall
+mac ox from a Linux system. I found this post, which is a bit 
+outdated, but nevertheless showed me the general approach:
+https://linuxforums.org.uk/index.php?topic=1072.0
+
+
+* Fixing the partitions
+
+We need at least 2 *HFS+* partitions, one of size *~1GB* to be used as
+RecoveryHD partition, and the other of size *>30GB* to be used for
+installing the system. I already had such partitions, but anyway I
+deleted and recreated them with =parted= (=gparted= can be used as
+well).
+
+We need to install first these tools:
+#+begin_example
+apt install gparted hfsplus hfsutils hfsprogs
+#+end_example
+
+
+* Getting the Mac OS X Installer
+
+This turned out to be more difficult than I thought, because usually
+you cannot find anything related to Mac outside of Mac App Store
+(MAS), and in order to access MAS you need to have a running Mac OS
+and an apple account. After lots of searches and failures, I managed
+to find this page with direct download archives:
+https://7labs.io/tips-tricks/macos-high-sierra-direct-download.html
+
+The part that I used was [[http://swcdn.apple.com/content/downloads/10/62/091-76233/v27a64q1zvxd2lbw4gbej9c2s5gxk6zb1l/RecoveryHDMetaDmg.pkg][RecoveryHDMetaDmg.pkg]] which contains an
+archive with the content of the RecoveryHD partition.
+
+
+* Extracting the pkg archive
+
+The ~*.pkg~ archives can be opened with the command =xar=, which is not
+a part of the standard Debian linux, so I had to install it manually,
+according to the instructions on this page:
+https://www.oueta.com/linux/extract-pkg-and-mpkg-files-with-xar-on-linux/
+
+#+begin_example
+apt install build-essential libxml2-dev libssl1.0-dev zlib1g-dev
+wget https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/xar/xar-1.5.2.tar.gz
+tar -xfz xar-1.5.2.tar.gz
+cd xar-1.5.2
+./configure
+make
+make install
+#+end_example
+
+Then I extracted the archive with the command: =xar -xvf
+ RecoveryHDMetaDmg.pkg=.  From the extracted files we are interested
+only on ~RecoveryHDMeta.dmg~, which has the content of the partition
+*RecoveryHD*.
+
+
+* Restoring the content of the partition RecoveryHD
+
+First we need to convert the file ~RecoveryHDMeta.dmg~ to a disk
+image, then mount this image, and finally copy its content to the
+recovery partition:
+
+1. Make sure that we have the needed tools:
+   #+begin_example
+   apt install dmg2img hfsplus hfsutils hfsprogs
+   #+end_example
+
+2. Convert the dmg file to a disk image:
+   #+begin_example
+   dmg2img RecoveryHDMeta.dmg RecoveryHDMeta.img
+   #+end_example
+
+3. Mount the hfs+ partition of the disk image:
+   #+begin_example
+   umount recovery_image
+   rm -rf recovery_image
+   mkdir -p recovery_image
+
+   devloop=$(losetup --find --show ./RecoveryHDMeta.img)
+   partprobe $devloop
+   mount ${devloop}p1 recovery_image
+   #+end_example
+
+4. Mount the partition RecoveryHD:
+   #+begin_example
+   umount recovery_hd
+   rm -rf recovery_hd
+   mkdir recovery_hd
+
+   parted /dev/sda print
+   parted /dev/sda print | grep hfs+
+   mount /dev/sdaX recovery_hd
+   #+end_example
+
+5. Restore the content of RecoveryHD from the image:
+   #+begin_example
+   rm -rf recovery_hd/*
+   cp -a recovery_image/* recovery_hd/
+   #+end_example
+
+6. Cleanup:
+   #+begin_example
+   umount recovery_hd/
+   rmdir recovery_hd/
+   umount recovery_image/
+   rmdir recovery_image/
+   losetup --detach /dev/loop4
+   #+end_example
+
+
+* Reinstalling Mac OS
+
+After replacing the content of the RecoveryHD partition with the one
+that we downloaded from the internet we have to restart the computer
+and boot it from this partition. In Mac this is done by keeping
+pressed the *[Alt]* key as soon as it makes the startup sound, then
+selecting to boot from the recovery disk. It is important to have an
+internet connection during installation, since the installation image
+will be downloaded from the internet.
+
+After the recovery system is started, it allows us to use several
+tools.  One of them is *Disk Util*, which I used to delete the 30GB
+partition and create it again. This step may not be necessary, but I
+had messed a lot with the partition table and didn't know how to
+restore it in a suitable state. Deleting and recreating that partition
+ensures that it is in a state suitable for being used by the
+installer. This also has the drawback of erasing all your previous
+content, but in my case this was OK, because I had not used it much
+and had nothing important on it. If I had something important on it,
+then I would make sure to backup it first, by mounting this partion
+from the Linux system first (similar to what was done on the previous
+section).
+
+After that, I started the Mac OS X Installer and selected the 30GB
+partition as the place where to install the new system. The
+installation takes several hours because it downloads the installation
+image from the internet.
+
+*Note:* MacOS High Sierra by default formats the disk with the format
+APFS, instead of the traditional HFS+ format. For some reasons, the
+HFS+ format is sometimes more preferred than the new one. This
+tutorial shows how to start the installer and tell it to use the HFS+
+format instead:
+https://malcont.net/2017/09/how-to-upgrade-macos-to-high-sierra-without-filesystem-change-hfs-to-apfs/
+
+
+* Restoring the GRUB menu and the Linux system
+
+The Mac installer will overwrite the boot menu so that it boots
+directly to the Mac OS. We can fix this with a recovery USB stick,
+for example with the Debian installer stick. It can restore the
+boot menu so that we can boot to Linux again.
+
+However, the Mac OS installer had also messed with the partition
+table, by creating one more partition. This had shifted the number of
+the rest of partitions by 1, for example ~/dev/sda5~ became
+~/dev/sda6~ etc.  For this reason Linux failed to boot
+properly. However this can be fixed easily from a rescue shell, by
+editing the file ~/etc/fstab~ and fixing partition numbers
+accordingly. Then I also reinstalled GRUB:
+#+begin_example
+grub-install /dev/sda
+update-grub
+#+end_example
+
+
+* References
+
+- [[https://linuxforums.org.uk/index.php?topic=1072.0][Use Linux to install OSX from a DMG extracted to a partition - without a Mac DVD]]
+- [[https://7labs.io/tips-tricks/macos-high-sierra-direct-download.html][Install macOS High Sierra on Mac -- Direct Download]]
+- [[https://www.oueta.com/linux/extract-pkg-and-mpkg-files-with-xar-on-linux/][Extract .pkg and .mpkg files with xar on Linux]]
+- [[https://askubuntu.com/a/845416/41687][Mount the HFS+ partition of a disk image]]
+- https://malcont.net/2017/09/how-to-upgrade-macos-to-high-sierra-without-filesystem-change-hfs-to-apfs/
+
