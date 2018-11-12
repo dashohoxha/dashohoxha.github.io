@@ -1,0 +1,901 @@
+---
+layout:     post
+title:      Simple And Minimal SMTP Server
+date:       2018-11-11
+
+summary: Quite often web applications need to send email notifications.
+  For example Moodle needs to notify students and teachers about various
+  events. Installing a mail server is not so easy because it needs also
+  some DNS and other configurations, in order to do it properly.
+  Otherwise the mails that are sent will end up being classified as spam
+  and most probably will not reach the recipient. This article describes
+  how to build such a mail server.
+
+tags:       postfix smtp server docker docker-script
+---
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2018-11-12 Mon 16:13 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Simple And Minimal SMTP Server</title>
+<meta name="generator" content="Org mode" />
+<meta name="author" content="Dashamir Hoxha" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { width: 90%; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2018 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Simple And Minimal SMTP Server</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org3703c8d">1. Introduction</a></li>
+<li><a href="#org05863dc">2. Sending Email From GMail SMTP Servers</a></li>
+<li><a href="#org55421c9">3. Minimal DNS Configuration</a></li>
+<li><a href="#org654ffd4">4. Build a Postfix Container With Docker-Scripts</a>
+<ul>
+<li><a href="#org072df55">4.1. Install Docker-Scripts</a></li>
+<li><a href="#org2c2e828">4.2. Install Web-Server Proxy</a></li>
+<li><a href="#org304e15e">4.3. Install Postfix</a></li>
+<li><a href="#org94b4842">4.4. Activate DKIM Key</a></li>
+<li><a href="#orgf4f5cac">4.5. Create a DMARC Record</a></li>
+</ul>
+</li>
+<li><a href="#org1df1616">5. Test the SMTP Server</a></li>
+<li><a href="#orgc401ae4">6. Check the Mail Server</a></li>
+<li><a href="#org7b38f2b">7. Add Another Email Domain</a></li>
+<li><a href="#orgf057fc5">8. Using The SMTP Server</a>
+<ul>
+<li><a href="#orgf5ae6e2">8.1. Sending Emails From Cron Jobs</a></li>
+<li><a href="#orgd44cc76">8.2. Sending Emails From Moodle</a></li>
+</ul>
+</li>
+<li><a href="#orgdcf9243">9. References</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org3703c8d" class="outline-2">
+<h2 id="org3703c8d"><span class="section-number-2">1</span> Introduction</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Quite often web applications need to send email notifications. For
+example Moodle needs to notify students and teachers about various
+events. Without being able to send notifications, Moodle and many
+other web applications loose half of their usefulness. On many web
+applications you cannot even finish the registration process and
+cannot login, unless you verify your email address (the application
+sends you an email with a link that you have to click).
+</p>
+
+<p>
+To send emails, an application needs to contact by SMTP a local or
+remote mail server. Installing a mail server is not so easy because it
+needs also some DNS and other configurations, in order to do it
+properly, otherwise the mails that are sent will end up being
+classified as spam and most probably will not reach the recipient.
+</p>
+
+<p>
+A relatively easy solution is to send emails from GMail SMTP servers,
+on behalf of the web application. For this you need a GMail account,
+which often needs to be different for each application. Managing lots
+of gmail accounts is a bit inconvenient. However the biggest problem
+is that gmail accounts have a limit on the number of messages that can
+be sent each month. For many applications this limit may be OK, but
+for some others it is not. For example Moodle typically needs to send
+a message for each course subscriber, for each event of the
+course. Even for a small Moodle site that does not have many active
+courses, the monthly limit can be reached very quickly.
+</p>
+
+<p>
+Another alternative is to install your own mail server, and to
+configure it properly. This article describes how to do it. The aim of
+this mail server is not to be a full-fledged system, where users can
+have accounts and use it daily, but just to support web applications
+(like Moodle) with sending notifications.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org05863dc" class="outline-2">
+<h2 id="org05863dc"><span class="section-number-2">2</span> Sending Email From GMail SMTP Servers</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+Before starting with building a SMTP server, let's see first the easy
+solution, in case this is sufficient for your needs.
+</p>
+
+<ol class="org-ol">
+<li>First install <b>Simple SMTP</b>: <code>apt install ssmtp</code></li>
+
+<li>You can create a new GMail account or use an existing one. In both
+cases you need to enable the two-factor authentication on the
+google account, and then to create a new application-specific
+password on this account, as described here:
+<a href="https://www.lifewire.com/get-a-password-to-access-gmail-by-pop-imap-2-1171882">https://www.lifewire.com/get-a-password-to-access-gmail-by-pop-imap-2-1171882</a></li>
+
+<li><p>
+Edit <code>/etc/ssmtp/</code> and place a content like this:
+</p>
+<pre class="example">
+root=username@gmail.com
+mailhub=smtp.gmail.com:587
+AuthUser=username@gmail.com
+AuthPass=xyzxyzxyzxyzxyzxyz
+UseTLS=YES
+UseSTARTTLS=YES
+rewriteDomain=gmail.com
+hostname=localhost
+FromLineOverride=YES
+</pre>
+<p>
+Here <code>AuthPass</code> is the app-specific password generated on the step above.
+</p></li>
+
+<li><p>
+Add this line on <code>/etc/ssmtp/revaliases</code>:
+</p>
+<pre class="example">
+root:username@gmail.com:smtp.gmail.com:587
+</pre></li>
+</ol>
+
+<p>
+To test that it works, create and execute a script called <code>test-ssmtp.sh</code> with a content like this:
+</p>
+<pre class="example">
+#!/bin/bash -x
+
+recipient=${1:-user@example.org}
+
+cat &lt;&lt;EOF | sendmail -v $recipient
+To: $recipient
+Subject: Testing ssmtp
+
+Line 1
+Line 2
+EOF
+</pre>
+
+<p>
+<b>Note:</b> Replace <code>user@example.org</code> with your email address or call
+the script with your email address as an argument.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org55421c9" class="outline-2">
+<h2 id="org55421c9"><span class="section-number-2">3</span> Minimal DNS Configuration</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+In order to build a mail server you need to own a domain (say
+<code>example.org</code>) and be able to customize its DNS records.
+</p>
+
+<p>
+For each email domain you need something like this on the DNS
+configuration:
+</p>
+<pre class="example">
+; mail for example.org
+smtp.example.org.    IN    A           10.11.12.13
+example.org.         IN    MX    1     smtp.example.org.
+example.org.         IN    TXT         "v=spf1 mx -all"
+</pre>
+
+<p>
+The first line shows the IP of the server <code>smtp.example.org</code>. The second
+line shows that the mail server (<code>MX</code>) for the domain <code>example.org</code> is
+<code>smtp.example.org</code>. Number <code>1</code> shows the priority of the mail server
+(since there may be more than one mail servers for the same domain).
+</p>
+
+<p>
+The third line basically tells to the other SMTP servers that only
+this server is allowed to send emails on behalf of this domain, and no
+other servers. This is done to prevent spammers from faking your email
+addresses. If a spammer tries to send a mail as if it is coming from
+your domain, the SMTP server that is getting this email will consult
+this DNS record, will figure out that the server of the spammer is not
+allowed to send emails on behalf of <code>example.org</code>, and will
+immediately classify that email as spam or reject it at all.
+</p>
+
+<p>
+<b>Note:</b> The configuration lines above are suitable for <code>bind9</code> (they
+should normally go to <code>example.org.db</code>). If you use some other system
+for managing your domain records, you should figure out how to do them
+properly on it. If you are starting from scratch and don't have yet a
+domain for the mail server, I would suggest trying this for managing
+its DNS configuration: <a href="https://github.com/docker-scripts/bind9">https://github.com/docker-scripts/bind9</a>
+</p>
+
+<p>
+<b>Note:</b> On <code>bind9</code>, make sure to change the serial number on the
+configuration file and then restart the service: <code>systemctl restart
+bind9</code>. It may take a few hours or a couple of days for the DNS changes
+to propagate on the internet.
+</p>
+
+<p>
+You can use <code>dig</code> to verify that these settings have already been
+activated:
+</p>
+<pre class="example">
+$ dig MX example.org +short
+1 smtp.example.org.
+
+$ dig A smtp.example.org +short
+10.11.12.13
+
+$ dig TXT example.org +short
+"v=spf1 mx -all"
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-org654ffd4" class="outline-2">
+<h2 id="org654ffd4"><span class="section-number-2">4</span> Build a Postfix Container With Docker-Scripts</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+It is easy to build a postfix container with docker-scripts.
+</p>
+</div>
+
+<div id="outline-container-org072df55" class="outline-3">
+<h3 id="org072df55"><span class="section-number-3">4.1</span> Install Docker-Scripts</h3>
+<div class="outline-text-3" id="text-4-1">
+<pre class="example">
+sudo su
+apt install m4
+git clone https://github.com/docker-scripts/ds /opt/docker-scripts/ds
+cd /opt/docker-scripts/ds/
+make install
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org2c2e828" class="outline-3">
+<h3 id="org2c2e828"><span class="section-number-3">4.2</span> Install Web-Server Proxy</h3>
+<div class="outline-text-3" id="text-4-2">
+<ul class="org-ul">
+<li>Get the scripts: <code>ds pull wsproxy</code></li>
+<li>Create a container directory: <code>ds init wsproxy @wsproxy</code></li>
+<li>Fix the settings: <code>cd /var/ds/wsproxy/; vim settings.sh</code></li>
+<li>Build image, create the container and configure it: <code>ds make</code></li>
+</ul>
+
+<p>
+We need <code>wsproxy</code> to get and manage letsencrypt SSL certificates for the
+<code>postfix</code> container.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org304e15e" class="outline-3">
+<h3 id="org304e15e"><span class="section-number-3">4.3</span> Install Postfix</h3>
+<div class="outline-text-3" id="text-4-3">
+<ul class="org-ul">
+<li>Get the scripts: <code>ds pull postfix</code></li>
+<li>Create a container directory: <code>ds init postfix @smtp.example.org</code></li>
+<li>Fix the settings: <code>cd /var/ds/smtp.example.org/ ; vim settings.sh</code></li>
+<li>Build image, create the container and configure it: <code>ds make</code></li>
+<li>Get a letsencrypt SSL certificate: <code>ds get-ssl-cert</code></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org94b4842" class="outline-3">
+<h3 id="org94b4842"><span class="section-number-3">4.4</span> Activate DKIM Key</h3>
+<div class="outline-text-3" id="text-4-4">
+<p>
+DKIM keys are used by mail servers to sign the emails that they send,
+so that they cannot be changed in transit, and so that it can be
+verified that they were sent by them. It is an important tool against
+spams and faked emails. If a smtp server signs the messages that it
+sends, it is less likely that they will be classified as spam.
+</p>
+
+<p>
+Installation scripts generate a DKIM key as well, which is on
+<code>config/dkim-keys/example.org/</code>.  To activate it you need to add a
+record like this on the DNS configuration of the domain:
+</p>
+<pre class="example">
+mail._domainkey.example.org.  IN  TXT  "v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQE....kMJdAwIDAQAB"
+</pre>
+<p>
+You can find the content of the public key on the file:
+<code>config/dkim-keys/example.org/mail.txt</code>.
+</p>
+
+<p>
+Don't forget to update the serial number of the DNS domain and to
+restart or reload the service (<code>systemctl restart bind9</code>). It may take a
+couple of hours or days until these changes are propagated on the
+internet.
+</p>
+
+<p>
+To check whether it has been activated or not, try the command:
+</p>
+<pre class="example">
+dig TXT mail._domainkey.example.org +short
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgf4f5cac" class="outline-3">
+<h3 id="orgf4f5cac"><span class="section-number-3">4.5</span> Create a DMARC Record</h3>
+<div class="outline-text-3" id="text-4-5">
+<p>
+DMARC is a standard that allows you to set policies on who can send
+email for your domain based on DKIM and SPF. For more details see
+this: <a href="https://postmarkapp.com/support/article/892-what-is-dmarc">https://postmarkapp.com/support/article/892-what-is-dmarc</a>
+</p>
+
+<p>
+You can add a DMARC Record on DNS that will allow you to get weekly
+reports from major ISPs about the usage of your email domain.
+</p>
+
+<ul class="org-ul">
+<li>Go to <a href="http://dmarc.postmarkapp.com/">http://dmarc.postmarkapp.com/</a> and add your email address where
+you want to receive reports, and email domain name (<code>example.org</code>).</li>
+
+<li><p>
+On the DNS configuration of the domain add a TXT record like this:
+</p>
+<pre class="example">
+_dmarc.example.org.  IN  TXT  "v=DMARC1; p=none; pct=100; rua=mailto:re+x2i0yw1hoq7@dmarc.postmarkapp.com; sp=none; aspf=r;"
+</pre>
+<p>
+The value of this TXT record is the one generated by the website
+above.
+</p></li>
+
+<li><p>
+To check that it has been activated, try the command:
+</p>
+<pre class="example">
+dig TXT _dmarc.example.org. +short
+</pre></li>
+</ul>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org1df1616" class="outline-2">
+<h2 id="org1df1616"><span class="section-number-2">5</span> Test the SMTP Server</h2>
+<div class="outline-text-2" id="text-5">
+<ul class="org-ul">
+<li><p>
+Install <code>swaks</code>:
+</p>
+<pre class="example">
+cd /var/ds/smtp.example.org/
+ds shell
+apt install swaks
+</pre></li>
+
+<li><p>
+Send a test email and check the logs:
+</p>
+<pre class="example">
+swaks --from info@example.org --to admin@example.org -tlso
+tail /var/log/mail.log
+</pre>
+<p>
+The option <code>-tlso</code> tells it to use TLS if possible.
+</p></li>
+
+<li><p>
+Send a test email to a gmail account:
+</p>
+<pre class="example">
+swaks --from info@example.org --to username@gmail.com -tlso
+tail /var/log/mail.log
+</pre>
+<p>
+On gmail use "Show original" from the menu, to see the source of the
+received email.
+</p></li>
+
+<li><p>
+Try to send a test email from the host (outside the container):
+</p>
+<pre class="example">
+cd /var/ds/smtp.example.org/
+swaks --from info@example.org --to admin@example.org -tlso
+tail /var/log/mail.log
+</pre>
+<p>
+It may fail, because the IP of the host may not be on the list of
+the trusted hosts (that are allowed to send email for the domain
+<code>example.org</code>). Add it on <code>config/trusted_hosts</code> and then run <code>ds inject
+  update.sh</code>. Verify that now you can send emails.
+</p></li>
+
+<li><p>
+Try to send email to <code>test@example.org</code>:
+</p>
+<pre class="example">
+swaks --from info@example.org --to test@example.org -tlso
+...
+&lt;** 550 5.1.1 &lt;test@example.org&gt;: Recipient address rejected: User unknown in virtual alias table
+...
+</pre>
+<p>
+It may fail because the recipient does not exist on the alias table.
+On <code>config/virtual_alias_maps.cf</code> add a line like this:
+</p>
+<pre class="example">
+test@example.org  username@gmail.com
+</pre>
+<p>
+Then update the alias db: <code>ds exec postmap
+  /host/config/virtual_alias_maps.cf</code> (or <code>ds inject update.sh</code>).
+Verify that now you can send emails to this address.
+</p></li>
+
+<li><p>
+Send an email to <code>check-auth@verifier.port25.com</code>:
+</p>
+<pre class="example">
+swaks --from info@example.org --to check-auth@verifier.port25.com \
+      --server smtp.example.org -tlso
+</pre>
+<p>
+The automatic reply will give you important information about the
+status and health of your email server (for example whether the
+mails sent from it pass the SPF and DKIM checks, whether they are
+considered spam or not, etc.)
+</p></li>
+
+<li><p>
+Go to <a href="https://www.mail-tester.com/">https://www.mail-tester.com/</a> and send a message to the email
+address displayed there, like this:
+</p>
+<pre class="example">
+swaks --from info@example.org --to test-1p4f6@mail-tester.com \
+      --server smtp.example.org -tlso
+</pre>
+<p>
+Then click the button for checking the score.
+</p></li>
+</ul>
+
+<p>
+<b>Note:</b> Another way to send test emails (instead of <code>swaks</code>) is by using
+<code>curl</code> and a script <code>testmail.sh</code> with a content like this:
+</p>
+<pre class="example">
+#!/bin/bash
+
+from_address='info@example.org'
+to_address='admin@example.org'
+cat &lt;&lt; EOF | curl -v --ssl --upload-file - \
+                  --url 'smtp://smtp.example.org' \
+                  --mail-from $from_address \
+                  --mail-rcpt $to_address
+From: $from_address
+To: $to_address
+Subject: test $(date)
+
+Test message.
+EOF
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-orgc401ae4" class="outline-2">
+<h2 id="orgc401ae4"><span class="section-number-2">6</span> Check the Mail Server</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+There are lots of tools and websites that help to check the
+configuration of a mail server (DNS settings, configuration, security
+features, etc.) These are some of them:
+</p>
+
+<ul class="org-ul">
+<li><a href="https://ns.tools/">https://ns.tools/</a></li>
+
+<li><a href="https://mxtoolbox.com/">https://mxtoolbox.com/</a></li>
+
+<li><a href="https://app.dmarcanalyzer.com/">https://app.dmarcanalyzer.com/</a>
+<ul class="org-ul">
+<li><a href="https://app.dmarcanalyzer.com/dns/spf?simple=1">https://app.dmarcanalyzer.com/dns/spf?simple=1</a></li>
+<li><a href="https://app.dmarcanalyzer.com/dns/dkim?simple=1">https://app.dmarcanalyzer.com/dns/dkim?simple=1</a></li>
+<li><a href="https://app.dmarcanalyzer.com/dns/dmarc_validator">https://app.dmarcanalyzer.com/dns/dmarc_validator</a></li>
+</ul></li>
+
+<li><p>
+<a href="https://github.com/drwetter/testssl.sh/">https://github.com/drwetter/testssl.sh/</a>
+</p>
+<pre class="example">
+git clone --depth 1 https://github.com/drwetter/testssl.sh.git
+cd testssl.sh/
+./testssl.sh -t smtp smtp.example.org:25
+</pre></li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-org7b38f2b" class="outline-2">
+<h2 id="org7b38f2b"><span class="section-number-2">7</span> Add Another Email Domain</h2>
+<div class="outline-text-2" id="text-7">
+<p>
+The same smtp server can support more than one mail domains. If we
+want to add another mail domain, for example <code>example.com</code>, we have to
+do these:
+</p>
+
+<ul class="org-ul">
+<li>Edit <code>config/virtual_alias_domains</code> and add the domain on a new line.</li>
+
+<li>Edit <code>config/virtual_alias_maps.cf</code> and add new email aliases (for
+<code>postmamster@example.com</code>, <code>root@example.com</code>, <code>admin@example.com</code>,
+<code>info@example.com</code>, etc.)</li>
+
+<li><p>
+Update server configuration with <code>ds inject update.sh</code>, or:
+</p>
+<pre class="example">
+ds exec postmap /host/config/virtual_alias_maps.cf
+ds exec postfix reload
+</pre></li>
+
+<li>Generate a DKIM key for the domain: <code>ds dkimkey add example.com</code></li>
+
+<li>Go to <a href="http://dmarc.postmarkapp.com/">http://dmarc.postmarkapp.com/</a> and generate a DMARC record for
+the new domain.</li>
+
+<li><p>
+Update the DNS configuration with records like these:
+</p>
+<pre class="example">
+; mail for example.com
+example.com.    IN    MX    1    smtp.example.org.
+
+example.com.                  IN  TXT  "v=spf1 mx -all"
+mail._domainkey.example.com.  IN  TXT  "v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQE....kMJdAwIDAQAB"
+_dmarc.example.com.           IN  TXT  "v=DMARC1; p=none; pct=100; rua=mailto:re+x2i0yw1hoq7@dmarc.postmarkapp.com; sp=none; aspf=r;"
+</pre>
+<p>
+Note that:
+</p>
+<ul class="org-ul">
+<li>The MX record has the same SMTP server as the primary domain:
+<code>smtp.example.org</code> (not the new domain <code>smtp.example.com</code>).</li>
+<li>The value of the key for the DKIM record can be found on the file:
+<code>config/dkim-keys/example.com/mail.txt</code></li>
+<li>The value of the DMARC record is the one obtained on the previous
+step.</li>
+</ul>
+<p>
+You can check these DNS configurations like this:
+</p>
+<pre class="example">
+dig mx  example.com. +short
+dig txt example.com. +short
+dig txt mail._domainkey.example.com. +short
+dig txt _dmarc.example.com. +short
+</pre></li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-orgf057fc5" class="outline-2">
+<h2 id="orgf057fc5"><span class="section-number-2">8</span> Using The SMTP Server</h2>
+<div class="outline-text-2" id="text-8">
+<p>
+Different applications have different methods for configuring the SMTP
+server. Let's see how to send emails from cron jobs and from Moodle.
+</p>
+
+<p>
+<b>Important:</b> For this to work, the IP of the application server should
+be on the list <code>config/trusted_hosts</code> on the smtp server, otherwise it
+will refuse to accept and send emails. After adding it on this list,
+run <code>ds inject update.sh</code> to update the configuration of the mail
+server.
+</p>
+</div>
+
+<div id="outline-container-orgf5ae6e2" class="outline-3">
+<h3 id="orgf5ae6e2"><span class="section-number-3">8.1</span> Sending Emails From Cron Jobs</h3>
+<div class="outline-text-3" id="text-8-1">
+<p>
+Cron jobs (for example <code>logwatch</code>) send emails to <code>root</code> through
+<code>sendmail</code>. We can make it work with <code>ssmtp</code>. First install it with: <code>apt
+install ssmtp</code>.  Then edit <code>/etc/ssmtp/ssmtp.conf</code> like this:
+</p>
+<pre class="example">
+mailhub=smtp.example.org
+rewriteDomain=example.org
+UseSTARTTLS=YES
+FromLineOverride=YES
+</pre>
+<p>
+Test it with: <code>echo test | sendmail -v root</code>
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgd44cc76" class="outline-3">
+<h3 id="orgd44cc76"><span class="section-number-3">8.2</span> Sending Emails From Moodle</h3>
+<div class="outline-text-3" id="text-8-2">
+<p>
+If we search for <code>smtp</code> on the GUI menu for administration, we will find
+that the place for SMTP configuration is on <code>Dashboard &gt; Site
+administration &gt; Server &gt; Email &gt; Outgoing mail configuration</code> (or on
+the location: <code>/admin/settings.php?section=outgoingmailconfig</code>).
+</p>
+
+<p>
+But we can also configure Moodle from command line, like this:
+</p>
+<pre class="example">
+moosh config-set smtphosts smtp.example.org
+moosh config-set smtpsecure TLS
+moosh config-set smtpauthtype PLAIN
+moosh config-set smtpuser ''
+moosh config-set smtppass ''
+moosh config-set smtpmaxbulk 100
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-orgdcf9243" class="outline-2">
+<h2 id="orgdcf9243"><span class="section-number-2">9</span> References</h2>
+<div class="outline-text-2" id="text-9">
+<ul class="org-ul">
+<li><a href="https://www.linux.com/learn/how-set-virtual-domains-and-virtual-users-postfix">https://www.linux.com/learn/how-set-virtual-domains-and-virtual-users-postfix</a></li>
+<li><a href="https://tecadmin.net/send-email-smtp-server-linux-command-line-ssmtp/">https://tecadmin.net/send-email-smtp-server-linux-command-line-ssmtp/</a></li>
+<li><a href="https://blog.kruyt.org/postfix-and-tls-encryption/">https://blog.kruyt.org/postfix-and-tls-encryption/</a></li>
+<li><a href="https://www.linuxbabe.com/mail-server/setting-up-dkim-and-spf">https://www.linuxbabe.com/mail-server/setting-up-dkim-and-spf</a></li>
+<li><a href="https://tecadmin.net/setup-dkim-with-postfix-on-ubuntu-debian/">https://tecadmin.net/setup-dkim-with-postfix-on-ubuntu-debian/</a></li>
+<li><a href="https://www.skelleton.net/2015/03/21/how-to-eliminate-spam-and-protect-your-name-with-dmarc/">https://www.skelleton.net/2015/03/21/how-to-eliminate-spam-and-protect-your-name-with-dmarc/</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Date: 2018-11-11</p>
+<p class="author">Author: Dashamir Hoxha</p>
+<p class="date">Created: 2018-11-12 Mon 16:13</p>
+<p class="validation"></p>
+</div>
+</body>
+</html>
