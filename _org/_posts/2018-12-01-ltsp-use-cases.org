@@ -67,7 +67,7 @@ besides being a gateway.
 #+CAPTION:    LTSP server is also Gateway and DHCP server.
 #+NAME:       fig:gateway-2nic
 #+ATTR_LaTeX: width=13cm
-[[file:images/sshtunnels/sshtunnel1.png][file:images/ltsp-usecases/gateway-2nic.png]]
+[[file:images/ltsp-usecases/gateway-2nic.png][file:images/ltsp-usecases/gateway-2nic.png]]
 
 
 ** Installation
@@ -210,7 +210,7 @@ get these services from the router/gateway.
 #+CAPTION:    LTSP server is a normal computer of the LAN (not Gateway and DHCP).
 #+NAME:       fig:normal-1nic
 #+ATTR_LaTeX: width=13cm
-[[file:images/sshtunnels/sshtunnel1.png][file:images/ltsp-usecases/normal-1nic.png]]
+[[file:images/ltsp-usecases/normal-1nic.png][file:images/ltsp-usecases/normal-1nic.png]]
 
 
 ** Installation
