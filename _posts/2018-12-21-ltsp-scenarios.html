@@ -1,0 +1,917 @@
+---
+layout:     post
+title:      LTSP Scenarios
+date:       2018-12-21
+
+summary: LTSP allows computers of a LAN to boot through the network from
+  a single server. The benefits of using it are reduced hardware costs and
+  reduced time of maintenance (with the later one becoming more important
+  over time, as hardware becomes cheaper). It has other benefits as well
+  in administration and maintenance. In this article we will see different
+  configuration and maintenance scenarios of a LTSP server.
+
+tags:       LTSP Ubuntu
+---
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2018-12-22 Sat 08:40 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LTSP Scenarios</title>
+<meta name="generator" content="Org mode" />
+<meta name="author" content="Dashamir Hoxha" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { width: 90%; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2018 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">LTSP Scenarios</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgf600e70">About LTSP</a></li>
+<li><a href="#org4992dd6">Managing User Accounts</a></li>
+<li><a href="#orgbae3700">Maintaining a Chrootless Client Image</a></li>
+<li><a href="#orgb2f2b9d">Creating Guest Accounts</a></li>
+<li><a href="#org3808668">Desktop Configuration For New Users</a></li>
+<li><a href="#orgfe6d10a">Reverting User Accounts to Default Configuration</a></li>
+<li><a href="#orgd452cfa">Allow Teacher To Use Epoptes From a Fat Client</a></li>
+<li><a href="#orga0149a5">Allow Users To Change The Password From a Fat Client</a></li>
+<li><a href="#org8a6e809">Remote Thin/Fat Client Access for Maintenance or Debugging</a></li>
+<li><a href="#org5524b01">Running Two LTSP Servers on The Same LAN</a></li>
+<li><a href="#orgfadb5a3">Having Home Directories on a Separate Server</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgf600e70" class="outline-2">
+<h2 id="orgf600e70">About LTSP</h2>
+<div class="outline-text-2" id="text-orgf600e70">
+<p>
+<a href="http://www.ltsp.org/">LTSP</a> allows computers of a LAN to boot through the network from a
+single server. The benefits of using it are reduced hardware costs and
+reduced time of maintenance.
+</p>
+
+<p>
+Hardware costs are reduced because the clients don't need to be
+powerful, since everything (or almost everything) runs on the
+server. They don't need to have a hard-disk and don't need to have
+much RAM.
+</p>
+
+<p>
+The time of maintenance is reduced because there is only the server to
+be maintained, not 20-30 computers of the LAN. Installing new
+software, updating, upgrading etc. is done only once on the server.
+The reduced time of maintenance is becoming the most important benefit
+of using LTSP, as hardware becomes cheaper.
+</p>
+
+<p>
+Besides these, LTSP has other administration and communication
+benefits. For example it provides centralized user accounts (a user
+can login to his account from any terminal). Or screen/desktop sharing
+(for example a teacher can show his desktop to the students for
+demonstration, or can see what they are doing, and even help them
+remotely).
+</p>
+
+<p>
+In this article we will see different configuration and maintenance
+scenarios of a LTSP server. These are based on my experience and on
+the discussion made on the ltsp-discuss mailing list. It is by no
+means a complete or thorough list of all the possible scenarios, so
+any suggestions for adding new scenarios to this list would be
+welcome.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org4992dd6" class="outline-2">
+<h2 id="org4992dd6">Managing User Accounts</h2>
+<div class="outline-text-2" id="text-org4992dd6">
+<p>
+User accounts are created and maintained on the server. Any command or
+tool will do, but if there are lots of accounts, some bash scripts
+would be useful for automating bulk operations. This is such a script:
+<a href="https://gitlab.com/Virtual-LTSP/VirtualBox/blob/bionic/users.sh">https://gitlab.com/Virtual-LTSP/VirtualBox/blob/bionic/users.sh</a>
+</p>
+
+<p>
+As shown also on its help, you can use it to create new accounts,
+export, import, backup and restore user accounts and their home
+directories:
+</p>
+
+<pre class="example">
+Usage: ./users.sh [&lt;command&gt;] [&lt;filename&gt;]
+
+Commands:
+
+    create [&lt;user-file.txt&gt;]
+        Create new user accounts. Each line of the input contains
+        a username, unencrypted password, and details, separated by ':'.
+        If no file is given than read from stdin.
+
+    export
+        Export to stdout username, encrypted password and details
+        for all the users.
+
+    import [&lt;user-file.passwd&gt;]
+        Import usernames, encrypted passwords and details from the export file.
+        If no file is given than read from stdin.
+
+    backup
+        Backup home directories and users (username:password:details).
+        The backup archive is stored on the directory 'backup/'.
+
+    restore &lt;backup-file.tgz&gt;
+        Restore home directories and user accounts from the given backup file.
+
+</pre>
+
+<p>
+If you have a Virtual-LTSP server (a LTSP server on VirtualBox, with
+Vagrant), you have to login first to the server, for example like this:
+</p>
+<pre class="example">
+cd ltsp-server/
+vagrant ssh
+sudo su
+cd /hosts/
+./users.sh
+</pre>
+
+<p>
+The backup files are usually stored on the directory <code>/hosts/backup/</code>,
+which is a shared directory between the virtualbox machine and its
+host. So, in case you have to rebuild the server (<code>./server.sh build</code>),
+the backup will be available to the new server and you can restore it.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgbae3700" class="outline-2">
+<h2 id="orgbae3700">Maintaining a Chrootless Client Image</h2>
+<div class="outline-text-2" id="text-orgbae3700">
+<p>
+The defining feature of a <b>chrootless</b> client image is that there is no
+<i>chroot</i> directory for its files. Instead, the LTSP server itself is
+used as an example or template for the client image. This means that
+if we want to update/upgrade or install new software on the client
+image, we have to do this on the server itself, and then we have to
+regenerate the image of the client (using the command
+<code>ltsp-update-image --cleanup /</code>).
+</p>
+
+<p>
+Sometimes there is a problem, because we want to install on the LTSP
+server things that we don't want to run on the client (for example
+apache2, mysql, guacamole, etc.).
+</p>
+
+<p>
+A solution for this is to exclude from the image some of the
+directories and services of the server. There are these options:
+</p>
+<ul class="org-ul">
+<li>Use the directive <code>RM_SYSTEM_SERVICES</code> on
+<code>/var/lib/tftpboot/ltsp/i386/lts.conf</code> to disable some services even
+if they are installed on the client.</li>
+<li>Use the directive <code>EXCLUDE</code> on <code>/etc/ltsp/ltsp-build-client.conf</code> to
+uninstall some packages from the finished chroot.</li>
+<li>Add lines like <code>etc/apache2/</code> on <code>/etc/ltsp/ltsp-update-image.excludes</code>
+to exclude certain directories from the image.</li>
+<li>Use the option <code>--exclude</code> of the command <code>ltsp-update-image</code> to exclude
+certain directories from the image.</li>
+<li>Create a shell script like <code>/etc/ltsp/cleanup.d/60-cleanup</code> which is
+executed inside the chroot before generating the image from it. In
+this script you can uninstall packages, remove directories, etc.</li>
+</ul>
+
+<p>
+Another approach, which is simpler and cleaner (in my opinion), is to
+unpack the client image into a directory, chroot into it, make any
+necessary maintenance (update, upgrade, install etc.), then generate
+again the client image from this <i>chroot</i> directory. This essentially
+converts it into a <b>chroot</b> client image, but that's OK.
+</p>
+
+<p>
+It can be done like this:
+</p>
+<pre class="example">
+unsquashfs -d /opt/ltsp/i386 /opt/ltsp/images/i386.img
+rm /opt/ltsp/i386/etc/resolv.conf
+ltsp-chroot -mr
+
+apt update
+apt upgrade
+apt install joe jove
+exit    # from chroot
+
+ltsp-update-image
+systemctl restart nbd-server
+</pre>
+
+<p>
+Some other tips and tricks are available here:
+<a href="http://wiki.ltsp.org/wiki/Tips_and_Tricks/Maintenance">http://wiki.ltsp.org/wiki/Tips_and_Tricks/Maintenance</a>
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgb2f2b9d" class="outline-2">
+<h2 id="orgb2f2b9d">Creating Guest Accounts</h2>
+<div class="outline-text-2" id="text-orgb2f2b9d">
+<p>
+In public computers (e.g. in schools, libraries, universities, etc.)
+sometimes it is useful to have guest accounts. This means that the
+content of the account is temporary and is erased immediately after
+logout (or on login). This is important because it reverts
+automatically all the default settings, no matter how much the users
+mess with them, therefore minimizing the need for maintenance. It is
+also important for the safety of the users, because it ensures that no
+open accounts or passwords are left behind.
+</p>
+
+<p>
+The approach used in LTSP for creating guest accounts is to create
+a user for each different IP, and to reset the content of the home
+of this user when he makes a login. It is described on these posts:
+</p>
+<ul class="org-ul">
+<li><a href="https://sourceforge.net/p/ltsp/mailman/message/27814821/">https://sourceforge.net/p/ltsp/mailman/message/27814821/</a></li>
+<li><a href="http://www.m-opensolutions.com/?p=537">http://www.m-opensolutions.com/?p=537</a></li>
+<li><a href="http://www.m-opensolutions.com/?p=667">http://www.m-opensolutions.com/?p=667</a></li>
+</ul>
+
+<p>
+This script (which should work on any Ubuntu <i>bionic</i> LTSP server) can
+be used to create and configure automatically guest accounts:
+<a href="https://gitlab.com/Virtual-LTSP/VirtualBox/blob/bionic/ltsp-server/scripts/create-guest-accounts.sh">https://gitlab.com/Virtual-LTSP/VirtualBox/blob/bionic/ltsp-server/scripts/create-guest-accounts.sh</a>
+</p>
+
+<pre class="example">
+#!/bin/bash -x
+### Create and config guest accounts.
+
+guest=${1:-guest}
+pass=${2:-pass}
+
+# create the template/skeleton guest account
+groupadd guest --gid=500 -f
+adduser $guest --uid=500 --gid=500 \
+        --shell=/bin/bash --gecos '' \
+        --disabled-password
+usermod $guest --password="$(openssl passwd -stdin &lt;&lt;&lt; $pass)"
+chown $guest:guest -R /home/$guest
+
+# create the guest accounts
+rm -rf /home/guest-accounts/
+mkdir -p /home/guest-accounts/
+for ip in {1..255}; do
+    user="${HOSTNAME}${ip}"
+    adduser $user --uid=$((500 + $ip)) --gid=500 \
+            --home=/home/guest-accounts/$user \
+            --shell=/bin/bash --gecos '' \
+            --disabled-password
+    usermod $user --password="$(openssl passwd -stdin &lt;&lt;&lt; $user)"
+done
+
+# create a script that resets a guest account
+cat &lt;&lt;EOF &gt; /usr/local/bin/reset-guest-account.sh
+#!/bin/bash
+user=\$SUDO_USER
+[[ \$user =~ ^'$HOSTNAME'[0-9]{1,3}\$ ]] || exit 1
+cd /home/guest-accounts/\$user || exit 2
+rm -rf .* *
+rsync -a /home/$guest/ .
+chown \$user -R .
+EOF
+chmod +x /usr/local/bin/reset-guest-account.sh
+
+# allow users of group 'guest' to call the reset script with sudo
+cat &lt;&lt;EOF &gt; /etc/sudoers.d/reset-guest-account
+# users of group 'guest' can call the reset script without password
+%guest  ALL = (root) NOPASSWD: /usr/local/bin/reset-guest-account.sh
+EOF
+
+# make sure guest accounts are reset on login
+cat &lt;&lt;EOF &gt; /usr/share/ldm/rc.d/S00-guest-sessions
+# if username matches the pattern of a guest account
+# then call the script that resets the account
+echo \$LDM_USERNAME | grep -E '^$HOSTNAME[0-9]{1,3}\$' \\
+    &amp;&amp; ssh -S "\$LDM_SOCKET" "\$LDM_SERVER" 'sudo /usr/local/bin/reset-guest-account.sh'
+EOF
+
+### place some limits on guest accounts
+sed -i /etc/security/limits.conf -e '/^### custom/,$ d'
+cat &lt;&lt;EOF &gt;&gt; /etc/security/limits.conf
+### custom
+@guest        hard    nproc           1000
+ *             hard    core            0
+@guest        hard    cpu             2
+@guest        hard    maxlogins       1
+EOF
+</pre>
+
+<p>
+Guest accounts are reset on each login, which means that the home
+directory is erased and is replaced with the content of the home
+directory of the account <b>guest</b>. As a result, by customizing the
+account <b>guest</b> (for example changing the background) we actually
+customize all the guest accounts.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org3808668" class="outline-2">
+<h2 id="org3808668">Desktop Configuration For New Users</h2>
+<div class="outline-text-2" id="text-org3808668">
+<p>
+Sometimes we want to customize the default desktop configuration of
+the users (for example change the background, add some apps on desktop
+or panel, etc.)
+</p>
+
+<p>
+An approach that works for MATE, Gnome, Firefox, etc. is to override
+the settings (search on google for "default settings" or "mandatory
+settings").  For MATE, you can make your own override file for all
+users, like this:
+</p>
+<pre class="example">
+vi /usr/share/glib-2.0/schemas/60_myown.gschema.override
+sudo glib-compile-schemas /usr/share/glib-2.0/schemas/
+</pre>
+
+<p>
+The override file looks like this:
+</p>
+<pre class="example">
+[org.mate.panel]
+default-layout='redmond'
+
+[org.mate.marco]
+button-layout='menu:minimize,maximize,close'
+theme='TraditionalOk'
+num-workspaces=4
+
+[org.mate.panel.objects.window-list.prefs]
+group-windows='auto'
+display-all-workspaces=true
+move-unminimized-windows=false
+</pre>
+
+<p>
+Here is an example:
+<a href="https://git.launchpad.net/sch-scripts/tree/debian/sch-scripts.gsettings-override">https://git.launchpad.net/sch-scripts/tree/debian/sch-scripts.gsettings-override</a>
+</p>
+
+<p>
+Another approach is to create a skeleton user account, for example
+<b>skel</b>, then to make a symbolic link from <code>/etc/skel</code> to <code>/home/skel</code>:
+</p>
+<pre class="example">
+mv /etc/skel /etc/skel.bak
+ln -s /home/skel /etc/skel
+</pre>
+<p>
+The configurations that you make to the <b>skel</b> user will be applied
+automatically to the new user accounts that are created.
+</p>
+
+<p>
+<b>Note:</b> Be careful with this approach. If some applets don't save the
+paths to user home directories relatively, this may lead to
+confusion. In this case you should remove these applets and try to
+configure them the other way (described above).
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgfe6d10a" class="outline-2">
+<h2 id="orgfe6d10a">Reverting User Accounts to Default Configuration</h2>
+<div class="outline-text-2" id="text-orgfe6d10a">
+<p>
+It is often useful to revert all the settings of user accounts to
+default values, except for the files that they have saved, Firefox
+bookmarks, etc.  This minimizes the maintenance time for user
+accounts, while allowing the users to play with changing the
+preferences and other configuration settings, etc.
+</p>
+
+<p>
+It can be done by creating the script
+<code>/opt/ltsp/i386/usr/share/ldm/rc.d/S01-user-sessions</code> with a content
+like this:
+</p>
+<pre class="example">
+case "$LDM_USERNAME" in
+    user*)
+        sh -S "$LDM_SOCKET" "$LDM_SERVER" "cd; find . -mindepth 1 -maxdepth 1 \
+            -name '.*' -delete; rsync -a /etc/skel/ ."
+        ;;
+esac
+</pre>
+
+<p>
+If you have a <b>chrootless</b> client image, then this script should be
+saved on the file <code>/usr/share/ldm/rc.d/S01-user-sessions</code> .
+</p>
+
+<p>
+The next step is to run <code>ltsp-update-image</code> (or <code>ltsp-update-image
+--cleanup /</code> for chrootless image).
+</p>
+
+<p>
+If we wanted to use a configuration script like that of guest accounts
+it would be like this:
+</p>
+<pre class="example">
+#!/bin/bash -x
+
+# create a script that resets a user account
+cat &lt;&lt;EOF &gt; /usr/local/bin/reset-user-account.sh
+#!/bin/bash
+user=\$SUDO_USER
+[[ \$user =~ ^user.*\$ ]] || exit 1
+cd /home/\$user || exit 2
+find . -mindepth 1 -maxdepth 1 -name '.*' -delete
+rsync -a /etc/skel/ .
+chown \$user: -R .
+EOF
+chmod +x /usr/local/bin/reset-user-account.sh
+
+# allow users of group 'student' to call the reset script with sudo
+cat &lt;&lt;EOF &gt; /etc/sudoers.d/reset-user-account
+# users of group 'user' can call the reset script without password
+%user  ALL = (root) NOPASSWD: /usr/local/bin/reset-user-account.sh
+EOF
+
+# make sure user accounts are reset on login
+cat &lt;&lt;EOF &gt; /usr/share/ldm/rc.d/S01-user-sessions
+# if username matches the pattern of a user account
+# then call the script that resets the account
+echo \$LDM_USERNAME | grep -E '^user.*\$' \\
+    &amp;&amp; ssh -S "\$LDM_SOCKET" "\$LDM_SERVER" 'sudo /usr/local/bin/reset-user-account.sh'
+EOF
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-orgd452cfa" class="outline-2">
+<h2 id="orgd452cfa">Allow Teacher To Use Epoptes From a Fat Client</h2>
+<div class="outline-text-2" id="text-orgd452cfa">
+<p>
+Usually the teacher has access to the desktop of the LTSP server and
+can launch Epoptes user interface there. It is important that the
+Epoptes UI is launched on the LTSP server, because the Epoptes daemon
+is running there.
+</p>
+
+<p>
+However, sometimes may not be possible to access the desktop of the
+LTSP server. In this case, it is possible to launch Epoptes from a fat
+client too. This can be done by using remote apps (which means that
+the apps run on the server and their display is on the client). Add
+these lines on <code>/var/lib/tftpboot/ltsp/i386/lts.conf</code>:
+</p>
+<pre class="example">
+[Default]
+    REMOTE_APPS=True
+    RCFILE_01="sed 's,^Exec=/usr/bin/epoptes,Exec=ltsp-remoteapps dbus-launch epoptes,' -i /usr/share/applications/epoptes.desktop"
+</pre>
+
+<p>
+Now you can login on a fat client and run this on the terminal:
+<code>ltsp-remoteapps dbus-launch epoptes</code>
+</p>
+
+<p>
+<b>Note:</b> Make sure that the user of the teacher is a member of the
+<b>epoptes</b> group.
+</p>
+
+<p>
+For more details see also this:
+<a href="http://www.epoptes.org/documentation/fat-clients">http://www.epoptes.org/documentation/fat-clients</a>
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orga0149a5" class="outline-2">
+<h2 id="orga0149a5">Allow Users To Change The Password From a Fat Client</h2>
+<div class="outline-text-2" id="text-orga0149a5">
+<p>
+Since user accounts live on the server, usually it is not possible to
+change the password from the client. The only way is to ssh to the
+server and to change it there, or to run a remote application (meaning
+that the application runs on the server) that can change the password.
+</p>
+
+<p>
+From the terminal it can be done like this: <code>ssh -t server passwd</code>
+(which runs the command <code>passwd</code> on the server). This may be a bit
+confusing because it requires twice the current password, before
+asking for the new password.
+</p>
+
+<p>
+Another way that is nicer, is to set <code>REMOTE_APPS=True</code> in
+<code>/var/lib/tftpboot/ltsp/amd64/lts.conf</code> (or
+<code>/var/lib/tftpboot/ltsp/i386/lts.conf</code>). Then you can run from the
+client something like this: <code>ltsp-remote-apps xfce4-terminal -e passwd</code>
+</p>
+
+<p>
+It is even nicer if you can create this alias (for example in <code>.bashrc</code>
+of the users):
+</p>
+<pre class="example">
+alias passwd='ltsp-remote-apps xfce4-terminal -e passwd'
+</pre>
+<p>
+Instead of <code>passwd</code>, you may also call a bash script on the server,
+which makes the interaction with the user nicer.
+</p>
+
+<p>
+It is also possible to allow users to change the password by using a
+GUI application.  You can do something like what is described here for
+Epoptes: <a href="http://www.epoptes.org/documentation/fat-clients">http://www.epoptes.org/documentation/fat-clients</a> Instead of
+<code>epoptes</code> you can do it for <code>gnome-about-me</code> or <code>mate-about-me</code> (or whatever
+works on your desktop) and then your users will be able to change
+their passwords from the menu, without requiring the terminal or any
+other weird things.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org8a6e809" class="outline-2">
+<h2 id="org8a6e809">Remote Thin/Fat Client Access for Maintenance or Debugging</h2>
+<div class="outline-text-2" id="text-org8a6e809">
+<p>
+Sometimes it is not possible (or feasible) to access physically the
+LTSP server and the clients for maintenance or debugging. In this case
+you can access the desktop of the LTSP server remotely. This can be
+done by:
+</p>
+<ul class="org-ul">
+<li>X2Go (<a href="https://wiki.x2go.org/doku.php">https://wiki.x2go.org/doku.php</a>)</li>
+<li>Epoptes (<a href="http://www.epoptes.org/">http://www.epoptes.org/</a>) "remote assistance" feature
+(i.e. reverse VNC)</li>
+<li>VNC and ssh tunneling (<a href="http://dashohoxha.fs.al/sshtunnels/">http://dashohoxha.fs.al/sshtunnels/</a>)</li>
+<li>Guacamole
+(<a href="https://gitlab.com/Virtual-LTSP/VirtualBox/blob/bionic/ltsp-server/scripts/guacamole.sh">https://gitlab.com/Virtual-LTSP/VirtualBox/blob/bionic/ltsp-server/scripts/guacamole.sh</a>)</li>
+</ul>
+
+<p>
+Once you are able to access the desktop of the LTSP server remotely,
+you can access the desktop of the clients as well, through the Epoptes
+"remote control" feature.
+</p>
+
+<p>
+You can also boot up clients remotely from Epoptes, if you have them
+organized in groups (see:
+<a href="http://www.epoptes.org/documentation/groups">http://www.epoptes.org/documentation/groups</a>).  However, for this to
+work, WoL (Wake on LAN) has to be enabled on the client BIOS/UEFI.
+</p>
+
+<p>
+If you want to check also the boot messages on the client, you can do
+it with a virtual machine. For example if you install VirtualBox on
+the LTSP server, then you can start a VirtualBox LTSP client with a
+script like this:
+<a href="https://gitlab.com/Virtual-LTSP/VirtualBox/blob/bionic/client.sh">https://gitlab.com/Virtual-LTSP/VirtualBox/blob/bionic/client.sh</a> A
+VirtualBox client may not be exactly the same as a real client (in
+terms of hardware etc.), but it is better than nothing.
+</p>
+
+<p>
+Instead of a VirtualBox machine, you can use a KVM virtual machine as
+well. It should be configured to boot in PXE and the KVM server must
+be in same subnet as your LTSP clients. Than you can have a QEMU+SSH
+connection using virt-manager, which gives you a graphical access to
+the VM.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org5524b01" class="outline-2">
+<h2 id="org5524b01">Running Two LTSP Servers on The Same LAN</h2>
+<div class="outline-text-2" id="text-org5524b01">
+<p>
+This may be useful for example when you already have an old server
+running (lets say based on Ubuntu-16.04), and you want to install and
+configure a new one (based on Ubuntu-18.04). You can't shutdown or
+throw away the old one, until the new one is prepared and tested.
+</p>
+
+<p>
+The most easy way is to avoid running them simultaneously (at the same
+time), especially when the DHCP server is inside the LTSP server
+itself. In this case you have to do the installation and testing of
+the new server when the classroom is not being used (so that you can
+shut down the old server and boot up the new one).
+</p>
+
+<p>
+However, if you make special configurations for each client on the
+DHCP server (based on the MAC addresses of the clients), it is
+possible to tell some of them to boot from one LTSP server, and the
+others to boot from the other. Then both of the LTSP servers (or all
+of them, if there are more than two) can run simultaneously, without
+stepping on the toes of each-other.
+</p>
+
+<p>
+This kind of configuration (running simultaneously multiple LTSP
+servers on the same LAN, each one with its own clients) might be
+useful also on cases when you have different kinds of clients on the
+LAN, which have different requirements, so you use different servers
+to serve them. However, it is better, in general, to build different
+client images on the same LTSP server, and to server them to different
+clients based on the clients' MAC addresses.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgfadb5a3" class="outline-2">
+<h2 id="orgfadb5a3">Having Home Directories on a Separate Server</h2>
+<div class="outline-text-2" id="text-orgfadb5a3">
+<p>
+If you run more than one LTSP server on the same LAN simultaneously,
+it is useful to keep all the user accounts and home directories on the
+same server. This means that for at least one of the LTSP servers, the
+user accounts will have to be accessed from another server (a different
+server than the one that serves the system image).
+</p>
+
+<p>
+This can be done by using the directive <code>LDM_SERVER=10.11.12.13</code> in
+<code>lts.conf</code>, which means "use this server for authentication and
+/home". It is an easy way to separate the authentication/home server,
+from the NBD server which serves <code>/</code> (the root filesystem).
+</p>
+
+<p>
+Alternatively, <code>/home</code> can also be shared via NFS with a directive like
+this on <code>lts.conf</code>:
+</p>
+<pre class="example">
+FSTAB_1="server:/home /home nfs defaults,nolock 0 0"
+</pre>
+<p>
+Instead of <code>server</code> (which is a name for the LTSP server) you can use
+any other server, for example <code>10.11.12.13</code>.
+</p>
+
+<p>
+<b>Note:</b> Using separate servers for the system image and for home
+directories, implicitly does a bit of load balancing as well.
+</p>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Date: 2018-12-21</p>
+<p class="author">Author: Dashamir Hoxha</p>
+<p class="date">Created: 2018-12-22 Sat 08:40</p>
+<p class="validation"></p>
+</div>
+</body>
+</html>

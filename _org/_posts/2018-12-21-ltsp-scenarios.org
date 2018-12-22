@@ -1,0 +1,517 @@
+#+TITLE:     LTSP Scenarios
+#+AUTHOR:    Dashamir Hoxha
+#+EMAIL:     dashohoxha@gmail.com
+#+DATE:      2018-12-21
+#+OPTIONS:   H:3 num:nil toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+# #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
+#+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
+#+begin_export html
+---
+layout:     post
+title:      LTSP Scenarios
+date:       2018-12-21
+
+summary: LTSP allows computers of a LAN to boot through the network from
+  a single server. The benefits of using it are reduced hardware costs and
+  reduced time of maintenance (with the later one becoming more important
+  over time, as hardware becomes cheaper). It has other benefits as well
+  in administration and maintenance. In this article we will see different
+  configuration and maintenance scenarios of a LTSP server.
+
+tags:       LTSP Ubuntu
+---
+#+end_export
+
+* About LTSP
+
+[[http://www.ltsp.org][LTSP]] allows computers of a LAN to boot through the network from a
+single server. The benefits of using it are reduced hardware costs and
+reduced time of maintenance.
+
+Hardware costs are reduced because the clients don't need to be
+powerful, since everything (or almost everything) runs on the
+server. They don't need to have a hard-disk and don't need to have
+much RAM.
+
+The time of maintenance is reduced because there is only the server to
+be maintained, not 20-30 computers of the LAN. Installing new
+software, updating, upgrading etc. is done only once on the server.
+The reduced time of maintenance is becoming the most important benefit
+of using LTSP, as hardware becomes cheaper.
+
+Besides these, LTSP has other administration and communication
+benefits. For example it provides centralized user accounts (a user
+can login to his account from any terminal). Or screen/desktop sharing
+(for example a teacher can show his desktop to the students for
+demonstration, or can see what they are doing, and even help them
+remotely).
+
+In this article we will see different configuration and maintenance
+scenarios of a LTSP server. These are based on my experience and on
+the discussion made on the ltsp-discuss mailing list. It is by no
+means a complete or thorough list of all the possible scenarios, so
+any suggestions for adding new scenarios to this list would be
+welcome.
+
+
+* Managing User Accounts
+
+User accounts are created and maintained on the server. Any command or
+tool will do, but if there are lots of accounts, some bash scripts
+would be useful for automating bulk operations. This is such a script:
+https://gitlab.com/Virtual-LTSP/VirtualBox/blob/bionic/users.sh
+
+As shown also on its help, you can use it to create new accounts,
+export, import, backup and restore user accounts and their home
+directories:
+
+#+begin_example
+Usage: ./users.sh [<command>] [<filename>]
+
+Commands:
+
+    create [<user-file.txt>]
+        Create new user accounts. Each line of the input contains
+        a username, unencrypted password, and details, separated by ':'.
+        If no file is given than read from stdin.
+
+    export
+        Export to stdout username, encrypted password and details
+        for all the users.
+
+    import [<user-file.passwd>]
+        Import usernames, encrypted passwords and details from the export file.
+        If no file is given than read from stdin.
+
+    backup
+        Backup home directories and users (username:password:details).
+        The backup archive is stored on the directory 'backup/'.
+
+    restore <backup-file.tgz>
+        Restore home directories and user accounts from the given backup file.
+
+#+end_example
+
+If you have a Virtual-LTSP server (a LTSP server on VirtualBox, with
+Vagrant), you have to login first to the server, for example like this:
+#+begin_example
+cd ltsp-server/
+vagrant ssh
+sudo su
+cd /hosts/
+./users.sh
+#+end_example
+
+The backup files are usually stored on the directory ~/hosts/backup/~,
+which is a shared directory between the virtualbox machine and its
+host. So, in case you have to rebuild the server (=./server.sh build=),
+the backup will be available to the new server and you can restore it.
+
+
+* Maintaining a Chrootless Client Image
+
+The defining feature of a *chrootless* client image is that there is no
+/chroot/ directory for its files. Instead, the LTSP server itself is
+used as an example or template for the client image. This means that
+if we want to update/upgrade or install new software on the client
+image, we have to do this on the server itself, and then we have to
+regenerate the image of the client (using the command
+=ltsp-update-image --cleanup /=).
+
+Sometimes there is a problem, because we want to install on the LTSP
+server things that we don't want to run on the client (for example
+apache2, mysql, guacamole, etc.).
+
+A solution for this is to exclude from the image some of the
+directories and services of the server. There are these options:
+- Use the directive =RM_SYSTEM_SERVICES= on
+  ~/var/lib/tftpboot/ltsp/i386/lts.conf~ to disable some services even
+  if they are installed on the client.
+- Use the directive =EXCLUDE= on ~/etc/ltsp/ltsp-build-client.conf~ to
+  uninstall some packages from the finished chroot.
+- Add lines like =etc/apache2/= on ~/etc/ltsp/ltsp-update-image.excludes~
+  to exclude certain directories from the image.
+- Use the option =--exclude= of the command =ltsp-update-image= to exclude
+  certain directories from the image.
+- Create a shell script like ~/etc/ltsp/cleanup.d/60-cleanup~ which is
+  executed inside the chroot before generating the image from it. In
+  this script you can uninstall packages, remove directories, etc.
+
+Another approach, which is simpler and cleaner (in my opinion), is to
+unpack the client image into a directory, chroot into it, make any
+necessary maintenance (update, upgrade, install etc.), then generate
+again the client image from this /chroot/ directory. This essentially
+converts it into a *chroot* client image, but that's OK.
+
+It can be done like this:
+#+begin_example
+unsquashfs -d /opt/ltsp/i386 /opt/ltsp/images/i386.img
+rm /opt/ltsp/i386/etc/resolv.conf
+ltsp-chroot -mr
+
+apt update
+apt upgrade
+apt install joe jove
+exit    # from chroot
+
+ltsp-update-image
+systemctl restart nbd-server
+#+end_example
+
+Some other tips and tricks are available here:
+http://wiki.ltsp.org/wiki/Tips_and_Tricks/Maintenance
+
+
+* Creating Guest Accounts
+
+In public computers (e.g. in schools, libraries, universities, etc.)
+sometimes it is useful to have guest accounts. This means that the
+content of the account is temporary and is erased immediately after
+logout (or on login). This is important because it reverts
+automatically all the default settings, no matter how much the users
+mess with them, therefore minimizing the need for maintenance. It is
+also important for the safety of the users, because it ensures that no
+open accounts or passwords are left behind.
+
+The approach used in LTSP for creating guest accounts is to create
+a user for each different IP, and to reset the content of the home
+of this user when he makes a login. It is described on these posts:
+- https://sourceforge.net/p/ltsp/mailman/message/27814821/
+- http://www.m-opensolutions.com/?p=537
+- http://www.m-opensolutions.com/?p=667
+
+This script (which should work on any Ubuntu /bionic/ LTSP server) can
+be used to create and configure automatically guest accounts:
+https://gitlab.com/Virtual-LTSP/VirtualBox/blob/bionic/ltsp-server/scripts/create-guest-accounts.sh
+
+#+begin_example
+#!/bin/bash -x
+### Create and config guest accounts.
+
+guest=${1:-guest}
+pass=${2:-pass}
+
+# create the template/skeleton guest account
+groupadd guest --gid=500 -f
+adduser $guest --uid=500 --gid=500 \
+        --shell=/bin/bash --gecos '' \
+        --disabled-password
+usermod $guest --password="$(openssl passwd -stdin <<< $pass)"
+chown $guest:guest -R /home/$guest
+
+# create the guest accounts
+rm -rf /home/guest-accounts/
+mkdir -p /home/guest-accounts/
+for ip in {1..255}; do
+    user="${HOSTNAME}${ip}"
+    adduser $user --uid=$((500 + $ip)) --gid=500 \
+            --home=/home/guest-accounts/$user \
+            --shell=/bin/bash --gecos '' \
+            --disabled-password
+    usermod $user --password="$(openssl passwd -stdin <<< $user)"
+done
+
+# create a script that resets a guest account
+cat <<EOF > /usr/local/bin/reset-guest-account.sh
+#!/bin/bash
+user=\$SUDO_USER
+[[ \$user =~ ^'$HOSTNAME'[0-9]{1,3}\$ ]] || exit 1
+cd /home/guest-accounts/\$user || exit 2
+rm -rf .* *
+rsync -a /home/$guest/ .
+chown \$user -R .
+EOF
+chmod +x /usr/local/bin/reset-guest-account.sh
+
+# allow users of group 'guest' to call the reset script with sudo
+cat <<EOF > /etc/sudoers.d/reset-guest-account
+# users of group 'guest' can call the reset script without password
+%guest  ALL = (root) NOPASSWD: /usr/local/bin/reset-guest-account.sh
+EOF
+
+# make sure guest accounts are reset on login
+cat <<EOF > /usr/share/ldm/rc.d/S00-guest-sessions
+# if username matches the pattern of a guest account
+# then call the script that resets the account
+echo \$LDM_USERNAME | grep -E '^$HOSTNAME[0-9]{1,3}\$' \\
+    && ssh -S "\$LDM_SOCKET" "\$LDM_SERVER" 'sudo /usr/local/bin/reset-guest-account.sh'
+EOF
+
+### place some limits on guest accounts
+sed -i /etc/security/limits.conf -e '/^### custom/,$ d'
+cat <<EOF >> /etc/security/limits.conf
+### custom
+@guest        hard    nproc           1000
+ *             hard    core            0
+@guest        hard    cpu             2
+@guest        hard    maxlogins       1
+EOF
+#+end_example
+
+Guest accounts are reset on each login, which means that the home
+directory is erased and is replaced with the content of the home
+directory of the account *guest*. As a result, by customizing the
+account *guest* (for example changing the background) we actually
+customize all the guest accounts.
+
+
+* Desktop Configuration For New Users
+
+Sometimes we want to customize the default desktop configuration of
+the users (for example change the background, add some apps on desktop
+or panel, etc.)
+
+An approach that works for MATE, Gnome, Firefox, etc. is to override
+the settings (search on google for "default settings" or "mandatory
+settings").  For MATE, you can make your own override file for all
+users, like this:
+#+begin_example
+vi /usr/share/glib-2.0/schemas/60_myown.gschema.override
+sudo glib-compile-schemas /usr/share/glib-2.0/schemas/
+#+end_example
+
+The override file looks like this:
+#+begin_example
+[org.mate.panel]
+default-layout='redmond'
+
+[org.mate.marco]
+button-layout='menu:minimize,maximize,close'
+theme='TraditionalOk'
+num-workspaces=4
+
+[org.mate.panel.objects.window-list.prefs]
+group-windows='auto'
+display-all-workspaces=true
+move-unminimized-windows=false
+#+end_example
+
+Here is an example:
+https://git.launchpad.net/sch-scripts/tree/debian/sch-scripts.gsettings-override
+
+Another approach is to create a skeleton user account, for example
+*skel*, then to make a symbolic link from ~/etc/skel~ to ~/home/skel~:
+#+begin_example
+mv /etc/skel /etc/skel.bak
+ln -s /home/skel /etc/skel
+#+end_example
+The configurations that you make to the *skel* user will be applied
+automatically to the new user accounts that are created.
+
+*Note:* Be careful with this approach. If some applets don't save the
+paths to user home directories relatively, this may lead to
+confusion. In this case you should remove these applets and try to
+configure them the other way (described above).
+
+
+* Reverting User Accounts to Default Configuration
+
+It is often useful to revert all the settings of user accounts to
+default values, except for the files that they have saved, Firefox
+bookmarks, etc.  This minimizes the maintenance time for user
+accounts, while allowing the users to play with changing the
+preferences and other configuration settings, etc.
+
+It can be done by creating the script
+~/opt/ltsp/i386/usr/share/ldm/rc.d/S01-user-sessions~ with a content
+like this:
+#+begin_example
+case "$LDM_USERNAME" in
+    user*)
+        sh -S "$LDM_SOCKET" "$LDM_SERVER" "cd; find . -mindepth 1 -maxdepth 1 \
+            -name '.*' -delete; rsync -a /etc/skel/ ."
+        ;;
+esac
+#+end_example
+
+If you have a *chrootless* client image, then this script should be
+saved on the file ~/usr/share/ldm/rc.d/S01-user-sessions~ .
+
+The next step is to run ~ltsp-update-image~ (or ~ltsp-update-image
+--cleanup /~ for chrootless image).
+
+If we wanted to use a configuration script like that of guest accounts
+it would be like this:
+#+begin_example
+#!/bin/bash -x
+
+# create a script that resets a user account
+cat <<EOF > /usr/local/bin/reset-user-account.sh
+#!/bin/bash
+user=\$SUDO_USER
+[[ \$user =~ ^user.*\$ ]] || exit 1
+cd /home/\$user || exit 2
+find . -mindepth 1 -maxdepth 1 -name '.*' -delete
+rsync -a /etc/skel/ .
+chown \$user: -R .
+EOF
+chmod +x /usr/local/bin/reset-user-account.sh
+
+# allow users of group 'student' to call the reset script with sudo
+cat <<EOF > /etc/sudoers.d/reset-user-account
+# users of group 'user' can call the reset script without password
+%user  ALL = (root) NOPASSWD: /usr/local/bin/reset-user-account.sh
+EOF
+
+# make sure user accounts are reset on login
+cat <<EOF > /usr/share/ldm/rc.d/S01-user-sessions
+# if username matches the pattern of a user account
+# then call the script that resets the account
+echo \$LDM_USERNAME | grep -E '^user.*\$' \\
+    && ssh -S "\$LDM_SOCKET" "\$LDM_SERVER" 'sudo /usr/local/bin/reset-user-account.sh'
+EOF
+#+end_example
+
+
+* Allow Teacher To Use Epoptes From a Fat Client
+
+Usually the teacher has access to the desktop of the LTSP server and
+can launch Epoptes user interface there. It is important that the
+Epoptes UI is launched on the LTSP server, because the Epoptes daemon
+is running there.
+
+However, sometimes may not be possible to access the desktop of the
+LTSP server. In this case, it is possible to launch Epoptes from a fat
+client too. This can be done by using remote apps (which means that
+the apps run on the server and their display is on the client). Add
+these lines on ~/var/lib/tftpboot/ltsp/i386/lts.conf~:
+#+begin_example
+[Default]
+    REMOTE_APPS=True
+    RCFILE_01="sed 's,^Exec=/usr/bin/epoptes,Exec=ltsp-remoteapps dbus-launch epoptes,' -i /usr/share/applications/epoptes.desktop"
+#+end_example
+
+Now you can login on a fat client and run this on the terminal:
+=ltsp-remoteapps dbus-launch epoptes=
+
+*Note:* Make sure that the user of the teacher is a member of the
+*epoptes* group.
+
+For more details see also this:
+http://www.epoptes.org/documentation/fat-clients
+
+
+* Allow Users To Change The Password From a Fat Client
+
+Since user accounts live on the server, usually it is not possible to
+change the password from the client. The only way is to ssh to the
+server and to change it there, or to run a remote application (meaning
+that the application runs on the server) that can change the password.
+
+From the terminal it can be done like this: =ssh -t server passwd=
+(which runs the command =passwd= on the server). This may be a bit
+confusing because it requires twice the current password, before
+asking for the new password.
+
+Another way that is nicer, is to set =REMOTE_APPS=True= in
+~/var/lib/tftpboot/ltsp/amd64/lts.conf~ (or
+~/var/lib/tftpboot/ltsp/i386/lts.conf~). Then you can run from the
+client something like this: =ltsp-remote-apps xfce4-terminal -e passwd=
+
+It is even nicer if you can create this alias (for example in ~.bashrc~
+of the users):
+#+begin_example
+alias passwd='ltsp-remote-apps xfce4-terminal -e passwd'
+#+end_example
+Instead of =passwd=, you may also call a bash script on the server,
+which makes the interaction with the user nicer.
+
+It is also possible to allow users to change the password by using a
+GUI application.  You can do something like what is described here for
+Epoptes: http://www.epoptes.org/documentation/fat-clients Instead of
+=epoptes= you can do it for =gnome-about-me= or =mate-about-me= (or whatever
+works on your desktop) and then your users will be able to change
+their passwords from the menu, without requiring the terminal or any
+other weird things.
+
+
+* Remote Thin/Fat Client Access for Maintenance or Debugging
+
+Sometimes it is not possible (or feasible) to access physically the
+LTSP server and the clients for maintenance or debugging. In this case
+you can access the desktop of the LTSP server remotely. This can be
+done by:
+- X2Go (https://wiki.x2go.org/doku.php)
+- Epoptes (http://www.epoptes.org) "remote assistance" feature
+  (i.e. reverse VNC)
+- VNC and ssh tunneling (http://dashohoxha.fs.al/sshtunnels/)
+- Guacamole
+  (https://gitlab.com/Virtual-LTSP/VirtualBox/blob/bionic/ltsp-server/scripts/guacamole.sh)
+
+Once you are able to access the desktop of the LTSP server remotely,
+you can access the desktop of the clients as well, through the Epoptes
+"remote control" feature.
+
+You can also boot up clients remotely from Epoptes, if you have them
+organized in groups (see:
+http://www.epoptes.org/documentation/groups).  However, for this to
+work, WoL (Wake on LAN) has to be enabled on the client BIOS/UEFI.
+
+If you want to check also the boot messages on the client, you can do
+it with a virtual machine. For example if you install VirtualBox on
+the LTSP server, then you can start a VirtualBox LTSP client with a
+script like this:
+https://gitlab.com/Virtual-LTSP/VirtualBox/blob/bionic/client.sh A
+VirtualBox client may not be exactly the same as a real client (in
+terms of hardware etc.), but it is better than nothing.
+
+Instead of a VirtualBox machine, you can use a KVM virtual machine as
+well. It should be configured to boot in PXE and the KVM server must
+be in same subnet as your LTSP clients. Than you can have a QEMU+SSH
+connection using virt-manager, which gives you a graphical access to
+the VM.
+
+
+* Running Two LTSP Servers on The Same LAN
+
+This may be useful for example when you already have an old server
+running (lets say based on Ubuntu-16.04), and you want to install and
+configure a new one (based on Ubuntu-18.04). You can't shutdown or
+throw away the old one, until the new one is prepared and tested.
+
+The most easy way is to avoid running them simultaneously (at the same
+time), especially when the DHCP server is inside the LTSP server
+itself. In this case you have to do the installation and testing of
+the new server when the classroom is not being used (so that you can
+shut down the old server and boot up the new one).
+
+However, if you make special configurations for each client on the
+DHCP server (based on the MAC addresses of the clients), it is
+possible to tell some of them to boot from one LTSP server, and the
+others to boot from the other. Then both of the LTSP servers (or all
+of them, if there are more than two) can run simultaneously, without
+stepping on the toes of each-other.
+
+This kind of configuration (running simultaneously multiple LTSP
+servers on the same LAN, each one with its own clients) might be
+useful also on cases when you have different kinds of clients on the
+LAN, which have different requirements, so you use different servers
+to serve them. However, it is better, in general, to build different
+client images on the same LTSP server, and to server them to different
+clients based on the clients' MAC addresses.
+
+
+* Having Home Directories on a Separate Server
+
+If you run more than one LTSP server on the same LAN simultaneously,
+it is useful to keep all the user accounts and home directories on the
+same server. This means that for at least one of the LTSP servers, the
+user accounts will have to be accessed from another server (a different
+server than the one that serves the system image).
+
+This can be done by using the directive =LDM_SERVER=10.11.12.13= in
+~lts.conf~, which means "use this server for authentication and
+/home". It is an easy way to separate the authentication/home server,
+from the NBD server which serves =/= (the root filesystem).
+
+Alternatively, ~/home~ can also be shared via NFS with a directive like
+this on ~lts.conf~:
+#+begin_example
+FSTAB_1="server:/home /home nfs defaults,nolock 0 0"
+#+end_example
+Instead of =server= (which is a name for the LTSP server) you can use
+any other server, for example =10.11.12.13=.
+
+*Note:* Using separate servers for the system image and for home
+directories, implicitly does a bit of load balancing as well.
