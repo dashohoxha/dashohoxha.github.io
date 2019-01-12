@@ -17,30 +17,23 @@ tags:       LTSP Ubuntu
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2018-12-22 Sat 08:40 -->
-<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>LTSP Scenarios</title>
-<meta name="generator" content="Org mode" />
-<meta name="author" content="Dashamir Hoxha" />
+<!-- 2019-01-12 Sat 16:29 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Dashamir Hoxha" />
 <style type="text/css">
  <!--/*--><![CDATA[/*><!--*/
-  .title  { text-align: center;
-             margin-bottom: .2em; }
-  .subtitle { text-align: center;
-              font-size: medium;
-              font-weight: bold;
-              margin-top:0; }
+  .title  { text-align: center; }
   .todo   { font-family: monospace; color: red; }
-  .done   { font-family: monospace; color: green; }
-  .priority { font-family: monospace; color: orange; }
+  .done   { color: green; }
   .tag    { background-color: #eee; font-family: monospace;
             padding: 2px; font-size: 80%; font-weight: normal; }
   .timestamp { color: #bebebe; }
   .timestamp-kwd { color: #5f9ea0; }
-  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
-  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
-  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
   .underline { text-decoration: underline; }
   #postamble p, #preamble p { font-size: 90%; margin: .2em; }
   p.verse { margin-left: 3%; }
@@ -67,111 +60,27 @@ tags:       LTSP Ubuntu
     border: 1px solid black;
   }
   pre.src:hover:before { display: inline;}
-  /* Languages per Org manual */
-  pre.src-asymptote:before { content: 'Asymptote'; }
-  pre.src-awk:before { content: 'Awk'; }
-  pre.src-C:before { content: 'C'; }
-  /* pre.src-C++ doesn't work in CSS */
-  pre.src-clojure:before { content: 'Clojure'; }
-  pre.src-css:before { content: 'CSS'; }
-  pre.src-D:before { content: 'D'; }
-  pre.src-ditaa:before { content: 'ditaa'; }
-  pre.src-dot:before { content: 'Graphviz'; }
-  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
   pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
-  pre.src-fortran:before { content: 'Fortran'; }
-  pre.src-gnuplot:before { content: 'gnuplot'; }
-  pre.src-haskell:before { content: 'Haskell'; }
-  pre.src-hledger:before { content: 'hledger'; }
-  pre.src-java:before { content: 'Java'; }
-  pre.src-js:before { content: 'Javascript'; }
-  pre.src-latex:before { content: 'LaTeX'; }
-  pre.src-ledger:before { content: 'Ledger'; }
-  pre.src-lisp:before { content: 'Lisp'; }
-  pre.src-lilypond:before { content: 'Lilypond'; }
-  pre.src-lua:before { content: 'Lua'; }
-  pre.src-matlab:before { content: 'MATLAB'; }
-  pre.src-mscgen:before { content: 'Mscgen'; }
-  pre.src-ocaml:before { content: 'Objective Caml'; }
-  pre.src-octave:before { content: 'Octave'; }
-  pre.src-org:before { content: 'Org mode'; }
-  pre.src-oz:before { content: 'OZ'; }
-  pre.src-plantuml:before { content: 'Plantuml'; }
-  pre.src-processing:before { content: 'Processing.js'; }
-  pre.src-python:before { content: 'Python'; }
-  pre.src-R:before { content: 'R'; }
-  pre.src-ruby:before { content: 'Ruby'; }
-  pre.src-sass:before { content: 'Sass'; }
-  pre.src-scheme:before { content: 'Scheme'; }
-  pre.src-screen:before { content: 'Gnu Screen'; }
-  pre.src-sed:before { content: 'Sed'; }
-  pre.src-sh:before { content: 'shell'; }
-  pre.src-sql:before { content: 'SQL'; }
-  pre.src-sqlite:before { content: 'SQLite'; }
-  /* additional languages in org.el's org-babel-load-languages alist */
-  pre.src-forth:before { content: 'Forth'; }
-  pre.src-io:before { content: 'IO'; }
-  pre.src-J:before { content: 'J'; }
-  pre.src-makefile:before { content: 'Makefile'; }
-  pre.src-maxima:before { content: 'Maxima'; }
-  pre.src-perl:before { content: 'Perl'; }
-  pre.src-picolisp:before { content: 'Pico Lisp'; }
-  pre.src-scala:before { content: 'Scala'; }
-  pre.src-shell:before { content: 'Shell Script'; }
-  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
-  /* additional language identifiers per "defun org-babel-execute"
-       in ob-*.el */
-  pre.src-cpp:before  { content: 'C++'; }
-  pre.src-abc:before  { content: 'ABC'; }
-  pre.src-coq:before  { content: 'Coq'; }
-  pre.src-groovy:before  { content: 'Groovy'; }
-  /* additional language identifiers from org-babel-shell-names in
-     ob-shell.el: ob-shell is the only babel language using a lambda to put
-     the execution function name together. */
-  pre.src-bash:before  { content: 'bash'; }
-  pre.src-csh:before  { content: 'csh'; }
-  pre.src-ash:before  { content: 'ash'; }
-  pre.src-dash:before  { content: 'dash'; }
-  pre.src-ksh:before  { content: 'ksh'; }
-  pre.src-mksh:before  { content: 'mksh'; }
-  pre.src-posh:before  { content: 'posh'; }
-  /* Additional Emacs modes also supported by the LaTeX listings package */
-  pre.src-ada:before { content: 'Ada'; }
-  pre.src-asm:before { content: 'Assembler'; }
-  pre.src-caml:before { content: 'Caml'; }
-  pre.src-delphi:before { content: 'Delphi'; }
-  pre.src-html:before { content: 'HTML'; }
-  pre.src-idl:before { content: 'IDL'; }
-  pre.src-mercury:before { content: 'Mercury'; }
-  pre.src-metapost:before { content: 'MetaPost'; }
-  pre.src-modula-2:before { content: 'Modula-2'; }
-  pre.src-pascal:before { content: 'Pascal'; }
-  pre.src-ps:before { content: 'PostScript'; }
-  pre.src-prolog:before { content: 'Prolog'; }
-  pre.src-simula:before { content: 'Simula'; }
-  pre.src-tcl:before { content: 'tcl'; }
-  pre.src-tex:before { content: 'TeX'; }
-  pre.src-plain-tex:before { content: 'Plain TeX'; }
-  pre.src-verilog:before { content: 'Verilog'; }
-  pre.src-vhdl:before { content: 'VHDL'; }
-  pre.src-xml:before { content: 'XML'; }
-  pre.src-nxml:before { content: 'XML'; }
-  /* add a generic configuration mode; LaTeX export needs an additional
-     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
-  pre.src-conf:before { content: 'Configuration File'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
 
   table { border-collapse:collapse; }
   caption.t-above { caption-side: top; }
   caption.t-bottom { caption-side: bottom; }
   td, th { vertical-align:top;  }
-  th.org-right  { text-align: center;  }
-  th.org-left   { text-align: center;   }
-  th.org-center { text-align: center; }
-  td.org-right  { text-align: right;  }
-  td.org-left   { text-align: left;   }
-  td.org-center { text-align: center; }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
   dt { font-weight: bold; }
-  .footpara { display: inline; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
   .footdef  { margin-bottom: 1em; }
   .figure { padding: 1em; }
   .figure p { text-align: center; }
@@ -191,7 +100,6 @@ tags:       LTSP Ubuntu
     { font-size: 10px; font-weight: bold; white-space: nowrap; }
   .org-info-js_search-highlight
     { background-color: #ffff00; color: #000000; font-weight: bold; }
-  .org-svg { width: 90%; }
   /*]]>*/-->
 </style>
 <script type="text/javascript">
@@ -199,7 +107,7 @@ tags:       LTSP Ubuntu
 @licstart  The following is the entire license notice for the
 JavaScript code in this tag.
 
-Copyright (C) 2012-2018 Free Software Foundation, Inc.
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
 
 The JavaScript code in this tag is free software: you can
 redistribute it and/or modify it under the terms of the GNU
@@ -248,26 +156,26 @@ for the JavaScript code in this tag.
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orgf600e70">About LTSP</a></li>
-<li><a href="#org4992dd6">Managing User Accounts</a></li>
-<li><a href="#orgbae3700">Maintaining a Chrootless Client Image</a></li>
-<li><a href="#orgb2f2b9d">Creating Guest Accounts</a></li>
-<li><a href="#org3808668">Desktop Configuration For New Users</a></li>
-<li><a href="#orgfe6d10a">Reverting User Accounts to Default Configuration</a></li>
-<li><a href="#orgd452cfa">Allow Teacher To Use Epoptes From a Fat Client</a></li>
-<li><a href="#orga0149a5">Allow Users To Change The Password From a Fat Client</a></li>
-<li><a href="#org8a6e809">Remote Thin/Fat Client Access for Maintenance or Debugging</a></li>
-<li><a href="#org5524b01">Running Two LTSP Servers on The Same LAN</a></li>
-<li><a href="#orgfadb5a3">Having Home Directories on a Separate Server</a></li>
+<li><a href="#sec-1">About LTSP</a></li>
+<li><a href="#sec-2">Managing User Accounts</a></li>
+<li><a href="#sec-3">Maintaining a Chrootless Client Image</a></li>
+<li><a href="#sec-4">Creating Guest Accounts</a></li>
+<li><a href="#sec-5">Desktop Configuration For New Users</a></li>
+<li><a href="#sec-6">Reverting User Accounts to Default Configuration</a></li>
+<li><a href="#sec-7">Allow Teacher To Use Epoptes From a Fat Client</a></li>
+<li><a href="#sec-8">Allow Users To Change The Password From a Fat Client</a></li>
+<li><a href="#sec-9">Remote Thin/Fat Client Access for Maintenance or Debugging</a></li>
+<li><a href="#sec-10">Running Two LTSP Servers on The Same LAN</a></li>
+<li><a href="#sec-11">Having Home Directories on a Separate Server</a></li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-orgf600e70" class="outline-2">
-<h2 id="orgf600e70">About LTSP</h2>
-<div class="outline-text-2" id="text-orgf600e70">
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1">About LTSP</h2>
+<div class="outline-text-2" id="text-1">
 <p>
-<a href="http://www.ltsp.org/">LTSP</a> allows computers of a LAN to boot through the network from a
+<a href="http://www.ltsp.org">LTSP</a> allows computers of a LAN to boot through the network from a
 single server. The benefits of using it are reduced hardware costs and
 reduced time of maintenance.
 </p>
@@ -308,9 +216,9 @@ welcome.
 </div>
 
 
-<div id="outline-container-org4992dd6" class="outline-2">
-<h2 id="org4992dd6">Managing User Accounts</h2>
-<div class="outline-text-2" id="text-org4992dd6">
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2">Managing User Accounts</h2>
+<div class="outline-text-2" id="text-2">
 <p>
 User accounts are created and maintained on the server. Any command or
 tool will do, but if there are lots of accounts, some bash scripts
@@ -348,7 +256,6 @@ Commands:
 
     restore &lt;backup-file.tgz&gt;
         Restore home directories and user accounts from the given backup file.
-
 </pre>
 
 <p>
@@ -373,9 +280,9 @@ the backup will be available to the new server and you can restore it.
 </div>
 
 
-<div id="outline-container-orgbae3700" class="outline-2">
-<h2 id="orgbae3700">Maintaining a Chrootless Client Image</h2>
-<div class="outline-text-2" id="text-orgbae3700">
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3">Maintaining a Chrootless Client Image</h2>
+<div class="outline-text-2" id="text-3">
 <p>
 The defining feature of a <b>chrootless</b> client image is that there is no
 <i>chroot</i> directory for its files. Instead, the LTSP server itself is
@@ -399,16 +306,21 @@ directories and services of the server. There are these options:
 <ul class="org-ul">
 <li>Use the directive <code>RM_SYSTEM_SERVICES</code> on
 <code>/var/lib/tftpboot/ltsp/i386/lts.conf</code> to disable some services even
-if they are installed on the client.</li>
+if they are installed on the client.
+</li>
 <li>Use the directive <code>EXCLUDE</code> on <code>/etc/ltsp/ltsp-build-client.conf</code> to
-uninstall some packages from the finished chroot.</li>
+uninstall some packages from the finished chroot.
+</li>
 <li>Add lines like <code>etc/apache2/</code> on <code>/etc/ltsp/ltsp-update-image.excludes</code>
-to exclude certain directories from the image.</li>
+  to exclude certain directories from the image.
+</li>
 <li>Use the option <code>--exclude</code> of the command <code>ltsp-update-image</code> to exclude
-certain directories from the image.</li>
+certain directories from the image.
+</li>
 <li>Create a shell script like <code>/etc/ltsp/cleanup.d/60-cleanup</code> which is
 executed inside the chroot before generating the image from it. In
-this script you can uninstall packages, remove directories, etc.</li>
+this script you can uninstall packages, remove directories, etc.
+</li>
 </ul>
 
 <p>
@@ -444,9 +356,9 @@ Some other tips and tricks are available here:
 </div>
 
 
-<div id="outline-container-orgb2f2b9d" class="outline-2">
-<h2 id="orgb2f2b9d">Creating Guest Accounts</h2>
-<div class="outline-text-2" id="text-orgb2f2b9d">
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4">Creating Guest Accounts</h2>
+<div class="outline-text-2" id="text-4">
 <p>
 In public computers (e.g. in schools, libraries, universities, etc.)
 sometimes it is useful to have guest accounts. This means that the
@@ -464,10 +376,24 @@ a user for each different IP, and to reset the content of the home
 of this user when he makes a login. It is described on these posts:
 </p>
 <ul class="org-ul">
-<li><a href="https://sourceforge.net/p/ltsp/mailman/message/27814821/">https://sourceforge.net/p/ltsp/mailman/message/27814821/</a></li>
-<li><a href="http://www.m-opensolutions.com/?p=537">http://www.m-opensolutions.com/?p=537</a></li>
-<li><a href="http://www.m-opensolutions.com/?p=667">http://www.m-opensolutions.com/?p=667</a></li>
+<li><a href="https://sourceforge.net/p/ltsp/mailman/message/27814821/">https://sourceforge.net/p/ltsp/mailman/message/27814821/</a>
+</li>
+<li><a href="http://www.m-opensolutions.com/?p=537">http://www.m-opensolutions.com/?p=537</a>
+</li>
+<li><a href="http://www.m-opensolutions.com/?p=667">http://www.m-opensolutions.com/?p=667</a>
+</li>
 </ul>
+
+<p>
+We need to add these directives on <code>lts.conf</code> in order to enable the
+guest login button:
+</p>
+<pre class="example">
+[Default]
+LDM_GUESTLOGIN=True
+HOSTNAME_BASE="$hostname"
+#LDM_AUTOLOGIN=True
+</pre>
 
 <p>
 This script (which should work on any Ubuntu <i>bionic</i> LTSP server) can
@@ -481,6 +407,7 @@ be used to create and configure automatically guest accounts:
 
 guest=${1:-guest}
 pass=${2:-pass}
+hostname=${3:-ltsp}
 
 # create the template/skeleton guest account
 groupadd guest --gid=500 -f
@@ -494,7 +421,7 @@ chown $guest:guest -R /home/$guest
 rm -rf /home/guest-accounts/
 mkdir -p /home/guest-accounts/
 for ip in {1..255}; do
-    user="${HOSTNAME}${ip}"
+    user="${hostname}${ip}"
     adduser $user --uid=$((500 + $ip)) --gid=500 \
             --home=/home/guest-accounts/$user \
             --shell=/bin/bash --gecos '' \
@@ -506,7 +433,7 @@ done
 cat &lt;&lt;EOF &gt; /usr/local/bin/reset-guest-account.sh
 #!/bin/bash
 user=\$SUDO_USER
-[[ \$user =~ ^'$HOSTNAME'[0-9]{1,3}\$ ]] || exit 1
+[[ \$user =~ ^'$hostname'[0-9]{1,3}\$ ]] || exit 1
 cd /home/guest-accounts/\$user || exit 2
 rm -rf .* *
 rsync -a /home/$guest/ .
@@ -524,7 +451,7 @@ EOF
 cat &lt;&lt;EOF &gt; /usr/share/ldm/rc.d/S00-guest-sessions
 # if username matches the pattern of a guest account
 # then call the script that resets the account
-echo \$LDM_USERNAME | grep -E '^$HOSTNAME[0-9]{1,3}\$' \\
+echo \$LDM_USERNAME | grep -E '^$hostname[0-9]{1,3}\$' \\
     &amp;&amp; ssh -S "\$LDM_SOCKET" "\$LDM_SERVER" 'sudo /usr/local/bin/reset-guest-account.sh'
 EOF
 
@@ -550,9 +477,9 @@ customize all the guest accounts.
 </div>
 
 
-<div id="outline-container-org3808668" class="outline-2">
-<h2 id="org3808668">Desktop Configuration For New Users</h2>
-<div class="outline-text-2" id="text-org3808668">
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5">Desktop Configuration For New Users</h2>
+<div class="outline-text-2" id="text-5">
 <p>
 Sometimes we want to customize the default desktop configuration of
 the users (for example change the background, add some apps on desktop
@@ -616,9 +543,9 @@ configure them the other way (described above).
 </div>
 
 
-<div id="outline-container-orgfe6d10a" class="outline-2">
-<h2 id="orgfe6d10a">Reverting User Accounts to Default Configuration</h2>
-<div class="outline-text-2" id="text-orgfe6d10a">
+<div id="outline-container-sec-6" class="outline-2">
+<h2 id="sec-6">Reverting User Accounts to Default Configuration</h2>
+<div class="outline-text-2" id="text-6">
 <p>
 It is often useful to revert all the settings of user accounts to
 default values, except for the files that they have saved, Firefox
@@ -688,9 +615,9 @@ EOF
 </div>
 
 
-<div id="outline-container-orgd452cfa" class="outline-2">
-<h2 id="orgd452cfa">Allow Teacher To Use Epoptes From a Fat Client</h2>
-<div class="outline-text-2" id="text-orgd452cfa">
+<div id="outline-container-sec-7" class="outline-2">
+<h2 id="sec-7">Allow Teacher To Use Epoptes From a Fat Client</h2>
+<div class="outline-text-2" id="text-7">
 <p>
 Usually the teacher has access to the desktop of the LTSP server and
 can launch Epoptes user interface there. It is important that the
@@ -729,9 +656,9 @@ For more details see also this:
 </div>
 
 
-<div id="outline-container-orga0149a5" class="outline-2">
-<h2 id="orga0149a5">Allow Users To Change The Password From a Fat Client</h2>
-<div class="outline-text-2" id="text-orga0149a5">
+<div id="outline-container-sec-8" class="outline-2">
+<h2 id="sec-8">Allow Users To Change The Password From a Fat Client</h2>
+<div class="outline-text-2" id="text-8">
 <p>
 Since user accounts live on the server, usually it is not possible to
 change the password from the client. The only way is to ssh to the
@@ -778,9 +705,9 @@ other weird things.
 </div>
 
 
-<div id="outline-container-org8a6e809" class="outline-2">
-<h2 id="org8a6e809">Remote Thin/Fat Client Access for Maintenance or Debugging</h2>
-<div class="outline-text-2" id="text-org8a6e809">
+<div id="outline-container-sec-9" class="outline-2">
+<h2 id="sec-9">Remote Thin/Fat Client Access for Maintenance or Debugging</h2>
+<div class="outline-text-2" id="text-9">
 <p>
 Sometimes it is not possible (or feasible) to access physically the
 LTSP server and the clients for maintenance or debugging. In this case
@@ -788,12 +715,16 @@ you can access the desktop of the LTSP server remotely. This can be
 done by:
 </p>
 <ul class="org-ul">
-<li>X2Go (<a href="https://wiki.x2go.org/doku.php">https://wiki.x2go.org/doku.php</a>)</li>
-<li>Epoptes (<a href="http://www.epoptes.org/">http://www.epoptes.org/</a>) "remote assistance" feature
-(i.e. reverse VNC)</li>
-<li>VNC and ssh tunneling (<a href="http://dashohoxha.fs.al/sshtunnels/">http://dashohoxha.fs.al/sshtunnels/</a>)</li>
+<li>X2Go (<a href="https://wiki.x2go.org/doku.php">https://wiki.x2go.org/doku.php</a>)
+</li>
+<li>Epoptes (<a href="http://www.epoptes.org">http://www.epoptes.org</a>) "remote assistance" feature
+(i.e. reverse VNC)
+</li>
+<li>VNC and ssh tunneling (<a href="http://dashohoxha.fs.al/sshtunnels/">http://dashohoxha.fs.al/sshtunnels/</a>)
+</li>
 <li>Guacamole
-(<a href="https://gitlab.com/Virtual-LTSP/VirtualBox/blob/bionic/ltsp-server/scripts/guacamole.sh">https://gitlab.com/Virtual-LTSP/VirtualBox/blob/bionic/ltsp-server/scripts/guacamole.sh</a>)</li>
+(<a href="https://gitlab.com/Virtual-LTSP/VirtualBox/blob/bionic/ltsp-server/scripts/guacamole.sh">https://gitlab.com/Virtual-LTSP/VirtualBox/blob/bionic/ltsp-server/scripts/guacamole.sh</a>)
+</li>
 </ul>
 
 <p>
@@ -830,9 +761,9 @@ the VM.
 </div>
 
 
-<div id="outline-container-org5524b01" class="outline-2">
-<h2 id="org5524b01">Running Two LTSP Servers on The Same LAN</h2>
-<div class="outline-text-2" id="text-org5524b01">
+<div id="outline-container-sec-10" class="outline-2">
+<h2 id="sec-10">Running Two LTSP Servers on The Same LAN</h2>
+<div class="outline-text-2" id="text-10">
 <p>
 This may be useful for example when you already have an old server
 running (lets say based on Ubuntu-16.04), and you want to install and
@@ -863,16 +794,16 @@ servers on the same LAN, each one with its own clients) might be
 useful also on cases when you have different kinds of clients on the
 LAN, which have different requirements, so you use different servers
 to serve them. However, it is better, in general, to build different
-client images on the same LTSP server, and to server them to different
+client images on the same LTSP server, and to serve them to different
 clients based on the clients' MAC addresses.
 </p>
 </div>
 </div>
 
 
-<div id="outline-container-orgfadb5a3" class="outline-2">
-<h2 id="orgfadb5a3">Having Home Directories on a Separate Server</h2>
-<div class="outline-text-2" id="text-orgfadb5a3">
+<div id="outline-container-sec-11" class="outline-2">
+<h2 id="sec-11">Having Home Directories on a Separate Server</h2>
+<div class="outline-text-2" id="text-11">
 <p>
 If you run more than one LTSP server on the same LAN simultaneously,
 it is useful to keep all the user accounts and home directories on the
@@ -910,8 +841,9 @@ directories, implicitly does a bit of load balancing as well.
 <div id="postamble" class="status">
 <p class="date">Date: 2018-12-21</p>
 <p class="author">Author: Dashamir Hoxha</p>
-<p class="date">Created: 2018-12-22 Sat 08:40</p>
-<p class="validation"></p>
+<p class="date">Created: 2019-01-12 Sat 16:29</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.1.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
 </html>

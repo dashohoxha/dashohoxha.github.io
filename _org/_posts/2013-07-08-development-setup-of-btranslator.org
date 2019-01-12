@@ -6,7 +6,7 @@
 #+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
 # #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
 #+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
-#+begin_export html
+#+begin_comment yaml-front-matter
 ---
 layout:     post
 title:      Development Setup of B-Translator
@@ -16,7 +16,7 @@ summary:    I describe the development setup that I use for B-Translator.
     them can be used on any Drupal project.
 tags: [B-Translator, Development]
 ---
-#+end_export
+#+end_comment
 
 B-Translator helps to get feedback about /l10n/ (translations of the
 programs). It tries to collect very small translation contributions

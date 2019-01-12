@@ -6,7 +6,7 @@
 #+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
 # #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
 #+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
-#+begin_export html
+#+begin_comment yaml-front-matter
 ---
 layout:     post
 title:      How to Manage Your Own Domain Name Server
@@ -16,7 +16,7 @@ summary:    Installing and managing your own nameserver is not so difficult
     basic command-line skills. I describe how I did it for myself.
 tags: [System Administration, Network, bind9, Domain Name Server]
 ---
-#+end_export
+#+end_comment
 
 In the old times (when men were real men), people used to manage their
 domains with their own domain name server. There is now a long time

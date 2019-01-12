@@ -4,7 +4,7 @@
 #+DATE:      2013-06-21
 #+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
 #+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
-#+begin_export html
+#+begin_comment yaml-front-matter
 ---
 layout:     post
 title:      Dual Boot Puppy Linux With Ubuntu
@@ -15,7 +15,7 @@ summary:    Puppy Linux is so nice that I always keep it around even if I
     system. The installation is very easy.
 tags: [Puppy Linux, GRUB, Ubuntu]
 ---
-#+end_export
+#+end_comment
 
 Puppy Linux is so nice that I always keep it around even if I don't
 need it. I have a small partition on my laptop where I install

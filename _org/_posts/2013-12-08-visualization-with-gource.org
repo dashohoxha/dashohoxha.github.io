@@ -6,7 +6,7 @@
 #+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
 # #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
 #+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
-#+begin_export html
+#+begin_comment yaml-front-matter
 ---
 layout:     post
 title:      Visualization with Gourse
@@ -17,7 +17,7 @@ summary:    Recently I made a visualization for contributors to
     so I would like to describe how I did it.
 tags: [Visualization, Gourse, Hacking]
 ---
-#+end_export
+#+end_comment
 
 Recently I made [[http://www.youtube.com/watch?v=qNCbEVVasto][this visualization]] for contributors to
 https://l10n.org.al for the last two years (2012-2013). This

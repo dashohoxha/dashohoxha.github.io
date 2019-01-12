@@ -6,7 +6,7 @@
 #+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
 # #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
 #+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
-#+begin_export html
+#+begin_comment yaml-front-matter
 ---
 layout:     post
 title:      Simple And Minimal SMTP Server
@@ -22,7 +22,7 @@ summary: Quite often web applications need to send email notifications.
 
 tags:       postfix smtp server docker docker-script
 ---
-#+end_export
+#+end_comment
 
 * Introduction
 

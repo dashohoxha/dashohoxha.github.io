@@ -1,6 +1,6 @@
 #+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
 #+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
-#+begin_export html
+#+begin_comment yaml-front-matter
 ---
 layout:     post
 title:      Multiple Webservers Behind NAT
@@ -10,7 +10,7 @@ summary:    We got from the ISP a single public IP, and we need to host
             How to do this?
 tags: [System Administration, Web Server, Apache2, Reverse Proxy]
 ---
-#+end_export
+#+end_comment
 
 The problem is that we have got from the ISP a single public IP, and
 we need to host our own public webservers (more than one) in our

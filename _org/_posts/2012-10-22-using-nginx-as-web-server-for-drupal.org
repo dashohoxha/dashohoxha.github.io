@@ -6,7 +6,7 @@
 #+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
 # #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
 #+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
-#+begin_export html
+#+begin_comment yaml-front-matter
 ---
 layout:     post
 title:      Using NGINX as a Web Server for Drupal
@@ -15,7 +15,7 @@ summary:    Nginx (engine-x) is a web server that is regarded to be faster
     than Apache and with a better performance on heavy load.
 tags: [Web Server, NGINX, Drupal, System Administration]
 ---
-#+end_export
+#+end_comment
 
 
 Nginx (engine-x) is a web server that is regarded to be faster than

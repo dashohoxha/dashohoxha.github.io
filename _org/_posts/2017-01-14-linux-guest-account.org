@@ -6,7 +6,7 @@
 #+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
 # #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
 #+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
-#+begin_export html
+#+begin_comment yaml-front-matter
 ---
 layout:     post
 title:      Linux Guest Account
@@ -21,7 +21,7 @@ summary:    In public computers (e.g. in schools, libraries, universities, etc.)
     or passwords are left behind.
 tags:       [linux]
 ---
-#+end_export
+#+end_comment
 
 In public computers (e.g. in schools, libraries, universities, etc.)
 it is useful to have a frozen guest account. This means that the

@@ -6,7 +6,7 @@
 #+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
 # #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
 #+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
-#+begin_export html
+#+begin_comment yaml-front-matter
 ---
 layout:     post
 title:      Easy Blogging With Emacs
@@ -17,7 +17,7 @@ summary:    Time after time I write technical blogs and articles that describe
     me! I always find WYSIWYG editing tedious and frustrating.
 tags: [Emacs, org-mode, Blogging, Documentation]
 ---
-#+end_export
+#+end_comment
 
 Time after time I write technical blogs and articles that describe and
 summarise my experiences. Nowadays all the blogging sites and tools

@@ -6,7 +6,7 @@
 #+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
 # #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
 #+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
-#+begin_export html
+#+begin_comment yaml-front-matter
 ---
 layout:     post
 title:      Building a Technical Blog Site With Jekyll And Emacs
@@ -16,7 +16,7 @@ summary:    This article shows how I set up my own blog site on GitHub,
     for displaying them.
 tags: [Jekyll, Emacs, org-mode, Blogging]
 ---
-#+end_export
+#+end_comment
 
 * Introduction
 
@@ -236,7 +236,7 @@ tags: [Jekyll, Emacs, org-mode, Blogging]
    #+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
    # #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
    # #+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
-   #+BEGIN_EXPORT HTML
+   # +BEGIN_COMMENT YAML-FRONT-MATTER
    ---
    layout:     post
    title:      Building a Technical Blog Site With Jekyll And Emacs
@@ -246,7 +246,7 @@ tags: [Jekyll, Emacs, org-mode, Blogging]
        for displaying them.
    tags: [Jekyll, Emacs, org-mode, Blogging]
    ---
-   # +END_EXPORT
+   # +END_COMMENT
 
    Jekyll is a static web site generator written in Ruby. It can
    transform various text markups, using a templating language, into

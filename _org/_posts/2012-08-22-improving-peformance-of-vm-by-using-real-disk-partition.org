@@ -1,6 +1,6 @@
 #+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
 #+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
-#+begin_export html
+#+begin_comment yaml-front-matter
 ---
 layout:     post
 title:      Improving the Performance of a VM by Using a Real Disk Partition
@@ -9,7 +9,7 @@ summary:    A virtual machine can also use a real partition,
             and this can improve its performance.
 tags: [Virtual Machines, System Administration]
 ---
-#+end_export
+#+end_comment
 
 I have used *zentyal* as a gateway server, and it is actually running
 on a virtual machine. An important component of it is *squid*, which
