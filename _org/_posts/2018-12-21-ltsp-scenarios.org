@@ -6,7 +6,8 @@
 #+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
 # #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
 #+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
-#+begin_export html
+
+#+begin_comment yaml-front-matter
 ---
 layout:     post
 title:      LTSP Scenarios
@@ -21,7 +22,7 @@ summary: LTSP allows computers of a LAN to boot through the network from
 
 tags:       LTSP Ubuntu
 ---
-#+end_export
+#+end_comment
 
 * About LTSP
 
@@ -181,6 +182,15 @@ of this user when he makes a login. It is described on these posts:
 - http://www.m-opensolutions.com/?p=537
 - http://www.m-opensolutions.com/?p=667
 
+We need to add these directives on ~lts.conf~ in order to enable the
+guest login button:
+#+begin_example
+[Default]
+LDM_GUESTLOGIN=True
+HOSTNAME_BASE="$hostname"
+#LDM_AUTOLOGIN=True
+#+end_example
+
 This script (which should work on any Ubuntu /bionic/ LTSP server) can
 be used to create and configure automatically guest accounts:
 https://gitlab.com/Virtual-LTSP/VirtualBox/blob/bionic/ltsp-server/scripts/create-guest-accounts.sh
@@ -191,6 +201,7 @@ https://gitlab.com/Virtual-LTSP/VirtualBox/blob/bionic/ltsp-server/scripts/creat
 
 guest=${1:-guest}
 pass=${2:-pass}
+hostname=${3:-ltsp}
 
 # create the template/skeleton guest account
 groupadd guest --gid=500 -f
@@ -204,7 +215,7 @@ chown $guest:guest -R /home/$guest
 rm -rf /home/guest-accounts/
 mkdir -p /home/guest-accounts/
 for ip in {1..255}; do
-    user="${HOSTNAME}${ip}"
+    user="${hostname}${ip}"
     adduser $user --uid=$((500 + $ip)) --gid=500 \
             --home=/home/guest-accounts/$user \
             --shell=/bin/bash --gecos '' \
@@ -216,7 +227,7 @@ done
 cat <<EOF > /usr/local/bin/reset-guest-account.sh
 #!/bin/bash
 user=\$SUDO_USER
-[[ \$user =~ ^'$HOSTNAME'[0-9]{1,3}\$ ]] || exit 1
+[[ \$user =~ ^'$hostname'[0-9]{1,3}\$ ]] || exit 1
 cd /home/guest-accounts/\$user || exit 2
 rm -rf .* *
 rsync -a /home/$guest/ .
@@ -234,7 +245,7 @@ EOF
 cat <<EOF > /usr/share/ldm/rc.d/S00-guest-sessions
 # if username matches the pattern of a guest account
 # then call the script that resets the account
-echo \$LDM_USERNAME | grep -E '^$HOSTNAME[0-9]{1,3}\$' \\
+echo \$LDM_USERNAME | grep -E '^$hostname[0-9]{1,3}\$' \\
     && ssh -S "\$LDM_SOCKET" "\$LDM_SERVER" 'sudo /usr/local/bin/reset-guest-account.sh'
 EOF
 
@@ -488,7 +499,7 @@ servers on the same LAN, each one with its own clients) might be
 useful also on cases when you have different kinds of clients on the
 LAN, which have different requirements, so you use different servers
 to serve them. However, it is better, in general, to build different
-client images on the same LTSP server, and to server them to different
+client images on the same LTSP server, and to serve them to different
 clients based on the clients' MAC addresses.
 
 
