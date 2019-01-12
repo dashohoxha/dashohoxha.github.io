@@ -18,7 +18,7 @@ tags:       LTSP Ubuntu
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>LTSP Scenarios</title>
-<!-- 2019-01-12 Sat 16:29 -->
+<!-- 2019-01-12 Sat 18:05 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Dashamir Hoxha" />
@@ -162,11 +162,12 @@ for the JavaScript code in this tag.
 <li><a href="#sec-4">Creating Guest Accounts</a></li>
 <li><a href="#sec-5">Desktop Configuration For New Users</a></li>
 <li><a href="#sec-6">Reverting User Accounts to Default Configuration</a></li>
-<li><a href="#sec-7">Allow Teacher To Use Epoptes From a Fat Client</a></li>
-<li><a href="#sec-8">Allow Users To Change The Password From a Fat Client</a></li>
-<li><a href="#sec-9">Remote Thin/Fat Client Access for Maintenance or Debugging</a></li>
-<li><a href="#sec-10">Running Two LTSP Servers on The Same LAN</a></li>
-<li><a href="#sec-11">Having Home Directories on a Separate Server</a></li>
+<li><a href="#sec-7">Share a Common And Persistent Directory For All the Users</a></li>
+<li><a href="#sec-8">Allow Teacher To Use Epoptes From a Fat Client</a></li>
+<li><a href="#sec-9">Allow Users To Change The Password From a Fat Client</a></li>
+<li><a href="#sec-10">Remote Thin/Fat Client Access for Maintenance or Debugging</a></li>
+<li><a href="#sec-11">Running Two LTSP Servers on The Same LAN</a></li>
+<li><a href="#sec-12">Having Home Directories on a Separate Server</a></li>
 </ul>
 </div>
 </div>
@@ -616,8 +617,33 @@ EOF
 
 
 <div id="outline-container-sec-7" class="outline-2">
-<h2 id="sec-7">Allow Teacher To Use Epoptes From a Fat Client</h2>
+<h2 id="sec-7">Share a Common And Persistent Directory For All the Users</h2>
 <div class="outline-text-2" id="text-7">
+<p>
+Sometimes it may be useful to have a shared directory for all the
+users, for example if the users want to exchange files with
+each-other, or if the guest users want to save some persistent files.
+It can be accomplished by adding a line like this on <code>lts.conf</code>:
+<code>LOCAL_APPS_EXTRAMOUNTS=/var/usr/shared</code> You should also set proper
+permissions to this directory, so that it is writable by all the
+users, like this:
+</p>
+<pre class="example">
+chown guest:guest /var/usr/shared
+chmod 777 /var/usr/shared
+</pre>
+
+<p>
+When the clients boot and users login, they can access this directory
+on <code>/var/usr/shared</code>.  Whatever they write on it will actually be
+stored on the server, so it will be persistent.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-8" class="outline-2">
+<h2 id="sec-8">Allow Teacher To Use Epoptes From a Fat Client</h2>
+<div class="outline-text-2" id="text-8">
 <p>
 Usually the teacher has access to the desktop of the LTSP server and
 can launch Epoptes user interface there. It is important that the
@@ -656,9 +682,9 @@ For more details see also this:
 </div>
 
 
-<div id="outline-container-sec-8" class="outline-2">
-<h2 id="sec-8">Allow Users To Change The Password From a Fat Client</h2>
-<div class="outline-text-2" id="text-8">
+<div id="outline-container-sec-9" class="outline-2">
+<h2 id="sec-9">Allow Users To Change The Password From a Fat Client</h2>
+<div class="outline-text-2" id="text-9">
 <p>
 Since user accounts live on the server, usually it is not possible to
 change the password from the client. The only way is to ssh to the
@@ -705,9 +731,9 @@ other weird things.
 </div>
 
 
-<div id="outline-container-sec-9" class="outline-2">
-<h2 id="sec-9">Remote Thin/Fat Client Access for Maintenance or Debugging</h2>
-<div class="outline-text-2" id="text-9">
+<div id="outline-container-sec-10" class="outline-2">
+<h2 id="sec-10">Remote Thin/Fat Client Access for Maintenance or Debugging</h2>
+<div class="outline-text-2" id="text-10">
 <p>
 Sometimes it is not possible (or feasible) to access physically the
 LTSP server and the clients for maintenance or debugging. In this case
@@ -761,9 +787,9 @@ the VM.
 </div>
 
 
-<div id="outline-container-sec-10" class="outline-2">
-<h2 id="sec-10">Running Two LTSP Servers on The Same LAN</h2>
-<div class="outline-text-2" id="text-10">
+<div id="outline-container-sec-11" class="outline-2">
+<h2 id="sec-11">Running Two LTSP Servers on The Same LAN</h2>
+<div class="outline-text-2" id="text-11">
 <p>
 This may be useful for example when you already have an old server
 running (lets say based on Ubuntu-16.04), and you want to install and
@@ -801,9 +827,9 @@ clients based on the clients' MAC addresses.
 </div>
 
 
-<div id="outline-container-sec-11" class="outline-2">
-<h2 id="sec-11">Having Home Directories on a Separate Server</h2>
-<div class="outline-text-2" id="text-11">
+<div id="outline-container-sec-12" class="outline-2">
+<h2 id="sec-12">Having Home Directories on a Separate Server</h2>
+<div class="outline-text-2" id="text-12">
 <p>
 If you run more than one LTSP server on the same LAN simultaneously,
 it is useful to keep all the user accounts and home directories on the
@@ -841,7 +867,7 @@ directories, implicitly does a bit of load balancing as well.
 <div id="postamble" class="status">
 <p class="date">Date: 2018-12-21</p>
 <p class="author">Author: Dashamir Hoxha</p>
-<p class="date">Created: 2019-01-12 Sat 16:29</p>
+<p class="date">Created: 2019-01-12 Sat 18:05</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.1.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>

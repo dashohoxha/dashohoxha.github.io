@@ -375,6 +375,24 @@ EOF
 #+end_example
 
 
+* Share a Common And Persistent Directory For All the Users
+
+Sometimes it may be useful to have a shared directory for all the
+users, for example if the users want to exchange files with
+each-other, or if the guest users want to save some persistent files.
+It can be accomplished by adding a line like this on ~lts.conf~:
+=LOCAL_APPS_EXTRAMOUNTS=/var/usr/shared= You should also set proper
+permissions to this directory, so that it is writable by all the
+users, like this:
+#+begin_example
+chown guest:guest /var/usr/shared
+chmod 777 /var/usr/shared
+#+end_example 
+
+When the clients boot and users login, they can access this directory
+on ~/var/usr/shared~.  Whatever they write on it will actually be
+stored on the server, so it will be persistent.
+
 * Allow Teacher To Use Epoptes From a Fat Client
 
 Usually the teacher has access to the desktop of the LTSP server and
