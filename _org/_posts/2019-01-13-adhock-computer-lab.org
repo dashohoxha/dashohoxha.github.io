@@ -134,13 +134,13 @@ Wi-Fi network.
 
 You can also use this script to create and start automatically a
 VirtualBox LTSP client:
-https://gitlab.com/Virtual-LTSP/VirtualBox/blob/bionic/client.sh
+https://gitlab.com/Virtual-LTSP/VirtualBox/blob/bionic/scripts/ltsp-client.sh
 #+begin_example
-wget https://gitlab.com/Virtual-LTSP/VirtualBox/raw/bionic/client.sh
-chmod +x client.sh
-./client.sh --help
+wget https://gitlab.com/Virtual-LTSP/VirtualBox/raw/bionic/scripts/ltsp-client.sh
+chmod +x ltsp-client.sh
+./ltsp-client.sh --help
 ip link
-./client.sh start -m 1024 -i wlp2s0b1
+./ltsp-client.sh start -m 1024 -i wlp2s0b1
 #+end_example
 
 
@@ -295,6 +295,12 @@ the server from a web browser. He can do it like this:
 - Click on the button "Login" without a username and password.
 - Click on the RDP connection.
 - Give the username and password of the account.
+
+*Note:* I have noticed that sometimes the firewall has a glitch,
+especially when a hotspot is started, which prevents the server from
+being accessed from the clients. When this happens, I try =ufw
+disable= and then =ufw enable=, and the problem goes away somehow.
+
 
 *** Teacher Sharing His Screen With The Students
 
