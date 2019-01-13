@@ -1,0 +1,1067 @@
+---
+layout:     post
+title:      Ad-Hock Computer Lab
+date:       2019-01-13
+
+summary: A computer lab is usually a classroom of 20-30 computers, connected
+  to a switch that makes a LAN. These computers are usually managed with LTSP,
+  which reduces the hardware costs and the time and efforts needed for
+  installing and maintaining all of them. What if there is no computer lab
+  but all the students have laptops? Can we build a similar infrastructure,
+  based on WiFi? Yes we can, and in this article we will see how. What if
+  the students are not located on the same classroom but are distributed
+  all over the world? Can we offer them some centralized services and build
+  a virtual classroom? There may be many ways of doing it but we will
+  see just one.
+
+tags:       LTSP VirtualBox vagrantup Guacamole docker
+---
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Ad-Hock Computer Lab</title>
+<!-- 2019-01-13 Sun 08:58 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Dashamir Hoxha" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Ad-Hock Computer Lab</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. Introduction</a></li>
+<li><a href="#sec-2">2. There Is No Computer Lab</a>
+<ul>
+<li><a href="#sec-2-1">2.1. Build a Wi-Fi LAN</a></li>
+<li><a href="#sec-2-2">2.2. Install a VirtualBox LTSP Server</a></li>
+<li><a href="#sec-2-3">2.3. Start a VirtualBox LTSP Client</a></li>
+<li><a href="#sec-2-4">2.4. LTSP Scenarios</a>
+<ul>
+<li><a href="#sec-2-4-1">2.4.1. Screen Sharing With Epoptes</a></li>
+<li><a href="#sec-2-4-2">2.4.2. Manage Student Accounts</a></li>
+<li><a href="#sec-2-4-3">2.4.3. Install New Applications On The Clients</a></li>
+<li><a href="#sec-2-4-4">2.4.4. Customize The Guest Accounts</a></li>
+<li><a href="#sec-2-4-5">2.4.5. Change The RAM Of The Server</a></li>
+</ul>
+</li>
+<li><a href="#sec-2-5">2.5. Install Guacamole</a></li>
+<li><a href="#sec-2-6">2.6. Guacamole Scenarios</a>
+<ul>
+<li><a href="#sec-2-6-1">2.6.1. Access Account From A Browser</a></li>
+<li><a href="#sec-2-6-2">2.6.2. Teacher Sharing His Screen With The Students</a></li>
+<li><a href="#sec-2-6-3">2.6.3. Students Collaborating With The Teacher And With Each-Other</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#sec-3">3. There Is No Classroom</a>
+<ul>
+<li><a href="#sec-3-1">3.1. Install A Docker Desktop Server On The Cloud</a>
+<ul>
+<li><a href="#sec-3-1-1">3.1.1. Install Docker</a></li>
+<li><a href="#sec-3-1-2">3.1.2. Install Docker-Scripts</a></li>
+<li><a href="#sec-3-1-3">3.1.3. Install Web Server Proxy</a></li>
+<li><a href="#sec-3-1-4">3.1.4. Build The Desktop Container</a></li>
+</ul>
+</li>
+<li><a href="#sec-3-2">3.2. Docker Server Scenarios</a>
+<ul>
+<li><a href="#sec-3-2-1">3.2.1. Install Additional Packages</a></li>
+<li><a href="#sec-3-2-2">3.2.2. Manage Student Accounts</a></li>
+<li><a href="#sec-3-2-3">3.2.3. Rebuild The Server</a></li>
+</ul>
+</li>
+<li><a href="#sec-3-3">3.3. Guacamole Scenarios</a>
+<ul>
+<li><a href="#sec-3-3-1">3.3.1. Access Account From A Browser</a></li>
+<li><a href="#sec-3-3-2">3.3.2. Teacher Sharing His Screen With The Students</a></li>
+<li><a href="#sec-3-3-3">3.3.3. Students Collaborating With The Teacher And With Each-Other</a></li>
+</ul>
+</li>
+<li><a href="#sec-3-4">3.4. Making Videoconferences</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Introduction</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+A computer lab is usually a classroom of 20-30 computers, connected to
+a switch that makes a LAN. These computers are usually managed with
+LTSP, which reduces the hardware costs and the time and efforts needed
+for installing and maintaining all of them.
+</p>
+
+<p>
+What if there is no computer lab but all the students have laptops?
+Can we build a similar infrastructure, based on WiFi? Yes we can, and
+in this article we will see how.
+</p>
+
+<p>
+What if the students are not located on the same classroom but are
+distributed all over the world? Can we offer them some centralized
+services and build a virtual classroom? There may be many ways of
+doing it but we will see just one.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> There Is No Computer Lab</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+In some computer science departments there are no computer labs
+anymore. Instead, the students are required to bring and use their own
+laptops. Let's see how we can build some kind of infrastructure in
+this case.
+</p>
+
+<p>
+We will use the laptop of the teacher as a server, so let's assume
+that it has at least 4GB RAM. Actually we will install the server on a
+VirtualBox machine, which is the most easy and the most flexible way.
+</p>
+
+<p>
+<b>Note:</b> Installing the server on a virtual machine provides isolation
+and encapsulation, so that the configurations of the server do not
+mess with the configurations of the rest of the laptop.  This way the
+laptop can be used for other purposes as well.
+</p>
+</div>
+
+<div id="outline-container-sec-2-1" class="outline-3">
+<h3 id="sec-2-1"><span class="section-number-3">2.1</span> Build a Wi-Fi LAN</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+We need a Wi-Fi LAN, so that the laptops can communicate with the
+server.  Often there is some Wi-Fi access point nearby. By connecting
+to it, laptops will be able to communicate with each-other as well. In
+this case we have nothing to do.
+</p>
+
+<p>
+If there is no Wi-Fi access point that can be used, we can create one
+with smartphone (Android or iPhone) and connect all the laptops to it.
+</p>
+
+<p>
+Another way is to start a hotspot on one of the laptops (for example
+on the laptop of the teacher). It can be done easily with a script,
+like this:
+</p>
+<pre class="example">
+wget https://gitlab.com/Virtual-LTSP/VirtualBox/raw/bionic/hotspot.sh
+chmod +x hotspot.sh
+./hotspot.sh start
+</pre>
+
+<p>
+The script <code>hotspot.sh</code> basically just calls the command <code>nmcli</code> with
+propper arguments:
+</p>
+<pre class="example">
+nmcli dev wifi hotspot ifname "$ifname" ssid "$ssid" password "$pass"
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-sec-2-2" class="outline-3">
+<h3 id="sec-2-2"><span class="section-number-3">2.2</span> Install a VirtualBox LTSP Server</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+The most easy way to install a LTSP server on a VirtualBox machine is
+to use the <a href="https://gitlab.com/Virtual-LTSP/VirtualBox">Virtual LTSP</a> scripts:
+</p>
+<ul class="org-ul">
+<li>Install virtualbox and vagrant: <code>apt install virtualbox virtualbox-qt vagrant</code>
+</li>
+<li>Get the scripts:
+<pre class="example">
+git clone https://gitlab.com/Virtual-LTSP/VirtualBox ltsp
+cd ltsp/
+</pre>
+</li>
+<li>Edit <code>settings.sh</code> and make sure to:
+<ul class="org-ul">
+<li>set *DEVELOPMENT="no"*
+</li>
+<li>set *GATEWAY="no"*
+</li>
+<li>set <b>LAN_IF</b> to the name of the Wi-Fi interface (check them with
+<code>ip addr</code>)
+</li>
+<li>change <b>ADMIN_PASS</b>, <b>GUEST_PASS</b>, <b>GUAC_PASS</b>
+</li>
+<li>optionally change <b>HOSTNAME</b> and the <b>PACKAGES</b> that need to be
+installed on the clients
+</li>
+<li>optionally change <b>VM_BOX</b> and <b>VM_RAM</b>, if you want to change the
+base system, or to allocate more RAM to the virtual machine
+</li>
+<li>Start the installation with: <code>./server.sh build</code> It takes a lot of
+time to download images and to install packages, so be patient.
+</li>
+</ul>
+</li>
+</ul>
+
+<p>
+Use <code>./server.sh halt</code> to stop the server and <code>./server.sh up</code> to start it
+again. Or go to <code>ltsp-server/</code> and use <code>vagrant halt</code> and <code>vagrant up</code>. You
+can use <code>vagrant ssh</code> as well, to login to the server, if needed.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-2-3" class="outline-3">
+<h3 id="sec-2-3"><span class="section-number-3">2.3</span> Start a VirtualBox LTSP Client</h3>
+<div class="outline-text-3" id="text-2-3">
+<p>
+Students can create on the laptop a VirtualBox machine that boots from
+the network as a LTSP client.
+</p>
+
+<p>
+Here are the steps for building it manually:
+</p>
+<ol class="org-ol">
+<li>Create a new VirtualBox machine, with 1GB RAM and no virtual hard
+disk.
+</li>
+<li>On the <b>Settings</b> of this machine, go to <b>System</b> settings, select
+<b>Network</b> on the <b>Boot Order:</b> and uncheck the other options.
+</li>
+<li>On the <b>Network</b> settings select a <b>Bridged Adapter</b>, and on the list
+select the Wi-Fi network interface (something like <i>wlp2s0b1</i>). Use
+the command <code>ip addr</code> to figure out the names of the network
+interfaces.
+</li>
+</ol>
+
+<p>
+This VirtualBox machine will boot from the LTSP server through the
+Wi-Fi network.
+</p>
+
+<p>
+You can also use this script to create and start automatically a
+VirtualBox LTSP client:
+<a href="https://gitlab.com/Virtual-LTSP/VirtualBox/blob/bionic/client.sh">https://gitlab.com/Virtual-LTSP/VirtualBox/blob/bionic/client.sh</a>
+</p>
+<pre class="example">
+wget https://gitlab.com/Virtual-LTSP/VirtualBox/raw/bionic/client.sh
+chmod +x client.sh
+./client.sh --help
+ip link
+./client.sh start -m 1024 -i wlp2s0b1
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-sec-2-4" class="outline-3">
+<h3 id="sec-2-4"><span class="section-number-3">2.4</span> LTSP Scenarios</h3>
+<div class="outline-text-3" id="text-2-4">
+</div><div id="outline-container-sec-2-4-1" class="outline-4">
+<h4 id="sec-2-4-1"><span class="section-number-4">2.4.1</span> Screen Sharing With Epoptes</h4>
+<div class="outline-text-4" id="text-2-4-1">
+<p>
+The teacher can use Epoptes to share (broadcast) his screen with the
+students, or to watch what they are doing and help them (monitor and
+assist): <a href="http://www.epoptes.org/screenshots">http://www.epoptes.org/screenshots</a>
+</p>
+
+<p>
+The username of the teacher should be added to the group <b>epoptes</b> in
+order to be able to use it: <code>adduser username epoptes</code> . Or you can create
+another admin user, which automatically is added to this group:
+</p>
+<pre class="example">
+cd ltsp-server/
+vagrant ssh
+sudo su
+cd /host/scripts/
+./create-admin-account.sh username password
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-2-4-2" class="outline-4">
+<h4 id="sec-2-4-2"><span class="section-number-4">2.4.2</span> Manage Student Accounts</h4>
+<div class="outline-text-4" id="text-2-4-2">
+<p>
+The script <code>scripts/users.sh</code> can be used to <b>create</b>, <b>export</b>, <b>import</b>,
+<b>backup</b> and <b>restore</b> user accounts. Try it like this:
+</p>
+<pre class="example">
+cd ltsp-server/
+vagrant ssh
+sudo su
+cd /host/
+script/users.sh --help
+script/users.sh create user-list.txt
+script/users.sh backup
+script/users.sh restore backup/users-20190113.tgz
+</pre>
+
+<p>
+This is useful when you need to create lots of accounts.  Also, when
+you need to rebuild the virtual LTSP server, you can backup user
+accounts before doing it and restore them afterwards.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-2-4-3" class="outline-4">
+<h4 id="sec-2-4-3"><span class="section-number-4">2.4.3</span> Install New Applications On The Clients</h4>
+<div class="outline-text-4" id="text-2-4-3">
+<p>
+Usually you list the packages that should be installed on the client
+on the variable <code>PACKAGES</code> on <code>settings.sh</code>:
+</p>
+<pre class="example">
+# List of extra packages that need to be installed on the client.
+# For example: ubuntu-edu-preschool, ubuntu-edu-primary, etc.
+PACKAGES="
+  vim
+  geany
+  xfce4-terminal
+"
+</pre>
+
+<p>
+However, often you need to install more packages (or to remove some)
+after the server has been built. In this case you have to make these
+customizations on the chroot directory and then rebuild the client
+image:
+</p>
+<pre class="example">
+cd ltsp-server/
+vagrant ssh
+
+sudo su
+rm /opt/ltsp/i386/etc/resolv.conf
+ltsp-chroot -mr
+
+apt update
+apt upgrade
+apt install emacs
+exit    # from chroot
+
+ltsp-update-image
+systemctl restart nbd-server
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-2-4-4" class="outline-4">
+<h4 id="sec-2-4-4"><span class="section-number-4">2.4.4</span> Customize The Guest Accounts</h4>
+<div class="outline-text-4" id="text-2-4-4">
+<p>
+On <code>settings.sh</code> there are these variables:
+</p>
+<pre class="example">
+# If GUEST_ACCOUNTS is "yes" then guest accounts are created and
+# a "Login as Guest" button is provided on the clients. Everything
+# on a guest account will be reset on login.
+#
+# If GUEST_AUTOLOGIN is "yes", then the client will automatically
+# login to a guest account as soon as it boots.
+#
+# The account GUEST_USER is used as a template (skeleton) for the
+# guest accounts. You can login to this account in order to customize
+# and tweak all the guest accounts.
+GUEST_ACCOUNTS="yes"
+GUEST_AUTOLOGIN="no"
+GUEST_USER="guest"
+GUEST_PASS="pass1"
+</pre>
+
+<p>
+If you login to and customize the account of GUEST_USER (for example
+change the background), this will be applied to all the guest logins.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-2-4-5" class="outline-4">
+<h4 id="sec-2-4-5"><span class="section-number-4">2.4.5</span> Change The RAM Of The Server</h4>
+<div class="outline-text-4" id="text-2-4-5">
+<p>
+You can easily increase or decrease the RAM of the VirtualBox LSP server
+like this:
+</p>
+<ul class="org-ul">
+<li>Stop the server with: <code>./server.sh halt</code> (or <code>cd ltsp-server/ ; vagrant halt</code>)
+</li>
+<li>Edit <code>settings.sh</code> and change <code>VB_RAM</code>
+</li>
+<li>Start the server with: <code>./server.sh up</code> (or <code>cd ltsp-server/ ; vagrant up</code>)
+</li>
+</ul>
+
+<p>
+The same also works for changing <code>LAN_IF</code> (the network interface that is
+connected to the LAN). However for changing the other settings you
+need to rebuild the server (with <code>./server.sh build</code>). If you want to
+preserve the user accounts, make sure to backup them first, and
+restore them after the rebuild.
+</p>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-sec-2-5" class="outline-3">
+<h3 id="sec-2-5"><span class="section-number-3">2.5</span> Install Guacamole</h3>
+<div class="outline-text-3" id="text-2-5">
+<p>
+Guacamole allows desktop access to a server from a web browser.
+When you install a virtual LTSP server, Guacamole is installed as well.
+This is the section about Guacamole on <code>settings.sh</code>:
+</p>
+<pre class="example">
+# Access the server from the web with Guacamole
+# https://guacamole.apache.org/doc/gug/using-guacamole.html
+# It can be accessed on: https://127.0.0.1/guac/
+# Comment out to disable installing Guacamole.
+GUAC_ADMIN="admin"
+GUAC_PASS="pass1"
+#VNC_PORT="5901"
+#VNC_WIDTH="1024"
+#VNC_HEIGHT="768"
+#VNC_DEPTH="24"
+</pre>
+
+<p>
+However you can install it on any <b>bionic</b> server, without having to
+install LTSP and other related things. It can be done like this:
+</p>
+<pre class="example">
+wget https://gitlab.com/Virtual-LTSP/VirtualBox/raw/bionic/scripts/install-guacamole.sh
+chmod +x install-guacamole.sh
+./install-guacamole.sh
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-sec-2-6" class="outline-3">
+<h3 id="sec-2-6"><span class="section-number-3">2.6</span> Guacamole Scenarios</h3>
+<div class="outline-text-3" id="text-2-6">
+</div><div id="outline-container-sec-2-6-1" class="outline-4">
+<h4 id="sec-2-6-1"><span class="section-number-4">2.6.1</span> Access Account From A Browser</h4>
+<div class="outline-text-4" id="text-2-6-1">
+<p>
+Any user that has an account on the server can access the desktop of
+the server from a web browser. He can do it like this:
+</p>
+<ul class="org-ul">
+<li>Open <code>https://12.34.56.78/guac/</code> on the browser. Here <code>12.34.56.78</code>
+is the IP of the server, most probably something like
+<code>192.168.0.xy</code>, or <code>10.42.0.1</code> if you started a hotspot from the
+laptop.
+</li>
+<li>Click on the button "Login" without a username and password.
+</li>
+<li>Click on the RDP connection.
+</li>
+<li>Give the username and password of the account.
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-2-6-2" class="outline-4">
+<h4 id="sec-2-6-2"><span class="section-number-4">2.6.2</span> Teacher Sharing His Screen With The Students</h4>
+<div class="outline-text-4" id="text-2-6-2">
+<p>
+This is useful when the teacher wants to demonstrate to the students
+how to do something, for example how to write a program. Usually a
+projector is used to show the desktop of the teacher, but this is a
+nice alternative too, especially when there is no projector available.
+</p>
+
+<p>
+To be able to share the screen of his account, the teacher should enter
+in Guacamole with the username <code>student</code> or <code>admin</code> (and the
+corresponding password). This is different from the case above, where
+he could login in Guacamole even without a username and password.
+</p>
+
+<p>
+Then he should go to his account by clicking on the RDP connection and
+giving the username and password of his account. Afterwards he should
+follow these steps:
+</p>
+<ul class="org-ul">
+<li>Press Ctrl+Alt+Shift to open the Guacamole panel on the left side.
+</li>
+<li>Click on the "Share" menu of the top and then on "Watch".
+</li>
+<li>Right-click on the link that is displayed and copy it.
+</li>
+<li>Open <code>https://12.34.56.78/chat/</code> (or <code>https://10.42.0.1/chat/</code>)
+and post the link there to share it with the students.
+</li>
+</ul>
+
+<p>
+Once the students open in browser the link of the shared Guacamole
+session they will be able to see the desktop of the teacher and what
+he is doing.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-2-6-3" class="outline-4">
+<h4 id="sec-2-6-3"><span class="section-number-4">2.6.3</span> Students Collaborating With The Teacher And With Each-Other</h4>
+<div class="outline-text-4" id="text-2-6-3">
+<p>
+The students can share their desktop too with the teacher and with
+other students. This is useful when a student is stuck and needs some
+help (for example he cannot find a bug in the program) or when the
+students are working in pairs or in groups.
+</p>
+
+<p>
+To be able to share his desktop a student should login in Guacamole
+with the username student. Then he should follow the same steps as
+above, except that he should select "Collaborate" from the menu of
+"Share", instead of "Watch". The difference is that with "Collaborate"
+both parties (or all of them) can use the keyboard and mouse to work
+together, instead of just watching what the other person does.
+</p>
+
+<p>
+Again they can use the chat (<code>https://10.42.0.1/chat/</code>) to share the
+link of the guacamole session with the others.
+</p>
+</div>
+</div>
+</div>
+</div>
+
+
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> There Is No Classroom</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+Teaching online is becoming common nowadays. In this case the students
+may be distributed all over the world. But it can also be combined
+with traditional teaching, where the students sometimes meet in a
+classroom and sometimes meet online.
+</p>
+
+<p>
+In this case the students are assumed to have a computer at home and
+good internet connection. The server will be a VPS on the cloud. It
+can also be located at the school/university, provided that there is
+good internet connection, however it is becoming increasingly more
+easy, cheaper and better to have it on the cloud.
+</p>
+</div>
+
+
+<div id="outline-container-sec-3-1" class="outline-3">
+<h3 id="sec-3-1"><span class="section-number-3">3.1</span> Install A Docker Desktop Server On The Cloud</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+The server will be installed on a Docker container, with the help of
+docker-scripts.
+</p>
+
+<p>
+<b>Note:</b> I have tried these installation steps on a server on <a href="https://www.hetzner.com/cloud">Hetzner
+Cloud</a> installed with Ubuntu-18.04, but it should be almost the same
+on other Linux servers.
+</p>
+</div>
+
+<div id="outline-container-sec-3-1-1" class="outline-4">
+<h4 id="sec-3-1-1"><span class="section-number-4">3.1.1</span> Install Docker</h4>
+<div class="outline-text-4" id="text-3-1-1">
+<p>
+Instructions for installing Docker on Ubuntu are here:
+<a href="https://docs.docker.com/install/linux/docker-ce/ubuntu/">https://docs.docker.com/install/linux/docker-ce/ubuntu/</a>
+</p>
+
+<ul class="org-ul">
+<li>Add the docker repository on the list of package repositories:
+<pre class="example">
+apt update
+apt install \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    software-properties-common
+
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+
+add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
+</pre>
+</li>
+
+<li>Install the package <code>docker-ce</code>:
+<pre class="example">
+apt update
+apt install docker-ce
+</pre>
+</li>
+
+<li>Verify that Docker CE is installed correctly by running the hello-world image:
+<pre class="example">
+docker container run hello-world
+</pre>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-3-1-2" class="outline-4">
+<h4 id="sec-3-1-2"><span class="section-number-4">3.1.2</span> Install Docker-Scripts</h4>
+<div class="outline-text-4" id="text-3-1-2">
+<p>
+<a href="https://github.com/docker-scripts/ds">DockerScripts</a> is a shell script framework for Docker. It facilitates
+creating and maintaining docker containers.
+</p>
+
+<p>
+Use these commands to install it:
+</p>
+<pre class="example">
+apt install m4
+git clone https://github.com/docker-scripts/ds /opt/docker-scripts/ds
+cd /opt/docker-scripts/ds/
+make install
+ds
+ds -h
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-3-1-3" class="outline-4">
+<h4 id="sec-3-1-3"><span class="section-number-4">3.1.3</span> Install Web Server Proxy</h4>
+<div class="outline-text-4" id="text-3-1-3">
+<p>
+We need <a href="https://github.com/docker-scripts/wsproxy">wsproxy</a> in order to get and maintain the free letsencrypt SSL
+certificates. It can be installed like this:
+</p>
+<ul class="org-ul">
+<li>Get its code: <code>ds pull wsproxy</code>
+</li>
+<li>Init a container directory for it: <code>ds init wsproxy @wsproxy</code>
+</li>
+<li>Customize the settings: <code>cd /var/ds/wsproxy/; vim settings.sh</code>
+</li>
+<li>Build image, create the container and configure it: <code>ds make</code>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-3-1-4" class="outline-4">
+<h4 id="sec-3-1-4"><span class="section-number-4">3.1.4</span> Build The Desktop Container</h4>
+<div class="outline-text-4" id="text-3-1-4">
+<ul class="org-ul">
+<li>Get its code: <code>ds pull desktop</code>
+</li>
+<li>Init a container directory for it: <code>ds init desktop @desktop.example.org</code>
+</li>
+<li>Customize the settings: <code>cd /var/ds/desktop.example.org/; vim settings.sh</code>
+</li>
+<li>Build image, create the container and configure it: <code>ds make</code>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-sec-3-2" class="outline-3">
+<h3 id="sec-3-2"><span class="section-number-3">3.2</span> Docker Server Scenarios</h3>
+<div class="outline-text-3" id="text-3-2">
+</div><div id="outline-container-sec-3-2-1" class="outline-4">
+<h4 id="sec-3-2-1"><span class="section-number-4">3.2.1</span> Install Additional Packages</h4>
+<div class="outline-text-4" id="text-3-2-1">
+<p>
+You can go inside the docker container and install other packages with
+<code>apt</code>, like this:
+</p>
+<pre class="example">
+cd /var/ds/desk.example.org/
+ds shell
+apt install ubuntu-edu-preschool ubuntu-edu-primary firefox
+exit
+</pre>
+
+<p>
+However in case you rebuild the server you will have to install them
+again manually.  To install them automatically on each rebuild of the
+server, create a file like <code>/var/ds/desk.example.org/packages</code> with a
+content like this:
+</p>
+<pre class="example">
+RUN DEBIAN_FRONTEND=noninteractive \
+    apt install --yes \
+        ubuntu-edu-preschool \
+        ubuntu-edu-primary \
+        firefox
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-3-2-2" class="outline-4">
+<h4 id="sec-3-2-2"><span class="section-number-4">3.2.2</span> Manage Student Accounts</h4>
+<div class="outline-text-4" id="text-3-2-2">
+<p>
+The script <code>users.sh</code> can be used to <b>create</b>, <b>export</b>, <b>import</b>,
+<b>backup</b> and <b>restore</b> user accounts. Try it like this:
+</p>
+<pre class="example">
+cd /var/ds/desk.example.org/
+ds shell
+
+/app-scripts/users.sh --help
+/app-scripts/users.sh create user-list.txt
+/app-scripts/users.sh backup
+/app-scripts/users.sh restore backup/users-20190113.tgz
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-3-2-3" class="outline-4">
+<h4 id="sec-3-2-3"><span class="section-number-4">3.2.3</span> Rebuild The Server</h4>
+<div class="outline-text-4" id="text-3-2-3">
+<p>
+Before rebuilding the server you should make first a backup of the
+user accounts and homes, and after rebuilding it you should restore
+them:
+</p>
+<pre class="example">
+cd /var/ds/desk.example.org/
+
+ds shell
+/app-scripts/users.sh backup
+exit
+
+ds make
+
+ds shell
+/app-scripts/users.sh restore backup/users-20190113.tgz
+exit
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-3-3" class="outline-3">
+<h3 id="sec-3-3"><span class="section-number-3">3.3</span> Guacamole Scenarios</h3>
+<div class="outline-text-3" id="text-3-3">
+<p>
+Guacamole is installed by default on the server and allows desktop
+access to the server from a web browser. Every application and
+everything runs on the server and the client does not consume any
+resources, except for a browser tab. This is very convenient because:
+</p>
+<ul class="org-ul">
+<li>Does not require installation of any additional tools or
+applications, except a web browser.
+</li>
+<li>It is cross-platform and universal. The desktop can be accessed from
+any system, on any architecture. This includes ChromeOS, RaspberryPi,
+tablets, smartphones, or any other not powerful computers.
+</li>
+</ul>
+
+<p>
+Things that we can do with Guacamole on a cloud server are almost the
+same that we can do on a local server.
+</p>
+</div>
+
+<div id="outline-container-sec-3-3-1" class="outline-4">
+<h4 id="sec-3-3-1"><span class="section-number-4">3.3.1</span> Access Account From A Browser</h4>
+<div class="outline-text-4" id="text-3-3-1">
+<p>
+Any user that has an account on the server can access the desktop of
+the server from a web browser. He can do it like this:
+</p>
+<ul class="org-ul">
+<li>Open <code>https://desk.example.org:444/guac/</code> on the browser. Here the
+port <code>444</code> is the one that is forwarded to port <code>443</code> on
+<code>settings.sh</code>
+</li>
+<li>Click on the button "Login" without a username and password.
+</li>
+<li>Click on the RDP connection.
+</li>
+<li>Give the username and password of the account.
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-3-3-2" class="outline-4">
+<h4 id="sec-3-3-2"><span class="section-number-4">3.3.2</span> Teacher Sharing His Screen With The Students</h4>
+<div class="outline-text-4" id="text-3-3-2">
+<p>
+This is useful when the teacher wants to demonstrate to the students
+how to do something, for example how to write a program.
+</p>
+
+<p>
+To be able to share the screen of his account, the teacher should enter
+in Guacamole with the username <code>student</code> or <code>admin</code> (and the
+corresponding password).
+</p>
+
+<p>
+Then he should go to his account by clicking on the RDP connection and
+giving the username and password of his account. Afterwards he should
+follow these steps:
+</p>
+<ul class="org-ul">
+<li>Press Ctrl+Alt+Shift to open the Guacamole panel on the left side.
+</li>
+<li>Click on the "Share" menu of the top and then on "Watch".
+</li>
+<li>Right-click on the link that is displayed and copy it.
+</li>
+<li>Send the link to the students by email, instant message (chat), etc.
+</li>
+</ul>
+
+<p>
+Once the students open in browser the link of the shared Guacamole
+session, they will be able to see the desktop of the teacher and what
+he is doing.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-3-3-3" class="outline-4">
+<h4 id="sec-3-3-3"><span class="section-number-4">3.3.3</span> Students Collaborating With The Teacher And With Each-Other</h4>
+<div class="outline-text-4" id="text-3-3-3">
+<p>
+The students can share their desktop too with the teacher and with
+other students. This is useful when a student is stuck and needs some
+help (for example he cannot find a bug in the program) or when the
+students are working in pairs or in groups.
+</p>
+
+<p>
+To be able to share his desktop a student should login in Guacamole
+with the username student. Then he should follow the same steps as
+above, except that he should select "Collaborate" from the menu of
+"Share", instead of "Watch". The difference is that with "Collaborate"
+both parties (or all of them) can use the keyboard and mouse to work
+together, instead of just watching what the other person does.
+</p>
+
+<p>
+Then they can use email or chat to share the link of the guacamole
+session with the others.
+</p>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-sec-3-4" class="outline-3">
+<h3 id="sec-3-4"><span class="section-number-3">3.4</span> Making Videoconferences</h3>
+<div class="outline-text-3" id="text-3-4">
+<p>
+Sharing the desktop with other people is most useful when you can also
+talk and discuss with them. This can be achieved even by phone calls,
+but videoconference applications are more useful, and there are plenty
+of them. I would suggest <a href="https://meet.jit.si/">https://meet.jit.si/</a> for these reasons:
+</p>
+<ul class="org-ul">
+<li>It is completely browser based and does not need any special tools
+or applications to be installed.
+</li>
+<li>Working straight from the browser means also that it is also
+cross-platform and can be used on any system that has a browser
+(Linux, Windows, MacOS, ChromeOS, etc.)
+</li>
+<li>It is completely free to use and does not have any limitations on
+the number of participants in a meeting.
+</li>
+<li>It is very easy to use and does not even ask for users to register
+or have an account.
+</li>
+<li>The software that it uses is free software and anybody can install
+it on his own server and build his own videoconference server.
+</li>
+</ul>
+
+<p>
+Some other useful features that videoconference applications usually
+have are:
+</p>
+<ul class="org-ul">
+<li>Instant messaging (chat), which can be useful for sharing url-s.
+</li>
+<li>File sending and sharing.
+</li>
+<li>Desktop sharing. With jitsi you can even share the view of a
+specific application or a specific tab of the browser.
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Date: 2019-01-13</p>
+<p class="author">Author: Dashamir Hoxha</p>
+<p class="date">Created: 2019-01-13 Sun 08:58</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.1.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>

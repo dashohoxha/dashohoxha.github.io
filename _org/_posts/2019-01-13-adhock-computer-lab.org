@@ -1,0 +1,578 @@
+#+TITLE:     Ad-Hock Computer Lab
+#+AUTHOR:    Dashamir Hoxha
+#+EMAIL:     dashohoxha@gmail.com
+#+DATE:      2019-01-13
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+OPTIONS:   TeX:nil LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+# #+INFOJS_OPT: view:overview toc:t ltoc:t mouse:#aadddd buttons:0 path:js/org-info.js
+#+STYLE: <link rel="stylesheet" type="text/css" href="css/org-info.css" />
+#+begin_comment yaml-front-matter
+---
+layout:     post
+title:      Ad-Hock Computer Lab
+date:       2019-01-13
+
+summary: A computer lab is usually a classroom of 20-30 computers, connected
+  to a switch that makes a LAN. These computers are usually managed with LTSP,
+  which reduces the hardware costs and the time and efforts needed for
+  installing and maintaining all of them. What if there is no computer lab
+  but all the students have laptops? Can we build a similar infrastructure,
+  based on WiFi? Yes we can, and in this article we will see how. What if
+  the students are not located on the same classroom but are distributed
+  all over the world? Can we offer them some centralized services and build
+  a virtual classroom? There may be many ways of doing it but we will
+  see just one.
+
+tags:       LTSP VirtualBox vagrantup Guacamole docker
+---
+#+end_comment
+
+* Introduction
+
+A computer lab is usually a classroom of 20-30 computers, connected to
+a switch that makes a LAN. These computers are usually managed with
+LTSP, which reduces the hardware costs and the time and efforts needed
+for installing and maintaining all of them.
+
+What if there is no computer lab but all the students have laptops?
+Can we build a similar infrastructure, based on WiFi? Yes we can, and
+in this article we will see how.
+
+What if the students are not located on the same classroom but are
+distributed all over the world? Can we offer them some centralized
+services and build a virtual classroom? There may be many ways of
+doing it but we will see just one.
+
+
+* There Is No Computer Lab
+
+In some computer science departments there are no computer labs
+anymore. Instead, the students are required to bring and use their own
+laptops. Let's see how we can build some kind of infrastructure in
+this case.
+
+We will use the laptop of the teacher as a server, so let's assume
+that it has at least 4GB RAM. Actually we will install the server on a
+VirtualBox machine, which is the most easy and the most flexible way.
+
+*Note:* Installing the server on a virtual machine provides isolation
+and encapsulation, so that the configurations of the server do not
+mess with the configurations of the rest of the laptop.  This way the
+laptop can be used for other purposes as well.
+
+** Build a Wi-Fi LAN
+
+We need a Wi-Fi LAN, so that the laptops can communicate with the
+server.  Often there is some Wi-Fi access point nearby. By connecting
+to it, laptops will be able to communicate with each-other as well. In
+this case we have nothing to do.
+
+If there is no Wi-Fi access point that can be used, we can create one
+with smartphone (Android or iPhone) and connect all the laptops to it.
+
+Another way is to start a hotspot on one of the laptops (for example
+on the laptop of the teacher). It can be done easily with a script,
+like this:
+#+begin_example
+wget https://gitlab.com/Virtual-LTSP/VirtualBox/raw/bionic/hotspot.sh
+chmod +x hotspot.sh
+./hotspot.sh start
+#+end_example
+
+The script =hotspot.sh= basically just calls the command =nmcli= with
+propper arguments:
+#+begin_example
+nmcli dev wifi hotspot ifname "$ifname" ssid "$ssid" password "$pass"
+#+end_example
+
+
+** Install a VirtualBox LTSP Server
+
+The most easy way to install a LTSP server on a VirtualBox machine is
+to use the [[https://gitlab.com/Virtual-LTSP/VirtualBox][Virtual LTSP]] scripts:
+ - Install virtualbox and vagrant: =apt install virtualbox virtualbox-qt vagrant=
+ - Get the scripts:
+   #+begin_example
+   git clone https://gitlab.com/Virtual-LTSP/VirtualBox ltsp
+   cd ltsp/
+   #+end_example
+ - Edit ~settings.sh~ and make sure to:
+    + set *DEVELOPMENT="no"*
+    + set *GATEWAY="no"*
+    + set *LAN_IF* to the name of the Wi-Fi interface (check them with
+      =ip addr=)
+    + change *ADMIN_PASS*, *GUEST_PASS*, *GUAC_PASS*
+    + optionally change *HOSTNAME* and the *PACKAGES* that need to be
+      installed on the clients
+    + optionally change *VM_BOX* and *VM_RAM*, if you want to change the
+      base system, or to allocate more RAM to the virtual machine
+  - Start the installation with: =./server.sh build= It takes a lot of
+    time to download images and to install packages, so be patient.
+
+Use =./server.sh halt= to stop the server and =./server.sh up= to start it
+again. Or go to ~ltsp-server/~ and use =vagrant halt= and =vagrant up=. You
+can use =vagrant ssh= as well, to login to the server, if needed.
+
+
+** Start a VirtualBox LTSP Client
+
+Students can create on the laptop a VirtualBox machine that boots from
+the network as a LTSP client.
+
+Here are the steps for building it manually:
+1. Create a new VirtualBox machine, with 1GB RAM and no virtual hard
+   disk.
+1. On the *Settings* of this machine, go to *System* settings, select
+   *Network* on the *Boot Order:* and uncheck the other options.
+1. On the *Network* settings select a *Bridged Adapter*, and on the list
+   select the Wi-Fi network interface (something like /wlp2s0b1/). Use
+   the command =ip addr= to figure out the names of the network
+   interfaces.
+
+This VirtualBox machine will boot from the LTSP server through the
+Wi-Fi network.
+
+You can also use this script to create and start automatically a
+VirtualBox LTSP client:
+https://gitlab.com/Virtual-LTSP/VirtualBox/blob/bionic/client.sh
+#+begin_example
+wget https://gitlab.com/Virtual-LTSP/VirtualBox/raw/bionic/client.sh
+chmod +x client.sh
+./client.sh --help
+ip link
+./client.sh start -m 1024 -i wlp2s0b1
+#+end_example
+
+
+** LTSP Scenarios
+
+*** Screen Sharing With Epoptes
+
+The teacher can use Epoptes to share (broadcast) his screen with the
+students, or to watch what they are doing and help them (monitor and
+assist): http://www.epoptes.org/screenshots
+
+The username of the teacher should be added to the group *epoptes* in
+order to be able to use it: =adduser username epoptes= . Or you can create
+another admin user, which automatically is added to this group:
+#+begin_example
+cd ltsp-server/
+vagrant ssh
+sudo su
+cd /host/scripts/
+./create-admin-account.sh username password
+#+end_example
+
+*** Manage Student Accounts
+
+The script ~scripts/users.sh~ can be used to *create*, *export*, *import*,
+*backup* and *restore* user accounts. Try it like this:
+#+begin_example
+cd ltsp-server/
+vagrant ssh
+sudo su
+cd /host/
+script/users.sh --help
+script/users.sh create user-list.txt
+script/users.sh backup
+script/users.sh restore backup/users-20190113.tgz
+#+end_example
+
+This is useful when you need to create lots of accounts.  Also, when
+you need to rebuild the virtual LTSP server, you can backup user
+accounts before doing it and restore them afterwards.
+
+*** Install New Applications On The Clients
+
+Usually you list the packages that should be installed on the client
+on the variable =PACKAGES= on ~settings.sh~:
+#+begin_example
+# List of extra packages that need to be installed on the client.
+# For example: ubuntu-edu-preschool, ubuntu-edu-primary, etc.
+PACKAGES="
+  vim
+  geany
+  xfce4-terminal
+"
+#+end_example
+
+However, often you need to install more packages (or to remove some)
+after the server has been built. In this case you have to make these
+customizations on the chroot directory and then rebuild the client
+image:
+#+begin_example
+cd ltsp-server/
+vagrant ssh
+
+sudo su
+rm /opt/ltsp/i386/etc/resolv.conf
+ltsp-chroot -mr
+
+apt update
+apt upgrade
+apt install emacs
+exit    # from chroot
+
+ltsp-update-image
+systemctl restart nbd-server
+#+end_example
+
+*** Customize The Guest Accounts
+
+On ~settings.sh~ there are these variables:
+#+begin_example
+# If GUEST_ACCOUNTS is "yes" then guest accounts are created and
+# a "Login as Guest" button is provided on the clients. Everything
+# on a guest account will be reset on login.
+#
+# If GUEST_AUTOLOGIN is "yes", then the client will automatically
+# login to a guest account as soon as it boots.
+#
+# The account GUEST_USER is used as a template (skeleton) for the
+# guest accounts. You can login to this account in order to customize
+# and tweak all the guest accounts.
+GUEST_ACCOUNTS="yes"
+GUEST_AUTOLOGIN="no"
+GUEST_USER="guest"
+GUEST_PASS="pass1"
+#+end_example
+
+If you login to and customize the account of GUEST_USER (for example
+change the background), this will be applied to all the guest logins.
+
+*** Change The RAM Of The Server
+
+You can easily increase or decrease the RAM of the VirtualBox LSP server
+like this:
+- Stop the server with: =./server.sh halt= (or =cd ltsp-server/ ; vagrant halt=)
+- Edit ~settings.sh~ and change =VB_RAM=
+- Start the server with: =./server.sh up= (or =cd ltsp-server/ ; vagrant up=)
+
+The same also works for changing =LAN_IF= (the network interface that is
+connected to the LAN). However for changing the other settings you
+need to rebuild the server (with =./server.sh build=). If you want to
+preserve the user accounts, make sure to backup them first, and
+restore them after the rebuild.
+
+
+** Install Guacamole
+
+Guacamole allows desktop access to a server from a web browser.
+When you install a virtual LTSP server, Guacamole is installed as well.
+This is the section about Guacamole on ~settings.sh~:
+#+begin_example
+# Access the server from the web with Guacamole
+# https://guacamole.apache.org/doc/gug/using-guacamole.html
+# It can be accessed on: https://127.0.0.1/guac/
+# Comment out to disable installing Guacamole.
+GUAC_ADMIN="admin"
+GUAC_PASS="pass1"
+#VNC_PORT="5901"
+#VNC_WIDTH="1024"
+#VNC_HEIGHT="768"
+#VNC_DEPTH="24"
+#+end_example
+
+However you can install it on any *bionic* server, without having to
+install LTSP and other related things. It can be done like this:
+#+begin_example
+wget https://gitlab.com/Virtual-LTSP/VirtualBox/raw/bionic/scripts/install-guacamole.sh
+chmod +x install-guacamole.sh
+./install-guacamole.sh
+#+end_example
+
+
+** Guacamole Scenarios
+
+*** Access Account From A Browser
+
+Any user that has an account on the server can access the desktop of
+the server from a web browser. He can do it like this:
+- Open =https://12.34.56.78/guac/= on the browser. Here =12.34.56.78=
+  is the IP of the server, most probably something like
+  =192.168.0.xy=, or =10.42.0.1= if you started a hotspot from the
+  laptop.
+- Click on the button "Login" without a username and password.
+- Click on the RDP connection.
+- Give the username and password of the account.
+
+*** Teacher Sharing His Screen With The Students
+
+This is useful when the teacher wants to demonstrate to the students
+how to do something, for example how to write a program. Usually a
+projector is used to show the desktop of the teacher, but this is a
+nice alternative too, especially when there is no projector available.
+
+To be able to share the screen of his account, the teacher should enter
+in Guacamole with the username =student= or =admin= (and the
+corresponding password). This is different from the case above, where
+he could login in Guacamole even without a username and password.
+
+Then he should go to his account by clicking on the RDP connection and
+giving the username and password of his account. Afterwards he should
+follow these steps:
+- Press Ctrl+Alt+Shift to open the Guacamole panel on the left side.
+- Click on the "Share" menu of the top and then on "Watch".
+- Right-click on the link that is displayed and copy it.
+- Open =https://12.34.56.78/chat/= (or =https://10.42.0.1/chat/=)
+  and post the link there to share it with the students.
+
+Once the students open in browser the link of the shared Guacamole
+session they will be able to see the desktop of the teacher and what
+he is doing.
+
+*** Students Collaborating With The Teacher And With Each-Other
+
+The students can share their desktop too with the teacher and with
+other students. This is useful when a student is stuck and needs some
+help (for example he cannot find a bug in the program) or when the
+students are working in pairs or in groups.
+
+To be able to share his desktop a student should login in Guacamole
+with the username student. Then he should follow the same steps as
+above, except that he should select "Collaborate" from the menu of
+"Share", instead of "Watch". The difference is that with "Collaborate"
+both parties (or all of them) can use the keyboard and mouse to work
+together, instead of just watching what the other person does.
+
+Again they can use the chat (=https://10.42.0.1/chat/=) to share the
+link of the guacamole session with the others.
+
+
+
+* There Is No Classroom
+
+Teaching online is becoming common nowadays. In this case the students
+may be distributed all over the world. But it can also be combined
+with traditional teaching, where the students sometimes meet in a
+classroom and sometimes meet online.
+
+In this case the students are assumed to have a computer at home and
+good internet connection. The server will be a VPS on the cloud. It
+can also be located at the school/university, provided that there is
+good internet connection, however it is becoming increasingly more
+easy, cheaper and better to have it on the cloud.
+
+
+** Install A Docker Desktop Server On The Cloud
+
+The server will be installed on a Docker container, with the help of
+docker-scripts.
+
+*Note:* I have tried these installation steps on a server on [[https://www.hetzner.com/cloud][Hetzner
+Cloud]] installed with Ubuntu-18.04, but it should be almost the same
+on other Linux servers.
+
+*** Install Docker
+
+Instructions for installing Docker on Ubuntu are here:
+https://docs.docker.com/install/linux/docker-ce/ubuntu/
+
+- Add the docker repository on the list of package repositories:
+  #+begin_example
+  apt update
+  apt install \
+      apt-transport-https \
+      ca-certificates \
+      curl \
+      software-properties-common
+
+  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+
+  add-apt-repository \
+     "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+     $(lsb_release -cs) \
+     stable"
+  #+end_example
+
+- Install the package =docker-ce=:
+  #+begin_example
+  apt update
+  apt install docker-ce
+  #+end_example
+
+- Verify that Docker CE is installed correctly by running the hello-world image:
+  #+begin_example
+  docker container run hello-world
+  #+end_example
+
+*** Install Docker-Scripts
+
+[[https://github.com/docker-scripts/ds][DockerScripts]] is a shell script framework for Docker. It facilitates
+creating and maintaining docker containers.
+
+Use these commands to install it:
+#+begin_example
+apt install m4
+git clone https://github.com/docker-scripts/ds /opt/docker-scripts/ds
+cd /opt/docker-scripts/ds/
+make install
+ds
+ds -h
+#+end_example
+
+*** Install Web Server Proxy
+
+We need [[https://github.com/docker-scripts/wsproxy][wsproxy]] in order to get and maintain the free letsencrypt SSL
+certificates. It can be installed like this:
+- Get its code: =ds pull wsproxy=
+- Init a container directory for it: =ds init wsproxy @wsproxy=
+- Customize the settings: =cd /var/ds/wsproxy/; vim settings.sh=
+- Build image, create the container and configure it: =ds make=
+
+*** Build The Desktop Container
+
+- Get its code: =ds pull desktop=
+- Init a container directory for it: =ds init desktop @desktop.example.org=
+- Customize the settings: =cd /var/ds/desktop.example.org/; vim settings.sh=
+- Build image, create the container and configure it: =ds make=
+
+
+** Docker Server Scenarios
+
+*** Install Additional Packages
+
+You can go inside the docker container and install other packages with
+=apt=, like this:
+#+begin_example
+cd /var/ds/desk.example.org/
+ds shell
+apt install ubuntu-edu-preschool ubuntu-edu-primary firefox
+exit
+#+end_example
+
+However in case you rebuild the server you will have to install them
+again manually.  To install them automatically on each rebuild of the
+server, create a file like ~/var/ds/desk.example.org/packages~ with a
+content like this:
+#+begin_example
+RUN DEBIAN_FRONTEND=noninteractive \
+    apt install --yes \
+        ubuntu-edu-preschool \
+        ubuntu-edu-primary \
+        firefox
+#+end_example
+
+*** Manage Student Accounts
+
+The script ~users.sh~ can be used to *create*, *export*, *import*,
+*backup* and *restore* user accounts. Try it like this:
+#+begin_example
+cd /var/ds/desk.example.org/
+ds shell
+
+/app-scripts/users.sh --help
+/app-scripts/users.sh create user-list.txt
+/app-scripts/users.sh backup
+/app-scripts/users.sh restore backup/users-20190113.tgz
+#+end_example
+
+*** Rebuild The Server
+
+Before rebuilding the server you should make first a backup of the
+user accounts and homes, and after rebuilding it you should restore
+them:
+#+begin_example
+cd /var/ds/desk.example.org/
+
+ds shell
+/app-scripts/users.sh backup
+exit
+
+ds make
+
+ds shell
+/app-scripts/users.sh restore backup/users-20190113.tgz
+exit
+#+end_example
+
+** Guacamole Scenarios
+
+Guacamole is installed by default on the server and allows desktop
+access to the server from a web browser. Every application and
+everything runs on the server and the client does not consume any
+resources, except for a browser tab. This is very convenient because:
+- Does not require installation of any additional tools or
+  applications, except a web browser.
+- It is cross-platform and universal. The desktop can be accessed from
+  any system, on any architecture. This includes ChromeOS, RaspberryPi,
+  tablets, smartphones, or any other not powerful computers.
+
+Things that we can do with Guacamole on a cloud server are almost the
+same that we can do on a local server.
+
+*** Access Account From A Browser
+
+Any user that has an account on the server can access the desktop of
+the server from a web browser. He can do it like this:
+- Open =https://desk.example.org:444/guac/= on the browser. Here the
+  port =444= is the one that is forwarded to port =443= on
+  ~settings.sh~
+- Click on the button "Login" without a username and password.
+- Click on the RDP connection.
+- Give the username and password of the account.
+
+*** Teacher Sharing His Screen With The Students
+
+This is useful when the teacher wants to demonstrate to the students
+how to do something, for example how to write a program.
+
+To be able to share the screen of his account, the teacher should enter
+in Guacamole with the username =student= or =admin= (and the
+corresponding password).
+
+Then he should go to his account by clicking on the RDP connection and
+giving the username and password of his account. Afterwards he should
+follow these steps:
+- Press Ctrl+Alt+Shift to open the Guacamole panel on the left side.
+- Click on the "Share" menu of the top and then on "Watch".
+- Right-click on the link that is displayed and copy it.
+- Send the link to the students by email, instant message (chat), etc.
+
+Once the students open in browser the link of the shared Guacamole
+session, they will be able to see the desktop of the teacher and what
+he is doing.
+
+*** Students Collaborating With The Teacher And With Each-Other
+
+The students can share their desktop too with the teacher and with
+other students. This is useful when a student is stuck and needs some
+help (for example he cannot find a bug in the program) or when the
+students are working in pairs or in groups.
+
+To be able to share his desktop a student should login in Guacamole
+with the username student. Then he should follow the same steps as
+above, except that he should select "Collaborate" from the menu of
+"Share", instead of "Watch". The difference is that with "Collaborate"
+both parties (or all of them) can use the keyboard and mouse to work
+together, instead of just watching what the other person does.
+
+Then they can use email or chat to share the link of the guacamole
+session with the others.
+
+
+** Making Videoconferences
+
+Sharing the desktop with other people is most useful when you can also
+talk and discuss with them. This can be achieved even by phone calls,
+but videoconference applications are more useful, and there are plenty
+of them. I would suggest https://meet.jit.si/ for these reasons:
+- It is completely browser based and does not need any special tools
+  or applications to be installed.
+- Working straight from the browser means also that it is also
+  cross-platform and can be used on any system that has a browser
+  (Linux, Windows, MacOS, ChromeOS, etc.)
+- It is completely free to use and does not have any limitations on
+  the number of participants in a meeting.
+- It is very easy to use and does not even ask for users to register
+  or have an account.
+- The software that it uses is free software and anybody can install
+  it on his own server and build his own videoconference server.
+
+Some other useful features that videoconference applications usually
+have are:
+- Instant messaging (chat), which can be useful for sharing url-s.
+- File sending and sharing.
+- Desktop sharing. With jitsi you can even share the view of a
+  specific application or a specific tab of the browser.
+
